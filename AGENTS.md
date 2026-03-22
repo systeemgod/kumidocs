@@ -52,6 +52,22 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 - **ALWAYS use `<EmojiIcon emoji="..." size={N} />` from `src/components/ui/EmojiIcon.tsx`**
 - This applies to ALL emojis everywhere: theme toggles, status icons, page icons, etc.
 
+**React `useEffect` practices** (CRITICAL — violations will be rejected):
+
+- **NEVER call `useEffect` directly in components**
+- For the rare case of syncing with an external system on mount, use `useMountEffect` instead:
+  ```ts
+  export function useMountEffect(effect: () => void | (() => void)) {
+    useEffect(effect, []);
+  }
+  ```
+- Most `useEffect` usage should be replaced with one of these patterns:
+  1. **Derive state inline** — never use `useEffect(() => setX(f(y)), [y])`; compute directly in render
+  2. **Data-fetching libraries** — use React Query or similar; never fetch inside effects
+  3. **Event handlers** — if triggered by a user action, do the work in the handler, not an effect
+  4. **`useMountEffect`** — for DOM integration, third-party widgets, and browser API subscriptions on mount; use conditional mounting (`key` prop or conditional render) instead of guards inside effects
+  5. **`key` prop for resets** — use `<Component key={id} />` to force a clean remount instead of choreographing resets via dependency arrays
+
 ---
 
 ## Decision-Making Protocol
