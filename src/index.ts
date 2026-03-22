@@ -7,7 +7,6 @@ import { join, sep } from 'path';
 // serveSPA reads from the pre-built dist/public/ directory instead.
 import devIndex from './index.html';
 declare const __BUNDLED__: boolean | undefined;
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 const isBundled = typeof __BUNDLED__ !== 'undefined';
 const publicDir = join(import.meta.dir, 'public');
 async function serveSPA(req: Request): Promise<Response> {
@@ -119,7 +118,9 @@ watch(config.repoPath, { recursive: true }, (_, filename) => {
 		setTimeout(() => {
 			debounceMap.delete(relPath);
 			if (relPath === '.kumidocs.json') {
-				void loadPermissions().then(() => console.log('Reloaded .kumidocs.json'));
+				void loadPermissions().then(() => {
+					console.log('Reloaded .kumidocs.json');
+				});
 				return;
 			}
 			const fullPath = join(config.repoPath, relPath);

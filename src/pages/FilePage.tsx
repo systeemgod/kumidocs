@@ -259,7 +259,7 @@ export default function FilePage() {
 			savePromiseRef.current = next;
 			return next;
 		},
-		[filePath, reloadTree, loadDoc],
+		[filePath, reloadTree],
 	);
 
 	// Handle content changes
@@ -441,7 +441,7 @@ export default function FilePage() {
 				const pageIdx = Math.floor(yLocal / PAGE_H_PX);
 				const yOnPage = yLocal - pageIdx * PAGE_H_PX;
 				const fsPx = parseFloat(
-					window.getComputedStyle((node as Text).parentElement!).fontSize,
+					window.getComputedStyle((node as Text).parentElement ?? document.body).fontSize,
 				);
 				pdf.setPage(pageIdx + 1);
 				pdf.setFontSize(isNaN(fsPx) ? 12 : fsPx);

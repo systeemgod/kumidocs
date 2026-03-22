@@ -116,7 +116,7 @@ function patchSvgDimensions(src: string, width?: number, height?: number): strin
 			const cleaned = attrs
 				.replace(/\s+width="[^"]*"/g, '')
 				.replace(/\s+height="[^"]*"/g, '');
-			return `<svg${cleaned} width="${width}" height="${height}">`;
+			return `<svg${cleaned} width="${String(width)}" height="${String(height)}">`;
 		});
 		return 'data:image/svg+xml;base64,' + btoa(svg);
 	} catch {
