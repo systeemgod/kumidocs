@@ -20,6 +20,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useParams } from 'react-router-dom';
+
+function FilePageRoute() {
+	const { '*': rawPath = '' } = useParams();
+	const { user, loading } = useUser();
+	// Key on both path and user ID so FilePage remounts once user becomes available,
+	// ensuring useMountEffect fires after user is known (needed for wsClient.joinPage).
+	const userKey = loading ? 'loading' : (user?.id ?? 'anon');
+	return <FilePage key={`${rawPath}-${userKey}`} />;
+}
 
 function EmailSetupDialog() {
 	const { needsEmailSetup, setEmailAndRefetch } = useUser();
@@ -81,7 +91,7 @@ export function App() {
 						<Routes>
 							<Route path="/" element={<Navigate to="/p/README.md" replace />} />{' '}
 							<Route element={<AppShell />}>
-								<Route path="/p/*" element={<FilePage />} />
+								<Route path="/p/*" element={<FilePageRoute />} />
 								<Route path="/i" element={<ImageLibraryPage />} />
 								<Route path="/i/:filename" element={<ImageLibraryPage />} />{' '}
 								<Route path="/t" element={<ThemeLibraryPage />} />{' '}

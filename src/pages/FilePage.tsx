@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { toast } from 'sonner';
 import { MoreHorizontalRegular, SaveRegular, InfoRegular } from '@fluentui/react-icons';
+import { useMountEffect } from '../hooks/useMountEffect';
 import { EmojiPickerPopover } from '../components/ui/EmojiPickerPopover';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -75,7 +76,7 @@ export default function FilePage() {
 	const pdfContentRef = useRef<HTMLDivElement>(null);
 
 	// Toggle info panel from sidebar context menu (same-tab custom event)
-	useEffect(() => {
+	useMountEffect(() => {
 		const handler = (e: Event) => {
 			const detail = (e as CustomEvent<string>).detail;
 			if (detail === filePath) {
@@ -91,15 +92,15 @@ export default function FilePage() {
 		return () => {
 			window.removeEventListener('kumidocs:open-info', handler);
 		};
-	}, [filePath]);
+	});
 
 	const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	// Clear the auto-save timer on unmount to prevent a save firing on a dead component.
-	useEffect(() => {
+	useMountEffect(() => {
 		return () => {
 			if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
 		};
-	}, []);
+	});
 	// Mutex: chain saves so they never run concurrently (prevents double-commit 409)
 	const savePromiseRef = useRef<Promise<void>>(Promise.resolve());
 	// Explicit dirty flag — set true on any content change, false when a save succeeds.
@@ -146,11 +147,11 @@ export default function FilePage() {
 		}
 	}, []);
 
-	useEffect(() => {
+	useMountEffect(() => {
 		loadDoc(filePath).catch((err: unknown) => {
 			console.error('Failed to load document:', err);
 		});
-	}, [filePath, loadDoc]);
+	});
 
 	// Track editMode in a ref so the cleanup can read the latest value
 	// without adding editMode to the effect deps (which would re-run joinPage on every keystroke).
@@ -158,13 +159,13 @@ export default function FilePage() {
 	editModeRef.current = editMode;
 
 	// Tell server which page we're on; clean up presence when navigating away or unmounting.
-	useEffect(() => {
+	useMountEffect(() => {
 		if (user) wsClient.joinPage(filePath);
 		return () => {
 			if (editModeRef.current) wsClient.stopEditing(filePath);
 			wsClient.leavePage();
 		};
-	}, [filePath, user]);
+	});
 
 	// WS events
 	useWsListener((msg) => {

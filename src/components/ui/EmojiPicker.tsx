@@ -5,13 +5,14 @@
  * Every emoji cell is rendered by <EmojiIcon> for visual consistency with the rest
  * of the app. SVGs are baked into the JS bundle — zero HTTP requests.
  */
-import { useState, useMemo, useRef, useEffect, memo } from 'react';
+import { useState, useMemo, useRef, memo } from 'react';
 import { EmojiIcon } from './EmojiIcon';
 import EMOJI_SVGS from './emoji/emojis';
 import data from './emoji/emojimart-data-all-15.json';
 import { Input } from './input';
 import { ScrollArea } from './scroll-area';
 import { cn } from '../../lib/utils';
+import { useMountEffect } from '../../hooks/useMountEffect';
 
 // ── Typed subset of emojimart-data-all-15.json ───────────────────────────────
 
@@ -119,7 +120,7 @@ export function EmojiPicker({ onEmojiSelect, autoFocus }: EmojiPickerProps) {
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	// Focus the search input once the popover animation has settled
-	useEffect(() => {
+	useMountEffect(() => {
 		if (!autoFocus) return;
 		const t = setTimeout(() => {
 			inputRef.current?.focus();
@@ -127,7 +128,7 @@ export function EmojiPicker({ onEmojiSelect, autoFocus }: EmojiPickerProps) {
 		return () => {
 			clearTimeout(t);
 		};
-	}, [autoFocus]);
+	});
 
 	const displayEmojis = useMemo(() => {
 		const q = search.trim().toLowerCase();

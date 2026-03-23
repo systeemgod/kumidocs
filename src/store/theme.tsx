@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -16,25 +16,35 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 function getInitialTheme(): Theme {
 	const stored = localStorage.getItem('kumidocs:theme');
-	if (stored === 'light' || stored === 'dark') return stored;
-	return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+	const theme: Theme =
+		stored === 'light' || stored === 'dark'
+			? stored
+			: window.matchMedia('(prefers-color-scheme: dark)').matches
+				? 'dark'
+				: 'light';
+	applyTheme(theme);
+	return theme;
+}
+
+function applyTheme(theme: Theme) {
+	const root = document.documentElement;
+	if (theme === 'dark') {
+		root.classList.add('dark');
+	} else {
+		root.classList.remove('dark');
+	}
+	localStorage.setItem('kumidocs:theme', theme);
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
 	const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
-	useEffect(() => {
-		const root = document.documentElement;
-		if (theme === 'dark') {
-			root.classList.add('dark');
-		} else {
-			root.classList.remove('dark');
-		}
-		localStorage.setItem('kumidocs:theme', theme);
-	}, [theme]);
-
 	const toggle = () => {
-		setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+		setTheme((t) => {
+			const next = t === 'dark' ? 'light' : 'dark';
+			applyTheme(next);
+			return next;
+		});
 	};
 
 	return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;

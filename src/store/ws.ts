@@ -1,4 +1,5 @@
-import { useEffect, useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
+import { useMountEffect } from '../hooks/useMountEffect';
 import type { WsClientMessage, WsServerMessage } from '../lib/types';
 
 type WsListener = (msg: WsServerMessage) => void;
@@ -121,7 +122,7 @@ export function useWsListener(handler: WsListener) {
 		handlerRef.current = handler;
 	});
 
-	useEffect(() => {
+	useMountEffect(() => {
 		const fn: WsListener = (msg) => {
 			handlerRef.current(msg);
 		};
@@ -129,5 +130,5 @@ export function useWsListener(handler: WsListener) {
 		return () => {
 			wsClient.removeListener(fn);
 		};
-	}, []);
+	});
 }

@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { useMountEffect } from '../hooks/useMountEffect';
 import type { User } from '../lib/types';
 import type { SlideThemeMap } from '../lib/slide';
 
@@ -49,14 +50,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	const [needsEmailSetup, setNeedsEmailSetup] = useState(false);
 	const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
 
-	useEffect(() => {
+	useMountEffect(() => {
 		void fetchMe().then(({ user: u, slideThemes: st, needs401 }) => {
 			setUser(u);
 			setSlideThemes(st);
 			setNeedsEmailSetup(needs401);
 			setLoading(false);
 		});
-	}, []);
+	});
 
 	const setEmailAndRefetch = useCallback((email: string) => {
 		document.cookie = `kumidocs_email=${encodeURIComponent(email.trim().toLowerCase())}; path=/; SameSite=Lax`;

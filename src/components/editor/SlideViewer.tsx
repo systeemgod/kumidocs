@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
 	ArrowLeft,
 	BookOpen,
@@ -19,6 +19,7 @@ import { parseSlideDirectives, resolveTheme, isBgDark } from '@/lib/slide';
 import type { ParsedSlide, SlideThemeMap } from '@/lib/slide';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/store/theme';
+import { useMountEffect } from '@/hooks/useMountEffect';
 import type { jsPDF as JsPDF } from 'jspdf';
 
 // ── PDF selectable layer ─────────────────────────────────────────────────────
@@ -279,42 +280,49 @@ export function SlideViewer({
 
 	const stageRef = useRef<HTMLDivElement>(null);
 	const fullscreenRef = useRef<HTMLDivElement>(null);
-	const spotlightRef = useRef<HTMLDivElement>(null);
 	const slideElemsRef = useRef<(HTMLDivElement | null)[]>([]);
 	const offscreenRef = useRef<HTMLDivElement>(null);
 
 	// ── Keyboard navigation ──────────────────────────────────────────────────
 	const prev = useCallback(() => {
-		setIndex((i) => Math.max(0, i - 1));
+		setIndex((i) => {
+			const next = Math.max(0, i - 1);
+			slideElemsRef.current[next]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			return next;
+		});
 	}, []);
 	const next = useCallback(() => {
-		setIndex((i) => Math.min(total - 1, i + 1));
+		setIndex((i) => {
+			const n = Math.min(total - 1, i + 1);
+			slideElemsRef.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			return n;
+		});
 	}, [total]);
 
-	useEffect(() => {
+	// Stable refs so mount-only keyboard listener always calls the latest prev/next
+	const prevRef = useRef(prev);
+	prevRef.current = prev;
+	const nextRef = useRef(next);
+	nextRef.current = next;
+
+	useMountEffect(() => {
 		const handler = (e: KeyboardEvent) => {
 			const tag = (e.target as HTMLElement).tagName;
 			if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
+			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevRef.current();
 			if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
 				e.preventDefault();
-				next();
+				nextRef.current();
 			}
 		};
 		window.addEventListener('keydown', handler);
 		return () => {
 			window.removeEventListener('keydown', handler);
 		};
-	}, [prev, next]);
-
-	// ── Scroll-mode slide navigation ─────────────────────────────────────────
-	useEffect(() => {
-		if (!scrollMode) return;
-		slideElemsRef.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-	}, [index, scrollMode]);
+	});
 
 	// ── Scale slide canvas to fit the stage ──────────────────────────────────
-	useEffect(() => {
+	useMountEffect(() => {
 		const el = stageRef.current;
 		if (!el) return;
 		const obs = new ResizeObserver(([entry]) => {
@@ -327,10 +335,10 @@ export function SlideViewer({
 		return () => {
 			obs.disconnect();
 		};
-	}, []);
+	});
 
 	// ── Fullscreen ───────────────────────────────────────────────────────────
-	useEffect(() => {
+	useMountEffect(() => {
 		const handler = () => {
 			const active = !!document.fullscreenElement;
 			setIsFullscreen(active);
@@ -340,7 +348,7 @@ export function SlideViewer({
 		return () => {
 			document.removeEventListener('fullscreenchange', handler);
 		};
-	}, []);
+	});
 
 	const toggleFullscreen = useCallback(() => {
 		if (document.fullscreenElement) {
@@ -351,9 +359,10 @@ export function SlideViewer({
 	}, []);
 
 	// ── Spotlight (bare fullscreen, slide only) ───────────────────────────────
-	useEffect(() => {
-		if (!isSpotlight) return;
-		const el = spotlightRef.current;
+	// Rendered only when isSpotlight=true, so useMountEffect runs requestFullscreen
+	// and a ResizeObserver immediately on mount of the spotlight overlay div.
+	const spotlightCleanupRef = useRef<(() => void) | null>(null);
+	const spotlightSetScale = useCallback((el: HTMLDivElement | null) => {
 		if (!el) return;
 		el.requestFullscreen().catch(() => undefined);
 		const obs = new ResizeObserver(([entry]) => {
@@ -362,10 +371,22 @@ export function SlideViewer({
 			setSpotlightScale(Math.max(0.1, Math.min(width / SLIDE_W, height / SLIDE_H)));
 		});
 		obs.observe(el);
-		return () => {
+		// cleanup stored on ref so we can call it when the component unmounts
+		spotlightCleanupRef.current = () => {
 			obs.disconnect();
 		};
-	}, [isSpotlight]);
+	}, []);
+	const spotlightCallbackRef = useCallback(
+		(el: HTMLDivElement | null) => {
+			if (el) {
+				spotlightSetScale(el);
+			} else {
+				spotlightCleanupRef.current?.();
+				spotlightCleanupRef.current = null;
+			}
+		},
+		[spotlightSetScale],
+	);
 
 	const enterSpotlight = useCallback(() => {
 		setIsSpotlight(true);
@@ -459,7 +480,7 @@ export function SlideViewer({
 				{/* ── Spotlight overlay — bare fullscreen, slide only ── */}
 				{isSpotlight && (
 					<div
-						ref={spotlightRef}
+						ref={spotlightCallbackRef}
 						className={cn(
 							'fixed inset-0 z-[9999] bg-black flex items-center justify-center select-none',
 							pointerVisible ? 'cursor-none' : 'cursor-default',

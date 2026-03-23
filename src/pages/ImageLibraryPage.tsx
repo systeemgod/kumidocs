@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { DeleteRegular, DismissRegular } from '@fluentui/react-icons';
 import { toast } from 'sonner';
+import { useMountEffect } from '@/hooks/useMountEffect';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -192,9 +193,9 @@ export default function ImageLibraryPage() {
 			});
 	}, []);
 
-	useEffect(() => {
+	useMountEffect(() => {
 		fetchImages();
-	}, [fetchImages]);
+	});
 
 	const selectedImage = filename ? images.find((img) => img.filename === filename) : undefined;
 

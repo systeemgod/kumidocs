@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useMountEffect } from '../../hooks/useMountEffect';
 import { parseDiff, Diff, Hunk } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 import { ScrollArea } from '../ui/scroll-area';
@@ -66,7 +67,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
 		});
 	};
 
-	useEffect(() => {
+	useMountEffect(() => {
 		fetch(`/api/file/history?path=${encodeURIComponent(filePath)}`)
 			.then((r) => r.json() as Promise<CommitEntry[]>)
 			.then((data) => {
@@ -78,7 +79,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
 			.finally(() => {
 				setLoading(false);
 			});
-	}, [filePath]);
+	});
 
 	const openDiff = (sha: string) => {
 		setDiffLoading(true);

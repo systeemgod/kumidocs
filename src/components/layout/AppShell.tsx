@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { TopBar } from './TopBar';
 import { Sidebar } from './Sidebar';
@@ -7,7 +7,16 @@ import { NewPageDialog } from '../dialogs/NewPageDialog';
 import { Toaster } from '../ui/sonner';
 import { useUser } from '../../store/user';
 import { wsClient, useWsListener } from '../../store/ws';
+import { useMountEffect } from '../../hooks/useMountEffect';
 import type { TreeNode, PresenceUser } from '../../lib/types';
+
+// Connects the WS client once on mount (rendered only when user is available)
+function WsConnector({ userId }: { userId: string }) {
+	useMountEffect(() => {
+		wsClient.connect(userId);
+	});
+	return null;
+}
 
 const SIDEBAR_WIDTH_KEY = 'kumidocs:sidebar-width';
 const SIDEBAR_DEFAULT = 288;
@@ -35,11 +44,6 @@ export function AppShell() {
 	// Keep a ref so the stable mousemove closure always reads the live drag-start values
 	const dragStartRef = useRef<{ x: number; width: number } | null>(null);
 
-	// Connect WS once user loads
-	useEffect(() => {
-		if (user) wsClient.connect(user.id);
-	}, [user]);
-
 	// Reload full file tree for sidebar.
 	// Returns void so it's safe to pass as event handler or onCreated callback.
 	const loadTree = useCallback((): void => {
@@ -54,7 +58,7 @@ export function AppShell() {
 	}, []);
 
 	// Load user/instance info
-	useEffect(() => {
+	useMountEffect(() => {
 		fetch('/api/me')
 			.then((r) => r.json() as Promise<{ instanceName?: string; autoSaveDelay?: number }>)
 			.then((data) => {
@@ -65,7 +69,7 @@ export function AppShell() {
 				console.error('Failed to load instance info:', err);
 			});
 		loadTree();
-	}, [loadTree]);
+	});
 
 	// Update per-page presence map from WS presence updates
 	useWsListener((msg) => {
@@ -102,7 +106,7 @@ export function AppShell() {
 	});
 
 	// Ctrl+K shortcut
-	useEffect(() => {
+	useMountEffect(() => {
 		const handler = (e: KeyboardEvent) => {
 			if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
 				e.preventDefault();
@@ -113,7 +117,7 @@ export function AppShell() {
 		return () => {
 			window.removeEventListener('keydown', handler);
 		};
-	}, []);
+	});
 
 	const handleResizeMouseDown = useCallback(
 		(e: React.MouseEvent) => {
@@ -158,6 +162,7 @@ export function AppShell() {
 
 	return (
 		<div className="h-screen flex flex-col overflow-hidden bg-background text-foreground">
+			{user && <WsConnector userId={user.id} />}
 			<TopBar
 				instanceName={instanceName}
 				onSearchOpen={() => {

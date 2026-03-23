@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
@@ -51,20 +51,27 @@ export function usePageActions(reloadTree: () => void) {
 	const [parentOpen, setParentOpen] = useState(false);
 	const [parentSearch, setParentSearch] = useState('');
 	const comboboxRef = useRef<HTMLDivElement>(null);
+	const outsideHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
+
+	const closeParentDropdown = useCallback(() => {
+		if (outsideHandlerRef.current) {
+			document.removeEventListener('mousedown', outsideHandlerRef.current);
+			outsideHandlerRef.current = null;
+		}
+		setParentOpen(false);
+	}, []);
 
 	// Close the parent combobox dropdown when clicking outside
-	useEffect(() => {
-		if (!parentOpen) return;
+	const openParentDropdown = useCallback(() => {
 		const handler = (e: MouseEvent) => {
 			if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
-				setParentOpen(false);
+				closeParentDropdown();
 			}
 		};
+		outsideHandlerRef.current = handler;
 		document.addEventListener('mousedown', handler);
-		return () => {
-			document.removeEventListener('mousedown', handler);
-		};
-	}, [parentOpen]);
+		setParentOpen(true);
+	}, [closeParentDropdown]);
 
 	const openMove = useCallback(async (filePath: string) => {
 		const parts = filePath.replace(/\.md$/, '').split('/');
@@ -175,7 +182,11 @@ export function usePageActions(reloadTree: () => void) {
 									type="button"
 									className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring"
 									onClick={() => {
-										setParentOpen((o) => !o);
+										if (parentOpen) {
+											closeParentDropdown();
+										} else {
+											openParentDropdown();
+										}
 									}}
 								>
 									<span className="truncate text-left">
@@ -206,7 +217,7 @@ export function usePageActions(reloadTree: () => void) {
 															value={ROOT}
 															onSelect={() => {
 																setMoveParent(ROOT);
-																setParentOpen(false);
+																closeParentDropdown();
 																setParentSearch('');
 															}}
 														>
@@ -230,7 +241,7 @@ export function usePageActions(reloadTree: () => void) {
 																value={pg.dir}
 																onSelect={() => {
 																	setMoveParent(pg.dir);
-																	setParentOpen(false);
+																	closeParentDropdown();
 																	setParentSearch('');
 																}}
 															>
