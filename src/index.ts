@@ -1,105 +1,103 @@
-import { serve } from 'bun';
-import { existsSync, watch } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
-import { join, sep } from 'node:path';
+import { serve } from "bun";
+import { existsSync, watch } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
+import { join, sep } from "node:path";
 // In dev (bun --hot), Bun bundles the frontend on-the-fly with HMR.
 // In production (dist/index.js), __BUNDLED__ is injected by scripts/build.ts and
 // serveSPA reads from the pre-built dist/public/ directory instead.
-import devIndex from './index.html';
-import { loadConfig } from './server/config';
-import { parseUser, setPermissions, type KumiDocsPermissions } from './server/auth';
-import { loadFilestore, reloadFile, removeFromCache, consumeWritten } from './server/filestore';
-import { initSearch, updateInIndex, removeFromIndex } from './server/search';
-import { gitPull, gitFetchAndRebase, gitStageAndCommit } from './server/git';
+import devIndex from "./index.html";
+import { loadConfig } from "./server/config";
+import { parseUser, setPermissions, type KumiDocsPermissions } from "./server/auth";
+import { loadFilestore, reloadFile, removeFromCache, consumeWritten } from "./server/filestore";
+import { initSearch, updateInIndex, removeFromIndex } from "./server/search";
+import { gitPull, gitFetchAndRebase, gitStageAndCommit } from "./server/git";
 import {
-	wsOpen,
-	wsMessage,
-	wsClose,
-	pruneDeadSessions,
-	broadcastPageChanged,
-	broadcastPageDeleted,
-	type WsData,
-} from './server/websocket';
+  wsOpen,
+  wsMessage,
+  wsClose,
+  pruneDeadSessions,
+  broadcastPageChanged,
+  broadcastPageDeleted,
+  type WsData,
+} from "./server/websocket";
 import {
-	apiMe,
-	apiTree,
-	apiFileGet,
-	apiFilePut,
-	apiFileCreate,
-	apiFileDelete,
-	apiFileRename,
-	apiFileHistory,
-	apiFileDiff,
-	apiSearch,
-	apiSidebar,
-	apiUploadImage,
-	apiImagesList,
-	apiImageDelete,
-	apiAvatarProxy,
-	serveRepoAsset,
-} from './server/api';
+  apiMe,
+  apiTree,
+  apiFileGet,
+  apiFilePut,
+  apiFileCreate,
+  apiFileDelete,
+  apiFileRename,
+  apiFileHistory,
+  apiFileDiff,
+  apiSearch,
+  apiSidebar,
+  apiUploadImage,
+  apiImagesList,
+  apiImageDelete,
+  apiAvatarProxy,
+  serveRepoAsset,
+} from "./server/api";
 
 declare const __BUNDLED__: boolean | undefined;
 const isBundled = __BUNDLED__ !== undefined;
-const publicDir = join(import.meta.dir, 'public');
+const publicDir = join(import.meta.dir, "public");
 async function serveSPA(req: Request): Promise<Response> {
-	const rel = new URL(req.url).pathname.replace(/^\/+/u, '') || 'index.html';
-	const filePath = join(publicDir, rel);
-	// Guard against directory traversal (join resolves ../ segments)
-	if (!filePath.startsWith(publicDir + sep)) {
-		return new Response(Bun.file(join(publicDir, 'index.html')));
-	}
-	const file = Bun.file(filePath);
-	if (await file.exists()) {
-		return new Response(file, {
-			headers:
-				rel !== 'index.html'
-					? { 'Cache-Control': 'public, max-age=31536000, immutable' }
-					: {},
-		});
-	}
-	// SPA fallback — let React Router handle unknown paths
-	return new Response(Bun.file(join(publicDir, 'index.html')));
+  const rel = new URL(req.url).pathname.replace(/^\/+/u, "") || "index.html";
+  const filePath = join(publicDir, rel);
+  // Guard against directory traversal (join resolves ../ segments)
+  if (!filePath.startsWith(publicDir + sep)) {
+    return new Response(Bun.file(join(publicDir, "index.html")));
+  }
+  const file = Bun.file(filePath);
+  if (await file.exists()) {
+    return new Response(file, {
+      headers:
+        rel !== "index.html" ? { "Cache-Control": "public, max-age=31536000, immutable" } : {},
+    });
+  }
+  // SPA fallback — let React Router handle unknown paths
+  return new Response(Bun.file(join(publicDir, "index.html")));
 }
 
 const config = loadConfig();
 
 // Validate repo
-if (!existsSync(join(config.repoPath, '.git'))) {
-	console.error(`Fatal: ${config.repoPath} is not a git repository.`);
-	process.exit(1);
+if (!existsSync(join(config.repoPath, ".git"))) {
+  console.error(`Fatal: ${config.repoPath} is not a git repository.`);
+  process.exit(1);
 }
 
 // Load .kumidocs.json permissions
 async function loadPermissions() {
-	const configPath = join(config.repoPath, '.kumidocs.json');
-	try {
-		const raw = await readFile(configPath, 'utf-8');
-		setPermissions(JSON.parse(raw) as KumiDocsPermissions);
-	} catch (error: unknown) {
-		// If file doesn't exist, create it with default config
-		if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-			const defaultConfig = {
-				instanceName: config.instanceName,
-				editors: [],
-			};
-			await writeFile(configPath, JSON.stringify(defaultConfig, null, 2));
-			setPermissions(defaultConfig);
-			console.log('Created .kumidocs.json with default configuration');
+  const configPath = join(config.repoPath, ".kumidocs.json");
+  try {
+    const raw = await readFile(configPath, "utf-8");
+    setPermissions(JSON.parse(raw) as KumiDocsPermissions);
+  } catch (error: unknown) {
+    // If file doesn't exist, create it with default config
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      const defaultConfig = {
+        instanceName: config.instanceName,
+        editors: [],
+      };
+      await writeFile(configPath, JSON.stringify(defaultConfig, null, 2));
+      setPermissions(defaultConfig);
+      console.log("Created .kumidocs.json with default configuration");
 
-			// Commit and push the new config file
-			await gitStageAndCommit(
-				config,
-				['.kumidocs.json'],
-				'chore: initialize .kumidocs.json',
-				'KumiDocs',
-				'kumidocs@localhost',
-			);
-			console.log('Committed and pushed .kumidocs.json to repository');
-		} else {
-			setPermissions({});
-		}
-	}
+      // Commit and push the new config file
+      await gitStageAndCommit(
+        config,
+        [".kumidocs.json"],
+        "chore: initialize .kumidocs.json",
+        "KumiDocs",
+        "kumidocs@localhost",
+      );
+      console.log("Committed and pushed .kumidocs.json to repository");
+    } else {
+      setPermissions({});
+    }
+  }
 }
 
 await loadPermissions();
@@ -107,37 +105,43 @@ await loadPermissions();
 // Watch entire repo folder for on-disk changes and reload immediately
 const debounceMap = new Map<string, ReturnType<typeof setTimeout>>();
 watch(config.repoPath, { recursive: true }, (_, filename) => {
-	if (!filename) { return; }
-	const relPath = filename.replaceAll('\\', '/');
-	if (relPath.startsWith('.git/') || relPath === '.git') { return; }
-	const prev = debounceMap.get(relPath);
-	if (prev) { clearTimeout(prev); }
-	debounceMap.set(
-		relPath,
-		setTimeout(() => {
-			debounceMap.delete(relPath);
-			if (relPath === '.kumidocs.json') {
-				void loadPermissions().then(() => {
-					console.log('Reloaded .kumidocs.json');
-				});
-				return;
-			}
-			const fullPath = join(config.repoPath, relPath);
-			if (existsSync(fullPath)) {
-				void reloadFile(relPath, config).then(() => {
-					updateInIndex(relPath);
-					// Skip broadcast for writes originated by this server process
-					if (!consumeWritten(relPath)) {
-						broadcastPageChanged(relPath, '', 'disk', 'Local');
-					}
-				});
-			} else {
-				removeFromCache(relPath);
-				removeFromIndex(relPath);
-				broadcastPageDeleted(relPath);
-			}
-		}, 100),
-	);
+  if (!filename) {
+    return;
+  }
+  const relPath = filename.replaceAll("\\", "/");
+  if (relPath.startsWith(".git/") || relPath === ".git") {
+    return;
+  }
+  const prev = debounceMap.get(relPath);
+  if (prev) {
+    clearTimeout(prev);
+  }
+  debounceMap.set(
+    relPath,
+    setTimeout(() => {
+      debounceMap.delete(relPath);
+      if (relPath === ".kumidocs.json") {
+        void loadPermissions().then(() => {
+          console.log("Reloaded .kumidocs.json");
+        });
+        return;
+      }
+      const fullPath = join(config.repoPath, relPath);
+      if (existsSync(fullPath)) {
+        void reloadFile(relPath, config).then(() => {
+          updateInIndex(relPath);
+          // Skip broadcast for writes originated by this server process
+          if (!consumeWritten(relPath)) {
+            broadcastPageChanged(relPath, "", "disk", "Local");
+          }
+        });
+      } else {
+        removeFromCache(relPath);
+        removeFromIndex(relPath);
+        broadcastPageDeleted(relPath);
+      }
+    }, 100),
+  );
 });
 
 await gitPull(config);
@@ -146,206 +150,238 @@ initSearch();
 
 // Auth helper used in route handlers
 function requireUser(req: Request) {
-	return parseUser(req.headers, config.authHeader);
+  return parseUser(req.headers, config.authHeader);
 }
 
 // Background tasks
 setInterval(() => {
-	void (async () => {
-		const result = await gitFetchAndRebase(config);
-		if (result.advanced) {
-			// Re-read changed files and update the search index incrementally.
-			// Use per-file updateInIndex/removeFromIndex (same as API write paths)
-			// rather than a full rebuild to avoid redundant work.
-			await loadPermissions();
-			for (const changedPath of result.changed) {
-				if (changedPath === '.kumidocs.json') { continue; }
-				const fullPath = join(config.repoPath, changedPath);
-				if (existsSync(fullPath)) {
-					await reloadFile(changedPath, config);
-					updateInIndex(changedPath);
-					broadcastPageChanged(changedPath, result.sha, 'upstream', 'Remote');
-				} else {
-					removeFromCache(changedPath);
-					removeFromIndex(changedPath);
-					broadcastPageDeleted(changedPath);
-				}
-			}
-		}
-	})();
+  void (async () => {
+    const result = await gitFetchAndRebase(config);
+    if (result.advanced) {
+      // Re-read changed files and update the search index incrementally.
+      // Use per-file updateInIndex/removeFromIndex (same as API write paths)
+      // rather than a full rebuild to avoid redundant work.
+      await loadPermissions();
+      for (const changedPath of result.changed) {
+        if (changedPath === ".kumidocs.json") {
+          continue;
+        }
+        const fullPath = join(config.repoPath, changedPath);
+        if (existsSync(fullPath)) {
+          await reloadFile(changedPath, config);
+          updateInIndex(changedPath);
+          broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
+        } else {
+          removeFromCache(changedPath);
+          removeFromIndex(changedPath);
+          broadcastPageDeleted(changedPath);
+        }
+      }
+    }
+  })();
 }, config.pullInterval);
 
 // Prune dead WS sessions every 30s
 setInterval(pruneDeadSessions, 30_000);
 
 const server = serve<WsData>({
-	port: config.port,
+  port: config.port,
 
-	routes: {
-		'/*': isBundled ? serveSPA : devIndex,
+  routes: {
+    "/*": isBundled ? serveSPA : devIndex,
 
-		'/api/avatar/:hash': {
-			async GET(req: Request) {
-				const hash = new URL(req.url).pathname.slice('/api/avatar/'.length);
-				return apiAvatarProxy(hash);
-			},
-		},
+    "/api/avatar/:hash": {
+      async GET(req: Request) {
+        const hash = new URL(req.url).pathname.slice("/api/avatar/".length);
+        return apiAvatarProxy(hash);
+      },
+    },
 
-		'/api/me': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiMe(user, config);
-			},
-		},
+    "/api/me": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiMe(user, config);
+      },
+    },
 
-		'/api/headers': {
-			GET(req: Request) {
-				const headers: Record<string, string> = {};
-				for (const [key, value] of req.headers) {
-					headers[key] = value;
-				}
-				return Response.json(headers);
-			},
-		},
+    "/api/headers": {
+      GET(req: Request) {
+        const headers: Record<string, string> = {};
+        for (const [key, value] of req.headers) {
+          headers[key] = value;
+        }
+        return Response.json(headers);
+      },
+    },
 
-		'/api/tree': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiTree();
-			},
-		},
+    "/api/tree": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiTree();
+      },
+    },
 
-		'/api/sidebar': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiSidebar();
-			},
-		},
+    "/api/sidebar": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiSidebar();
+      },
+    },
 
-		'/api/file': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFileGet(new URL(req.url), config);
-			},
-			async PUT(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFilePut(new URL(req.url), req, user, config);
-			},
-			async POST(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFileCreate(req, user, config);
-			},
-			async DELETE(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFileDelete(new URL(req.url), user, config);
-			},
-		},
+    "/api/file": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileGet(new URL(req.url), config);
+      },
+      async PUT(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFilePut(new URL(req.url), req, user, config);
+      },
+      async POST(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileCreate(req, user, config);
+      },
+      async DELETE(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileDelete(new URL(req.url), user, config);
+      },
+    },
 
-		'/api/file/rename': {
-			async POST(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFileRename(req, user, config);
-			},
-		},
+    "/api/file/rename": {
+      async POST(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileRename(req, user, config);
+      },
+    },
 
-		'/api/file/history': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFileHistory(new URL(req.url), config);
-			},
-		},
+    "/api/file/history": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileHistory(new URL(req.url), config);
+      },
+    },
 
-		'/api/file/diff': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiFileDiff(new URL(req.url), config);
-			},
-		},
+    "/api/file/diff": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileDiff(new URL(req.url), config);
+      },
+    },
 
-		'/api/search': {
-			GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiSearch(new URL(req.url));
-			},
-		},
+    "/api/search": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiSearch(new URL(req.url));
+      },
+    },
 
-		'/api/upload/image': {
-			async POST(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiUploadImage(req, user, config);
-			},
-		},
+    "/api/upload/image": {
+      async POST(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiUploadImage(req, user, config);
+      },
+    },
 
-		'/api/images': {
-			async GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				return apiImagesList(config);
-			},
-		},
+    "/api/images": {
+      async GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiImagesList(config);
+      },
+    },
 
-		'/api/images/:filename': {
-			async DELETE(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				const filename = new URL(req.url).pathname.slice('/api/images/'.length);
-				return apiImageDelete(decodeURIComponent(filename), user, config);
-			},
-		},
+    "/api/images/:filename": {
+      async DELETE(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        const filename = new URL(req.url).pathname.slice("/api/images/".length);
+        return apiImageDelete(decodeURIComponent(filename), user, config);
+      },
+    },
 
-		'/images/:filename': {
-			async GET(req: Request) {
-				const user = requireUser(req);
-				if (!user) { return new Response('Unauthorized', { status: 401 }); }
-				const filename = decodeURIComponent(
-					new URL(req.url).pathname.slice('/images/'.length),
-				);
-				return serveRepoAsset(`images/${filename}`, config);
-			},
-		},
-	},
+    "/images/:filename": {
+      async GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        const filename = decodeURIComponent(new URL(req.url).pathname.slice("/images/".length));
+        return serveRepoAsset(`images/${filename}`, config);
+      },
+    },
+  },
 
-	fetch(req, srv) {
-		const url = new URL(req.url);
+  fetch(req, srv) {
+    const url = new URL(req.url);
 
-		// WebSocket upgrade
-		if (url.pathname === '/ws') {
-			const user = requireUser(req);
-			if (!user) { return new Response('Unauthorized', { status: 401 }); }
-			const upgraded = srv.upgrade(req, {
-				data: {
-					user,
-					pageId: null,
-					sessionId: '',
-					lastHeartbeat: Date.now(),
-				},
-			});
-			return upgraded ? undefined : new Response('WS upgrade failed', { status: 400 });
-		}
-	},
+    // WebSocket upgrade
+    if (url.pathname === "/ws") {
+      const user = requireUser(req);
+      if (!user) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const upgraded = srv.upgrade(req, {
+        data: {
+          user,
+          pageId: null,
+          sessionId: "",
+          lastHeartbeat: Date.now(),
+        },
+      });
+      return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
+    }
+  },
 
-	websocket: {
-		open: wsOpen,
-		message: wsMessage,
-		close: wsClose,
-	},
+  websocket: {
+    open: wsOpen,
+    message: wsMessage,
+    close: wsClose,
+  },
 
-	development: process.env.NODE_ENV !== 'production' && {
-		hmr: true,
-		console: true,
-	},
+  development: process.env.NODE_ENV !== "production" && {
+    hmr: true,
+    console: true,
+  },
 });
 
 console.log(`🚀 KumiDocs (${config.instanceName}) running at ${server.url}`);

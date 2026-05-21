@@ -1,13 +1,13 @@
-@import '../styles/globals.css';
+@import "../styles/globals.css";
 
 @layer base {
-	:root {
-		@apply font-sans;
-	}
+  :root {
+    @apply font-sans;
+  }
 
-	html,
-	body,
-	#root {
-		@apply h-full w-full m-0 p-0 overflow-hidden bg-background text-foreground;
-	}
+  html,
+  body,
+  #root {
+    @apply h-full w-full m-0 p-0 overflow-hidden bg-background text-foreground;
+  }
 }

@@ -1,76 +1,92 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-	ArrowLeft,
-	BookOpen,
-	ChevronLeft,
-	ChevronRight,
-	Download,
-	GalleryVertical,
-	Maximize,
-	Minimize,
-	Mouse,
-	Spotlight,
-	Square,
-} from 'lucide-react';
-import { Button } from '../ui/button';
-import { SlideMarkdownViewer } from './SlideMarkdownViewer';
-import { SlideOverlay } from './SlideOverlay';
-import { parseSlideDirectives, resolveTheme, isBgDark, type ParsedSlide, type SlideThemeMap } from '@/lib/slide';
-import { cn } from '@/lib/utils';
-import { useTheme } from '@/store/theme';
-import { useMountEffect } from '@/hooks/useMountEffect';
-import { type jsPDF as JsPDF } from 'jspdf';
+  ArrowLeft,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  GalleryVertical,
+  Maximize,
+  Minimize,
+  Mouse,
+  Spotlight,
+  Square,
+} from "lucide-react";
+import { Button } from "../ui/button";
+import { SlideMarkdownViewer } from "./SlideMarkdownViewer";
+import { SlideOverlay } from "./SlideOverlay";
+import {
+  parseSlideDirectives,
+  resolveTheme,
+  isBgDark,
+  type ParsedSlide,
+  type SlideThemeMap,
+} from "@/lib/slide";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/store/theme";
+import { useMountEffect } from "@/hooks/useMountEffect";
+import { type jsPDF as JsPDF } from "jspdf";
 
 // ── PDF selectable layer ─────────────────────────────────────────────────────
 // Walks the DOM of a rendered slide and adds invisible text + link hotspots
 // on top of the bitmap image so PDF readers can search/select text and follow links.
 
 function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
-	const rootRect = root.getBoundingClientRect();
+  const rootRect = root.getBoundingClientRect();
 
-	// Invisible text
-	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-		const text = (node.textContent ?? '').replaceAll(/\s+/gu, ' ').trim();
-		if (!text || !node.parentElement) { continue; }
-		// Skip text nodes inside SVG (rendered as vector paths, not text)
-		let ancestor: Element | null = node.parentElement;
-		let inSvg = false;
-		while (ancestor) {
-			if (ancestor.tagName.toLowerCase() === 'svg') {
-				inSvg = true;
-				break;
-			}
-			ancestor = ancestor.parentElement;
-		}
-		if (inSvg) { continue; }
-		const range = document.createRange();
-		range.selectNode(node);
-		const br = range.getBoundingClientRect();
-		if (br.width <= 0 || br.height <= 0) { continue; }
-		const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
-		pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
-		// Stretch/compress char spacing so the invisible text spans the same
-		// pixel width as the actual DOM render, compensating for font differences.
-		const pdfWidth = pdf.getTextWidth(text);
-		const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
-		pdf.setCharSpace(charSpace);
-		pdf.text(text, br.left - rootRect.left, br.top - rootRect.top, {
-			renderingMode: 'invisible',
-			baseline: 'top',
-		});
-		pdf.setCharSpace(0);
-	}
+  // Invisible text
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
+    if (!text || !node.parentElement) {
+      continue;
+    }
+    // Skip text nodes inside SVG (rendered as vector paths, not text)
+    let ancestor: Element | null = node.parentElement;
+    let inSvg = false;
+    while (ancestor) {
+      if (ancestor.tagName.toLowerCase() === "svg") {
+        inSvg = true;
+        break;
+      }
+      ancestor = ancestor.parentElement;
+    }
+    if (inSvg) {
+      continue;
+    }
+    const range = document.createRange();
+    range.selectNode(node);
+    const br = range.getBoundingClientRect();
+    if (br.width <= 0 || br.height <= 0) {
+      continue;
+    }
+    const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
+    pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
+    // Stretch/compress char spacing so the invisible text spans the same
+    // pixel width as the actual DOM render, compensating for font differences.
+    const pdfWidth = pdf.getTextWidth(text);
+    const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
+    pdf.setCharSpace(charSpace);
+    pdf.text(text, br.left - rootRect.left, br.top - rootRect.top, {
+      renderingMode: "invisible",
+      baseline: "top",
+    });
+    pdf.setCharSpace(0);
+  }
 
-	// Link hotspots
-	for (const a of root.querySelectorAll<HTMLAnchorElement>('a[href]')) {
-		const rect = a.getBoundingClientRect();
-		if (rect.width <= 0 || rect.height <= 0) { continue; }
-		const x = rect.left - rootRect.left;
-		const y = rect.top - rootRect.top;
-		if (x < 0 || y < 0) { continue; }
-		pdf.link(x, y, rect.width, rect.height, { url: a.href });
-	}
+  // Link hotspots
+  for (const a of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const rect = a.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      continue;
+    }
+    const x = rect.left - rootRect.left;
+    const y = rect.top - rootRect.top;
+    if (x < 0 || y < 0) {
+      continue;
+    }
+    pdf.link(x, y, rect.width, rect.height, { url: a.href });
+  }
 }
 
 // ── Slide parsing ─────────────────────────────────────────────────────────────
@@ -80,34 +96,36 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
  * Lines inside fenced code blocks (``` or ~~~) are never treated as separators.
  */
 function splitSlides(content: string): string[] {
-	const slides: string[] = [];
-	let current: string[] = [];
-	let fence: string | null = null;
-	for (const line of content.split('\n')) {
-		const trimmed = line.trimStart();
-		if (fence === null) {
-			const m = /^(`{3,}|~{3,})/u.exec(trimmed);
-			if (m) {
-				// Opening a fenced code block — capture the fence character string
-				fence = m[1] ?? '```';
-				current.push(line);
-				continue;
-			}
-			// Only treat bare `---` as a slide separator when outside a code fence
-			if (line.trim() === '---') {
-				slides.push(current.join('\n').trim());
-				current = [];
-				continue;
-			}
-		} else {
-			// Inside a fence — check if this line closes it
-			const closeRe = new RegExp(`^${fence[0] ?? '`'}{${String(fence.length)},}\\s*$`, 'u');
-			if (closeRe.test(trimmed)) { fence = null; }
-		}
-		current.push(line);
-	}
-	slides.push(current.join('\n').trim());
-	return slides.filter((s) => s.length > 0);
+  const slides: string[] = [];
+  let current: string[] = [];
+  let fence: string | null = null;
+  for (const line of content.split("\n")) {
+    const trimmed = line.trimStart();
+    if (fence === null) {
+      const m = /^(`{3,}|~{3,})/u.exec(trimmed);
+      if (m) {
+        // Opening a fenced code block — capture the fence character string
+        fence = m[1] ?? "```";
+        current.push(line);
+        continue;
+      }
+      // Only treat bare `---` as a slide separator when outside a code fence
+      if (line.trim() === "---") {
+        slides.push(current.join("\n").trim());
+        current = [];
+        continue;
+      }
+    } else {
+      // Inside a fence — check if this line closes it
+      const closeRe = new RegExp(`^${fence[0] ?? "`"}{${String(fence.length)},}\\s*$`, "u");
+      if (closeRe.test(trimmed)) {
+        fence = null;
+      }
+    }
+    current.push(line);
+  }
+  slides.push(current.join("\n").trim());
+  return slides.filter((s) => s.length > 0);
 }
 
 // ── Slide canvas size ─────────────────────────────────────────────────────────
@@ -120,664 +138,679 @@ export const SLIDE_H = 540;
  * showing a slide number badge.  Theme and per-slide directives are both applied.
  */
 export function ScaledSlide({
-	slide,
-	scale,
-	theme,
-	paginate,
-	slideNum,
-	total,
-	slideThemes,
-	themeVars,
-	origin = 'center center',
-	shadow = false,
-	rounded = false,
-	absolute = false,
+  slide,
+  scale,
+  theme,
+  paginate,
+  slideNum,
+  total,
+  slideThemes,
+  themeVars,
+  origin = "center center",
+  shadow = false,
+  rounded = false,
+  absolute = false,
 }: {
-	slide: ParsedSlide;
-	scale: number;
-	theme: string;
-	paginate: boolean;
-	slideNum: number;
-	total: number;
-	slideThemes?: SlideThemeMap;
-	themeVars?: Record<string, string>;
-	origin?: string;
-	shadow?: boolean;
-	rounded?: boolean;
-	/** Position absolute top-0 left-0 — used inside the scroll-mode tile wrapper */
-	absolute?: boolean;
+  slide: ParsedSlide;
+  scale: number;
+  theme: string;
+  paginate: boolean;
+  slideNum: number;
+  total: number;
+  slideThemes?: SlideThemeMap;
+  themeVars?: Record<string, string>;
+  origin?: string;
+  shadow?: boolean;
+  rounded?: boolean;
+  /** Position absolute top-0 left-0 — used inside the scroll-mode tile wrapper */
+  absolute?: boolean;
 }) {
-	const { directives } = slide;
-	const { theme: siteTheme } = useTheme();
+  const { directives } = slide;
+  const { theme: siteTheme } = useTheme();
 
-	// Resolve theme: user-defined custom themes first, then built-ins, then default (null)
-	const layoutClass = directives.classes[0] ?? '';
-	const resolvedTheme = resolveTheme(slideThemes, theme, layoutClass);
+  // Resolve theme: user-defined custom themes first, then built-ins, then default (null)
+  const layoutClass = directives.classes[0] ?? "";
+  const resolvedTheme = resolveTheme(slideThemes, theme, layoutClass);
 
-	// Stamp .dark or .light on canvas to isolate slide tokens from site mode.
-	const isDark = resolvedTheme
-		? isBgDark(resolvedTheme.bg ?? '')
-		: theme === 'default' && siteTheme === 'dark';
+  // Stamp .dark or .light on canvas to isolate slide tokens from site mode.
+  const isDark = resolvedTheme
+    ? isBgDark(resolvedTheme.bg ?? "")
+    : theme === "default" && siteTheme === "dark";
 
-	// Extract first heading for template variable substitution
-	const slideTitle = useMemo(() => {
-		const m = /^#+\s+(.+)$/mu.exec(slide.content);
-		return m?.[1]?.trim() ?? '';
-	}, [slide.content]);
+  // Extract first heading for template variable substitution
+  const slideTitle = useMemo(() => {
+    const m = /^#+\s+(.+)$/mu.exec(slide.content);
+    return m?.[1]?.trim() ?? "";
+  }, [slide.content]);
 
-	// Build canvas inline style: custom theme bg/fg first, then per-slide directive overrides
-	const canvasStyle: React.CSSProperties = {};
-	if (resolvedTheme?.bg) {
-		canvasStyle.background = resolvedTheme.bg;
-		canvasStyle.backgroundSize = 'cover';
-		canvasStyle.backgroundPosition = 'center';
-		canvasStyle.backgroundRepeat = 'no-repeat';
-	}
-	if (resolvedTheme?.fg) {
-		(canvasStyle as Record<string, unknown>)['--slide-fg'] = resolvedTheme.fg;
-	}
-	if (resolvedTheme?.fontFamily) {
-		canvasStyle.fontFamily = resolvedTheme.fontFamily;
-	}
-	// Per-slide bg overrides custom theme bg
-	if (directives.bg) {
-		canvasStyle.background = directives.bg;
-		canvasStyle.backgroundSize = 'cover';
-		canvasStyle.backgroundPosition = 'center';
-		canvasStyle.backgroundRepeat = 'no-repeat';
-	}
+  // Build canvas inline style: custom theme bg/fg first, then per-slide directive overrides
+  const canvasStyle: React.CSSProperties = {};
+  if (resolvedTheme?.bg) {
+    canvasStyle.background = resolvedTheme.bg;
+    canvasStyle.backgroundSize = "cover";
+    canvasStyle.backgroundPosition = "center";
+    canvasStyle.backgroundRepeat = "no-repeat";
+  }
+  if (resolvedTheme?.fg) {
+    (canvasStyle as Record<string, unknown>)["--slide-fg"] = resolvedTheme.fg;
+  }
+  if (resolvedTheme?.fontFamily) {
+    canvasStyle.fontFamily = resolvedTheme.fontFamily;
+  }
+  // Per-slide bg overrides custom theme bg
+  if (directives.bg) {
+    canvasStyle.background = directives.bg;
+    canvasStyle.backgroundSize = "cover";
+    canvasStyle.backgroundPosition = "center";
+    canvasStyle.backgroundRepeat = "no-repeat";
+  }
 
-	return (
-		<div
-			style={{
-				width: SLIDE_W,
-				height: SLIDE_H,
-				transform: `scale(${String(scale)})`,
-				transformOrigin: origin,
-				flexShrink: 0,
-				...canvasStyle,
-			}}
-			className={cn(
-				'slide-canvas overflow-hidden',
-				isDark ? 'dark' : 'light',
-				directives.classes.includes('invert') && 'slide-layout-invert',
-				shadow && 'shadow-xl',
-				rounded && 'rounded-sm',
-				absolute && 'absolute top-0 left-0',
-			)}
-		>
-			<SlideMarkdownViewer slide={slide} contentPadding={resolvedTheme?.contentPadding} />
-			{resolvedTheme?.elements && resolvedTheme.elements.length > 0 && (
-				<SlideOverlay
-					elements={resolvedTheme.elements}
-					slideNum={slideNum}
-					total={total}
-					title={slideTitle}
-					themeVars={themeVars}
-				/>
-			)}
-			{paginate && (
-				<div className="slide-number">
-					{slideNum} / {total}
-				</div>
-			)}
-		</div>
-	);
+  return (
+    <div
+      style={{
+        width: SLIDE_W,
+        height: SLIDE_H,
+        transform: `scale(${String(scale)})`,
+        transformOrigin: origin,
+        flexShrink: 0,
+        ...canvasStyle,
+      }}
+      className={cn(
+        "slide-canvas overflow-hidden",
+        isDark ? "dark" : "light",
+        directives.classes.includes("invert") && "slide-layout-invert",
+        shadow && "shadow-xl",
+        rounded && "rounded-sm",
+        absolute && "absolute top-0 left-0",
+      )}
+    >
+      <SlideMarkdownViewer slide={slide} contentPadding={resolvedTheme?.contentPadding} />
+      {resolvedTheme?.elements && resolvedTheme.elements.length > 0 && (
+        <SlideOverlay
+          elements={resolvedTheme.elements}
+          slideNum={slideNum}
+          total={total}
+          title={slideTitle}
+          themeVars={themeVars}
+        />
+      )}
+      {paginate && (
+        <div className="slide-number">
+          {slideNum} / {total}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export interface SlideViewerProps {
-	value: string;
-	/** Filename stem used when saving the PDF (e.g. page title). Defaults to "slides". */
-	filename?: string;
-	/** When true, fills the full viewport (used by the standalone SlidesPage). */
-	standalone?: boolean;
-	/**
-	 * Deck-level theme applied to all slides.
-	 * Values: 'default' | 'dark' | 'corporate' | 'minimal' | 'gradient'
-	 * Or any key defined in .kumidocs.json slideThemes.
-	 */
-	theme?: string;
-	/** When true, each slide canvas shows a "N / total" badge in the bottom-right. */
-	paginate?: boolean;
-	/** Custom theme definitions loaded from .kumidocs.json via /api/me. */
-	slideThemes?: SlideThemeMap;
-	/** User-defined variables from frontmatter (theme-var-* fields) substituted into theme element content */
-	themeVars?: Record<string, string>;
+  value: string;
+  /** Filename stem used when saving the PDF (e.g. page title). Defaults to "slides". */
+  filename?: string;
+  /** When true, fills the full viewport (used by the standalone SlidesPage). */
+  standalone?: boolean;
+  /**
+   * Deck-level theme applied to all slides.
+   * Values: 'default' | 'dark' | 'corporate' | 'minimal' | 'gradient'
+   * Or any key defined in .kumidocs.json slideThemes.
+   */
+  theme?: string;
+  /** When true, each slide canvas shows a "N / total" badge in the bottom-right. */
+  paginate?: boolean;
+  /** Custom theme definitions loaded from .kumidocs.json via /api/me. */
+  slideThemes?: SlideThemeMap;
+  /** User-defined variables from frontmatter (theme-var-* fields) substituted into theme element content */
+  themeVars?: Record<string, string>;
 }
 
 export function SlideViewer({
-	value,
-	filename = 'slides',
-	standalone = false,
-	theme = 'default',
-	paginate = false,
-	slideThemes,
-	themeVars,
+  value,
+  filename = "slides",
+  standalone = false,
+  theme = "default",
+  paginate = false,
+  slideThemes,
+  themeVars,
 }: SlideViewerProps) {
-	// Parse slides once per value change
-	const parsedSlides = useMemo<ParsedSlide[]>(
-		() => splitSlides(value).map(parseSlideDirectives),
-		[value],
-	);
-	const total = parsedSlides.length;
+  // Parse slides once per value change
+  const parsedSlides = useMemo<ParsedSlide[]>(
+    () => splitSlides(value).map(parseSlideDirectives),
+    [value],
+  );
+  const total = parsedSlides.length;
 
-	const [index, setIndex] = useState(0);
-	const [prevValue, setPrevValue] = useState(value);
-	if (prevValue !== value) {
-		setPrevValue(value);
-		setIndex(0);
-	}
-	const [scale, setScale] = useState(1);
-	const [isFullscreen, setIsFullscreen] = useState(false);
-	const [isSpotlight, setIsSpotlight] = useState(false);
-	const [spotlightScale, setSpotlightScale] = useState(1);
-	const [isExporting, setIsExporting] = useState(false);
-	const [scrollMode, setScrollMode] = useState(!standalone);
-	const [pointerVisible, setPointerVisible] = useState(false);
-	const [pointerPos, setPointerPos] = useState({ x: 0, y: 0 });
-	const [spotlightMenu, setSpotlightMenu] = useState<{ x: number; y: number } | null>(null);
+  const [index, setIndex] = useState(0);
+  const [prevValue, setPrevValue] = useState(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
+    setIndex(0);
+  }
+  const [scale, setScale] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSpotlight, setIsSpotlight] = useState(false);
+  const [spotlightScale, setSpotlightScale] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
+  const [scrollMode, setScrollMode] = useState(!standalone);
+  const [pointerVisible, setPointerVisible] = useState(false);
+  const [pointerPos, setPointerPos] = useState({ x: 0, y: 0 });
+  const [spotlightMenu, setSpotlightMenu] = useState<{ x: number; y: number } | null>(null);
 
-	const stageRef = useRef<HTMLDivElement>(null);
-	const fullscreenRef = useRef<HTMLDivElement>(null);
-	const slideElemsRef = useRef<(HTMLDivElement | null)[]>([]);
-	const offscreenRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const fullscreenRef = useRef<HTMLDivElement>(null);
+  const slideElemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const offscreenRef = useRef<HTMLDivElement>(null);
 
-	// ── Keyboard navigation ──────────────────────────────────────────────────
-	const prev = useCallback(() => {
-		setIndex((i) => {
-			const next = Math.max(0, i - 1);
-			slideElemsRef.current[next]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			return next;
-		});
-	}, []);
-	const next = useCallback(() => {
-		setIndex((i) => {
-			const n = Math.min(total - 1, i + 1);
-			slideElemsRef.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			return n;
-		});
-	}, [total]);
+  // ── Keyboard navigation ──────────────────────────────────────────────────
+  const prev = useCallback(() => {
+    setIndex((i) => {
+      const next = Math.max(0, i - 1);
+      slideElemsRef.current[next]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return next;
+    });
+  }, []);
+  const next = useCallback(() => {
+    setIndex((i) => {
+      const n = Math.min(total - 1, i + 1);
+      slideElemsRef.current[n]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return n;
+    });
+  }, [total]);
 
-	// Stable refs so mount-only keyboard listener always calls the latest prev/next
-	const prevRef = useRef(prev);
-	prevRef.current = prev;
-	const nextRef = useRef(next);
-	nextRef.current = next;
+  // Stable refs so mount-only keyboard listener always calls the latest prev/next
+  const prevRef = useRef(prev);
+  prevRef.current = prev;
+  const nextRef = useRef(next);
+  nextRef.current = next;
 
-	useMountEffect(() => {
-		const handler = (e: KeyboardEvent) => {
-			const tag = (e.target as HTMLElement).tagName;
-			if (tag === 'INPUT' || tag === 'TEXTAREA') { return; }
-			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { prevRef.current(); }
-			if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
-				e.preventDefault();
-				nextRef.current();
-			}
-		};
-		window.addEventListener('keydown', handler);
-		return () => {
-			window.removeEventListener('keydown', handler);
-		};
-	});
+  useMountEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") {
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        prevRef.current();
+      }
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
+        e.preventDefault();
+        nextRef.current();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+    };
+  });
 
-	// ── Scale slide canvas to fit the stage ──────────────────────────────────
-	useMountEffect(() => {
-		const el = stageRef.current;
-		if (!el) { return; }
-		const obs = new ResizeObserver(([entry]) => {
-			if (!entry) { return; }
-			const { width, height } = entry.contentRect;
-			const s = Math.min((width - 192) / SLIDE_W, (height - 96) / SLIDE_H);
-			setScale(Math.max(0.1, s));
-		});
-		obs.observe(el);
-		return () => {
-			obs.disconnect();
-		};
-	});
+  // ── Scale slide canvas to fit the stage ──────────────────────────────────
+  useMountEffect(() => {
+    const el = stageRef.current;
+    if (!el) {
+      return;
+    }
+    const obs = new ResizeObserver(([entry]) => {
+      if (!entry) {
+        return;
+      }
+      const { width, height } = entry.contentRect;
+      const s = Math.min((width - 192) / SLIDE_W, (height - 96) / SLIDE_H);
+      setScale(Math.max(0.1, s));
+    });
+    obs.observe(el);
+    return () => {
+      obs.disconnect();
+    };
+  });
 
-	// ── Fullscreen ───────────────────────────────────────────────────────────
-	useMountEffect(() => {
-		const handler = () => {
-			const active = !!document.fullscreenElement;
-			setIsFullscreen(active);
-			if (!active) { setIsSpotlight(false); }
-		};
-		document.addEventListener('fullscreenchange', handler);
-		return () => {
-			document.removeEventListener('fullscreenchange', handler);
-		};
-	});
+  // ── Fullscreen ───────────────────────────────────────────────────────────
+  useMountEffect(() => {
+    const handler = () => {
+      const active = !!document.fullscreenElement;
+      setIsFullscreen(active);
+      if (!active) {
+        setIsSpotlight(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handler);
+    return () => {
+      document.removeEventListener("fullscreenchange", handler);
+    };
+  });
 
-	const toggleFullscreen = useCallback(() => {
-		if (document.fullscreenElement) {
-			document.exitFullscreen().catch(() => {});
-		} else {
-			fullscreenRef.current?.requestFullscreen().catch(() => {});
-		}
-	}, []);
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      fullscreenRef.current?.requestFullscreen().catch(() => {});
+    }
+  }, []);
 
-	// ── Spotlight (bare fullscreen, slide only) ───────────────────────────────
-	// Rendered only when isSpotlight=true, so useMountEffect runs requestFullscreen
-	// and a ResizeObserver immediately on mount of the spotlight overlay div.
-	const spotlightCleanupRef = useRef<(() => void) | null>(null);
-	const spotlightSetScale = useCallback((el: HTMLDivElement | null) => {
-		if (!el) { return; }
-		el.requestFullscreen().catch(() => {});
-		const obs = new ResizeObserver(([entry]) => {
-			if (!entry) { return; }
-			const { width, height } = entry.contentRect;
-			setSpotlightScale(Math.max(0.1, Math.min(width / SLIDE_W, height / SLIDE_H)));
-		});
-		obs.observe(el);
-		// cleanup stored on ref so we can call it when the component unmounts
-		spotlightCleanupRef.current = () => {
-			obs.disconnect();
-		};
-	}, []);
-	const spotlightCallbackRef = useCallback(
-		(el: HTMLDivElement | null) => {
-			if (el) {
-				spotlightSetScale(el);
-			} else {
-				spotlightCleanupRef.current?.();
-				spotlightCleanupRef.current = null;
-			}
-		},
-		[spotlightSetScale],
-	);
+  // ── Spotlight (bare fullscreen, slide only) ───────────────────────────────
+  // Rendered only when isSpotlight=true, so useMountEffect runs requestFullscreen
+  // and a ResizeObserver immediately on mount of the spotlight overlay div.
+  const spotlightCleanupRef = useRef<(() => void) | null>(null);
+  const spotlightSetScale = useCallback((el: HTMLDivElement | null) => {
+    if (!el) {
+      return;
+    }
+    el.requestFullscreen().catch(() => {});
+    const obs = new ResizeObserver(([entry]) => {
+      if (!entry) {
+        return;
+      }
+      const { width, height } = entry.contentRect;
+      setSpotlightScale(Math.max(0.1, Math.min(width / SLIDE_W, height / SLIDE_H)));
+    });
+    obs.observe(el);
+    // cleanup stored on ref so we can call it when the component unmounts
+    spotlightCleanupRef.current = () => {
+      obs.disconnect();
+    };
+  }, []);
+  const spotlightCallbackRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el) {
+        spotlightSetScale(el);
+      } else {
+        spotlightCleanupRef.current?.();
+        spotlightCleanupRef.current = null;
+      }
+    },
+    [spotlightSetScale],
+  );
 
-	const enterSpotlight = useCallback(() => {
-		setIsSpotlight(true);
-	}, []);
+  const enterSpotlight = useCallback(() => {
+    setIsSpotlight(true);
+  }, []);
 
-	// ── PDF export ───────────────────────────────────────────────────────────
-	const exportPdf = useCallback(async () => {
-		if (isExporting) { return; }
-		setIsExporting(true);
-		try {
-			const container = offscreenRef.current;
-			if (!container) { return; }
-			const { default: html2canvas } = await import('html2canvas-pro');
-			const { jsPDF } = await import('jspdf');
-			const pdf = new jsPDF({
-				orientation: 'landscape',
-				unit: 'px',
-				format: [SLIDE_W, SLIDE_H],
-			});
-			const slideEls = [...container.children] as HTMLElement[];
-			for (let i = 0; i < slideEls.length; i++) {
-				const el = slideEls[i];
-				if (!el) { continue; }
-				const canvas = await html2canvas(el, {
-					width: SLIDE_W,
-					height: SLIDE_H,
-					scale: 2,
-					useCORS: true,
-					logging: false,
-				});
-				if (i > 0) { pdf.addPage(); }
-				pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, SLIDE_W, SLIDE_H);
-				overlaySelectableLayer(pdf, el);
-			}
-			pdf.save(`${filename}.pdf`);
-		} finally {
-			setIsExporting(false);
-		}
-	}, [isExporting, filename]);
+  // ── PDF export ───────────────────────────────────────────────────────────
+  const exportPdf = useCallback(async () => {
+    if (isExporting) {
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const container = offscreenRef.current;
+      if (!container) {
+        return;
+      }
+      const { default: html2canvas } = await import("html2canvas-pro");
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [SLIDE_W, SLIDE_H],
+      });
+      const slideEls = [...container.children] as HTMLElement[];
+      for (let i = 0; i < slideEls.length; i++) {
+        const el = slideEls[i];
+        if (!el) {
+          continue;
+        }
+        const canvas = await html2canvas(el, {
+          width: SLIDE_W,
+          height: SLIDE_H,
+          scale: 2,
+          useCORS: true,
+          logging: false,
+        });
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, SLIDE_W, SLIDE_H);
+        overlaySelectableLayer(pdf, el);
+      }
+      pdf.save(`${filename}.pdf`);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [isExporting, filename]);
 
-	const currentSlide = parsedSlides[index] ?? { content: '', directives: { classes: [] } };
+  const currentSlide = parsedSlides[index] ?? { content: "", directives: { classes: [] } };
 
-	return (
-		<>
-			{/* ── Off-screen render container for PDF export ── */}
-			<div
-				ref={offscreenRef}
-				aria-hidden="true"
-				style={{
-					position: 'fixed',
-					top: 0,
-					left: 0,
-					zIndex: -9999,
-					pointerEvents: 'none',
-					opacity: 0,
-				}}
-			>
-				{parsedSlides.map((slide, i) => (
-					// Outer wrapper provides the pixel dimensions html2canvas measures
-					<div
-						key={i}
-						style={{
-							width: SLIDE_W,
-							height: SLIDE_H,
-							overflow: 'hidden',
-							flexShrink: 0,
-						}}
-					>
-						<ScaledSlide
-							slide={slide}
-							scale={1}
-							theme={theme}
-							paginate={paginate}
-							slideNum={i + 1}
-							total={total}
-							slideThemes={slideThemes}
-							themeVars={themeVars}
-							origin="top left"
-						/>
-					</div>
-				))}
-			</div>
+  return (
+    <>
+      {/* ── Off-screen render container for PDF export ── */}
+      <div
+        ref={offscreenRef}
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: -9999,
+          pointerEvents: "none",
+          opacity: 0,
+        }}
+      >
+        {parsedSlides.map((slide, i) => (
+          // Outer wrapper provides the pixel dimensions html2canvas measures
+          <div
+            key={i}
+            style={{
+              width: SLIDE_W,
+              height: SLIDE_H,
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            <ScaledSlide
+              slide={slide}
+              scale={1}
+              theme={theme}
+              paginate={paginate}
+              slideNum={i + 1}
+              total={total}
+              slideThemes={slideThemes}
+              themeVars={themeVars}
+              origin="top left"
+            />
+          </div>
+        ))}
+      </div>
 
-			<div
-				ref={fullscreenRef}
-				className={cn(
-					'flex flex-col bg-muted/30 dark:bg-muted/10',
-					standalone ? 'h-screen w-screen' : 'h-full',
-				)}
-			>
-				{/* ── Spotlight overlay — bare fullscreen, slide only ── */}
-				{isSpotlight && (
-					<div
-						ref={spotlightCallbackRef}
-						className={cn(
-							'fixed inset-0 z-[9999] bg-black flex items-center justify-center select-none',
-							pointerVisible ? 'cursor-none' : 'cursor-default',
-						)}
-						onClick={() => {
-							if (spotlightMenu) {
-								setSpotlightMenu(null);
-								return;
-							}
-							next();
-						}}
-						onMouseMove={(e) => {
-							setPointerPos({ x: e.clientX, y: e.clientY });
-						}}
-						onContextMenu={(e) => {
-							e.preventDefault();
-							setSpotlightMenu({ x: e.clientX, y: e.clientY });
-						}}
-					>
-						<ScaledSlide
-							slide={currentSlide}
-							scale={spotlightScale}
-							theme={theme}
-							paginate={paginate}
-							slideNum={index + 1}
-							total={total}
-							slideThemes={slideThemes}
-							themeVars={themeVars}
-						/>
-						{/* Laser pointer dot */}
-						{pointerVisible && (
-							<div
-								aria-hidden="true"
-								style={{
-									position: 'fixed',
-									left: pointerPos.x,
-									top: pointerPos.y,
-									transform: 'translate(-50%, -50%)',
-									width: 18,
-									height: 18,
-									borderRadius: '50%',
-									backgroundColor: 'rgba(255, 30, 30, 0.92)',
-									boxShadow:
-										'0 0 10px 8px rgba(255, 60, 60, 0.85), 0 0 36px 16px rgba(255, 0, 0, 0.5)',
-									pointerEvents: 'none',
-									zIndex: 10_000,
-								}}
-							/>
-						)}
-						{/* Right-click menu — rendered inside fullscreen element so it's visible */}
-						{spotlightMenu && (
-							<div
-								style={{
-									position: 'fixed',
-									left: spotlightMenu.x,
-									top: spotlightMenu.y,
-									zIndex: 10_001,
-								}}
-								className="min-w-[200px] rounded-md border border-border bg-popover text-popover-foreground shadow-lg py-1 text-sm"
-								onClick={(e) => {
-									e.stopPropagation();
-								}}
-							>
-								<button
-									type="button"
-									className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
-									onClick={() => {
-										document.exitFullscreen().catch(() => {});
-										setSpotlightMenu(null);
-									}}
-								>
-									<Minimize size={14} />
-									Exit fullscreen
-								</button>
-								<button
-									type="button"
-									className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
-									onClick={() => {
-										window.location.reload();
-									}}
-								>
-									<Square size={14} className="invisible" />
-									Refresh
-								</button>
-								<div className="my-1 border-t border-border" />
-								<button
-									type="button"
-									className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
-									onClick={() => {
-										prev();
-										setSpotlightMenu(null);
-									}}
-								>
-									<ArrowLeft size={14} />
-									Previous
-								</button>
-								<button
-									type="button"
-									className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
-									onClick={() => {
-										setIndex(0);
-										setSpotlightMenu(null);
-									}}
-								>
-									<Square size={14} className="invisible" />
-									Go to start
-								</button>
-								<div className="my-1 border-t border-border" />
-								<button
-									type="button"
-									className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
-									onClick={() => {
-										setPointerVisible((v) => !v);
-										setSpotlightMenu(null);
-									}}
-								>
-									<Mouse size={14} />
-									{pointerVisible ? 'Hide laser pointer' : 'Show laser pointer'}
-								</button>
-							</div>
-						)}
-					</div>
-				)}
+      <div
+        ref={fullscreenRef}
+        className={cn(
+          "flex flex-col bg-muted/30 dark:bg-muted/10",
+          standalone ? "h-screen w-screen" : "h-full",
+        )}
+      >
+        {/* ── Spotlight overlay — bare fullscreen, slide only ── */}
+        {isSpotlight && (
+          <div
+            ref={spotlightCallbackRef}
+            className={cn(
+              "fixed inset-0 z-[9999] bg-black flex items-center justify-center select-none",
+              pointerVisible ? "cursor-none" : "cursor-default",
+            )}
+            onClick={() => {
+              if (spotlightMenu) {
+                setSpotlightMenu(null);
+                return;
+              }
+              next();
+            }}
+            onMouseMove={(e) => {
+              setPointerPos({ x: e.clientX, y: e.clientY });
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setSpotlightMenu({ x: e.clientX, y: e.clientY });
+            }}
+          >
+            <ScaledSlide
+              slide={currentSlide}
+              scale={spotlightScale}
+              theme={theme}
+              paginate={paginate}
+              slideNum={index + 1}
+              total={total}
+              slideThemes={slideThemes}
+              themeVars={themeVars}
+            />
+            {/* Laser pointer dot */}
+            {pointerVisible && (
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "fixed",
+                  left: pointerPos.x,
+                  top: pointerPos.y,
+                  transform: "translate(-50%, -50%)",
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(255, 30, 30, 0.92)",
+                  boxShadow:
+                    "0 0 10px 8px rgba(255, 60, 60, 0.85), 0 0 36px 16px rgba(255, 0, 0, 0.5)",
+                  pointerEvents: "none",
+                  zIndex: 10_000,
+                }}
+              />
+            )}
+            {/* Right-click menu — rendered inside fullscreen element so it's visible */}
+            {spotlightMenu && (
+              <div
+                style={{
+                  position: "fixed",
+                  left: spotlightMenu.x,
+                  top: spotlightMenu.y,
+                  zIndex: 10_001,
+                }}
+                className="min-w-[200px] rounded-md border border-border bg-popover text-popover-foreground shadow-lg py-1 text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
+                  onClick={() => {
+                    document.exitFullscreen().catch(() => {});
+                    setSpotlightMenu(null);
+                  }}
+                >
+                  <Minimize size={14} />
+                  Exit fullscreen
+                </button>
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
+                  onClick={() => {
+                    window.location.reload();
+                  }}
+                >
+                  <Square size={14} className="invisible" />
+                  Refresh
+                </button>
+                <div className="my-1 border-t border-border" />
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
+                  onClick={() => {
+                    prev();
+                    setSpotlightMenu(null);
+                  }}
+                >
+                  <ArrowLeft size={14} />
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
+                  onClick={() => {
+                    setIndex(0);
+                    setSpotlightMenu(null);
+                  }}
+                >
+                  <Square size={14} className="invisible" />
+                  Go to start
+                </button>
+                <div className="my-1 border-t border-border" />
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
+                  onClick={() => {
+                    setPointerVisible((v) => !v);
+                    setSpotlightMenu(null);
+                  }}
+                >
+                  <Mouse size={14} />
+                  {pointerVisible ? "Hide laser pointer" : "Show laser pointer"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
-				{/* ── Slide stage ── */}
-				{scrollMode ? (
-					<div
-						ref={stageRef}
-						className="flex-1 overflow-y-auto flex flex-col items-center py-6 gap-4"
-					>
-						{parsedSlides.map((slide, i) => (
-							<div
-								key={i}
-								ref={(el) => {
-									slideElemsRef.current[i] = el;
-								}}
-								style={{
-									position: 'relative',
-									width: SLIDE_W * scale,
-									height: SLIDE_H * scale,
-									flexShrink: 0,
-								}}
-								className="shadow-xl rounded-sm overflow-hidden"
-							>
-								<ScaledSlide
-									slide={slide}
-									scale={scale}
-									theme={theme}
-									paginate={paginate}
-									slideNum={i + 1}
-									total={total}
-									slideThemes={slideThemes}
-									themeVars={themeVars}
-									origin="top left"
-									absolute
-								/>
-							</div>
-						))}
-					</div>
-				) : (
-					<div
-						ref={stageRef}
-						className="flex-1 flex items-center justify-center overflow-hidden"
-					>
-						<ScaledSlide
-							slide={currentSlide}
-							scale={scale}
-							theme={theme}
-							paginate={paginate}
-							slideNum={index + 1}
-							total={total}
-							slideThemes={slideThemes}
-							themeVars={themeVars}
-							shadow
-							rounded
-						/>
-					</div>
-				)}
+        {/* ── Slide stage ── */}
+        {scrollMode ? (
+          <div
+            ref={stageRef}
+            className="flex-1 overflow-y-auto flex flex-col items-center py-6 gap-4"
+          >
+            {parsedSlides.map((slide, i) => (
+              <div
+                key={i}
+                ref={(el) => {
+                  slideElemsRef.current[i] = el;
+                }}
+                style={{
+                  position: "relative",
+                  width: SLIDE_W * scale,
+                  height: SLIDE_H * scale,
+                  flexShrink: 0,
+                }}
+                className="shadow-xl rounded-sm overflow-hidden"
+              >
+                <ScaledSlide
+                  slide={slide}
+                  scale={scale}
+                  theme={theme}
+                  paginate={paginate}
+                  slideNum={i + 1}
+                  total={total}
+                  slideThemes={slideThemes}
+                  themeVars={themeVars}
+                  origin="top left"
+                  absolute
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div ref={stageRef} className="flex-1 flex items-center justify-center overflow-hidden">
+            <ScaledSlide
+              slide={currentSlide}
+              scale={scale}
+              theme={theme}
+              paginate={paginate}
+              slideNum={index + 1}
+              total={total}
+              slideThemes={slideThemes}
+              themeVars={themeVars}
+              shadow
+              rounded
+            />
+          </div>
+        )}
 
-				{/* ── Progress bar (paginate mode only) ── */}
-				{!scrollMode && (
-					<div className="shrink-0 h-0.5 bg-muted">
-						<div
-							className="h-full bg-primary transition-[width] duration-300 ease-out"
-							style={{
-								width: total > 0 ? `${String(((index + 1) / total) * 100)}%` : '0%',
-							}}
-						/>
-					</div>
-				)}
+        {/* ── Progress bar (paginate mode only) ── */}
+        {!scrollMode && (
+          <div className="shrink-0 h-0.5 bg-muted">
+            <div
+              className="h-full bg-primary transition-[width] duration-300 ease-out"
+              style={{
+                width: total > 0 ? `${String(((index + 1) / total) * 100)}%` : "0%",
+              }}
+            />
+          </div>
+        )}
 
-				{/* ── Controls bar ── */}
-				<div className="shrink-0 flex items-center justify-center gap-3 px-4 py-2 border-t border-border bg-background">
-					{scrollMode ? (
-						<span className="text-xs text-muted-foreground tabular-nums select-none">
-							{total} {total === 1 ? 'slide' : 'slides'}
-						</span>
-					) : (
-						<>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="h-7 w-7"
-								onClick={prev}
-								disabled={index === 0}
-								title="Previous slide (←)"
-							>
-								<ChevronLeft className="w-4 h-4" />
-							</Button>
+        {/* ── Controls bar ── */}
+        <div className="shrink-0 flex items-center justify-center gap-3 px-4 py-2 border-t border-border bg-background">
+          {scrollMode ? (
+            <span className="text-xs text-muted-foreground tabular-nums select-none">
+              {total} {total === 1 ? "slide" : "slides"}
+            </span>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={prev}
+                disabled={index === 0}
+                title="Previous slide (←)"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
 
-							<span className="text-xs text-muted-foreground tabular-nums select-none min-w-[4rem] text-center">
-								{index + 1} / {total}
-							</span>
+              <span className="text-xs text-muted-foreground tabular-nums select-none min-w-[4rem] text-center">
+                {index + 1} / {total}
+              </span>
 
-							<Button
-								variant="ghost"
-								size="icon"
-								className="h-7 w-7"
-								onClick={next}
-								disabled={index === total - 1}
-								title="Next slide (→)"
-							>
-								<ChevronRight className="w-4 h-4" />
-							</Button>
-						</>
-					)}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={next}
+                disabled={index === total - 1}
+                title="Next slide (→)"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </>
+          )}
 
-					{!standalone && (
-						<>
-							<div className="w-px h-4 bg-border mx-1" />
+          {!standalone && (
+            <>
+              <div className="w-px h-4 bg-border mx-1" />
 
-							<Button
-								variant={scrollMode ? 'secondary' : 'ghost'}
-								size="icon"
-								className="h-7 w-7"
-								onClick={() => {
-									setScrollMode(true);
-								}}
-								title="Scroll mode"
-							>
-								<GalleryVertical className="w-4 h-4" />
-							</Button>
-							<Button
-								variant={scrollMode ? 'ghost' : 'secondary'}
-								size="icon"
-								className="h-7 w-7"
-								onClick={() => {
-									setScrollMode(false);
-								}}
-								title="Paginate mode"
-							>
-								<BookOpen className="w-4 h-4" />
-							</Button>
-						</>
-					)}
+              <Button
+                variant={scrollMode ? "secondary" : "ghost"}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  setScrollMode(true);
+                }}
+                title="Scroll mode"
+              >
+                <GalleryVertical className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={scrollMode ? "ghost" : "secondary"}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  setScrollMode(false);
+                }}
+                title="Paginate mode"
+              >
+                <BookOpen className="w-4 h-4" />
+              </Button>
+            </>
+          )}
 
-					<div className="w-px h-4 bg-border mx-1" />
+          <div className="w-px h-4 bg-border mx-1" />
 
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-7 w-7"
-						onClick={toggleFullscreen}
-						title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
-					>
-						{isFullscreen ? (
-							<Minimize className="w-4 h-4" />
-						) : (
-							<Maximize className="w-4 h-4" />
-						)}
-					</Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={toggleFullscreen}
+            title={isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
+          >
+            {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+          </Button>
 
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-7 w-7"
-						onClick={enterSpotlight}
-						title="Spotlight — slide only fullscreen"
-					>
-						<Spotlight className="w-4 h-4" />
-					</Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={enterSpotlight}
+            title="Spotlight — slide only fullscreen"
+          >
+            <Spotlight className="w-4 h-4" />
+          </Button>
 
-					<div className="w-px h-4 bg-border mx-1" />
+          <div className="w-px h-4 bg-border mx-1" />
 
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-7 w-7"
-						onClick={() => {
-							void exportPdf();
-						}}
-						disabled={isExporting}
-						title="Export as PDF"
-					>
-						<Download className="w-4 h-4" />
-					</Button>
-				</div>
-			</div>
-		</>
-	);
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => {
+              void exportPdf();
+            }}
+            disabled={isExporting}
+            title="Export as PDF"
+          >
+            <Download className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </>
+  );
 }

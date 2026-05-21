@@ -1,113 +1,113 @@
 interface User {
-	id: string;
-	email: string;
-	name: string;
-	displayName: string;
-	canEdit: boolean;
+  id: string;
+  email: string;
+  name: string;
+  displayName: string;
+  canEdit: boolean;
 }
 
-type MarkdownType = 'doc' | 'slide';
-type FileType = MarkdownType | 'code' | 'image' | 'other';
+type MarkdownType = "doc" | "slide";
+type FileType = MarkdownType | "code" | "image" | "other";
 
 interface FileEntry {
-	path: string;
-	type: FileType;
-	title: string;
-	emoji?: string;
-	description?: string;
+  path: string;
+  type: FileType;
+  title: string;
+  emoji?: string;
+  description?: string;
 }
 
 interface TreeNode {
-	path: string;
-	name: string;
-	type: 'file' | 'dir';
-	children?: TreeNode[];
-	fileEntry?: FileEntry;
+  path: string;
+  name: string;
+  type: "file" | "dir";
+  children?: TreeNode[];
+  fileEntry?: FileEntry;
 }
 
 interface SearchResult {
-	path: string;
-	title: string;
-	emoji?: string;
-	type?: FileType;
-	description?: string;
-	snippet: string;
-	score: number;
+  path: string;
+  title: string;
+  emoji?: string;
+  type?: FileType;
+  description?: string;
+  snippet: string;
+  score: number;
 }
 
 interface PresenceUser {
-	id: string;
-	name: string;
-	email: string;
+  id: string;
+  name: string;
+  email: string;
 }
 
 // WebSocket message types
 type WsClientMessage =
-	| { type: 'hello'; pageId: string; userId: string }
-	| { type: 'bye' }
-	| { type: 'editing_start'; pageId: string }
-	| { type: 'editing_stop'; pageId: string }
-	| { type: 'heartbeat' };
+  | { type: "hello"; pageId: string; userId: string }
+  | { type: "bye" }
+  | { type: "editing_start"; pageId: string }
+  | { type: "editing_stop"; pageId: string }
+  | { type: "heartbeat" };
 
 type WsServerMessage =
-	| {
-			type: 'presence_update';
-			pageId: string;
-			viewers: PresenceUser[];
-			editor: PresenceUser | null;
-	  }
-	| {
-			type: 'page_changed';
-			pageId: string;
-			commitSha: string;
-			changedBy: string;
-			changedByName: string;
-	  }
-	| { type: 'page_deleted'; pageId: string }
-	| { type: 'page_created'; pageId: string; path: string }
-	| { type: 'save_conflict_lost'; pageId: string; message: string }
-	| { type: 'heartbeat_ack' };
+  | {
+      type: "presence_update";
+      pageId: string;
+      viewers: PresenceUser[];
+      editor: PresenceUser | null;
+    }
+  | {
+      type: "page_changed";
+      pageId: string;
+      commitSha: string;
+      changedBy: string;
+      changedByName: string;
+    }
+  | { type: "page_deleted"; pageId: string }
+  | { type: "page_created"; pageId: string; path: string }
+  | { type: "save_conflict_lost"; pageId: string; message: string }
+  | { type: "heartbeat_ack" };
 
 interface SidebarItem {
-	title: string;
-	href: string;
-	children: SidebarItem[];
-	emoji?: string;
+  title: string;
+  href: string;
+  children: SidebarItem[];
+  emoji?: string;
 }
 
 interface CommitEntry {
-	sha: string;
-	fullSha: string;
-	message: string;
-	// Email address of the commit author
-	author: string;
-	authorEmail: string;
-	// ISO 8601 timestamp
-	date: string;
-	added?: number;
-	removed?: number;
+  sha: string;
+  fullSha: string;
+  message: string;
+  // Email address of the commit author
+  author: string;
+  authorEmail: string;
+  // ISO 8601 timestamp
+  date: string;
+  added?: number;
+  removed?: number;
 }
 
 interface FileDiff {
-	sha: string;
-	message: string;
-	author: string;
-	date: string;
-	before: string;
-	after: string;
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+  before: string;
+  after: string;
 }
 
 export type {
-	User,
-	MarkdownType,
-	FileType,
-	FileEntry,
-	TreeNode,
-	SearchResult,
-	PresenceUser,
-	WsClientMessage,
-	WsServerMessage,
-	SidebarItem,
-	CommitEntry,
-	FileDiff,
+  User,
+  MarkdownType,
+  FileType,
+  FileEntry,
+  TreeNode,
+  SearchResult,
+  PresenceUser,
+  WsClientMessage,
+  WsServerMessage,
+  SidebarItem,
+  CommitEntry,
+  FileDiff,
 };
