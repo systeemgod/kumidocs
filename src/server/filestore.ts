@@ -150,29 +150,29 @@ export function buildFileTree(): TreeNode[] {
   const allPaths = getAllPaths();
   // Filter out hidden / internal files and the images/ directory (shown via Image Library)
   const visible = allPaths.filter(
-    (p) =>
-      !p.startsWith(".") && !IGNORED_NAMES.has(p.split("/")[0] ?? "") && !p.startsWith("images/"),
+    (filePath) =>
+      !filePath.startsWith(".") && !IGNORED_NAMES.has(filePath.split("/")[0] ?? "") && !filePath.startsWith("images/"),
   );
 
   const root: TreeNode[] = [];
   const nodeMap = new Map<string, TreeNode>();
 
-  for (const p of visible.toSorted()) {
-    const parts = p.split("/");
+  for (const filePath of visible.toSorted()) {
+    const parts = filePath.split("/");
     let current = root;
     let cumPath = "";
 
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
+    for (let idx = 0; idx < parts.length; idx++) {
+      const part = parts[idx];
       if (!part) {
         continue;
       }
       cumPath = cumPath ? `${cumPath}/${part}` : part;
-      const isLast = i === parts.length - 1;
+      const isLast = idx === parts.length - 1;
 
       if (isLast) {
-        const fileEntry = parseFileEntry(p);
-        const node: TreeNode = { path: p, name: part, type: "file", fileEntry };
+        const fileEntry = parseFileEntry(filePath);
+        const node: TreeNode = { path: filePath, name: part, type: "file", fileEntry };
         current.push(node);
         nodeMap.set(cumPath, node);
       } else {

@@ -79,8 +79,8 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
     }
   }, [title, slug, slugEdited, pageType, finalPath, navigate, onCreated, onClose]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !creating && title.trim() && effectiveSlug) {
+  const handleKeyDown = (ev: React.KeyboardEvent) => {
+    if (ev.key === "Enter" && !creating && title.trim() && effectiveSlug) {
       handleCreate().catch((error: unknown) => {
         console.error("Failed to create page:", error);
       });
@@ -90,8 +90,8 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
   return (
     <Dialog
       open={open}
-      onOpenChange={(v) => {
-        if (v) {
+      onOpenChange={(isOpen) => {
+        if (isOpen) {
           setTitle("");
           setSlug("");
           setSlugEdited(false);
@@ -151,8 +151,8 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
               id="np-title"
               autoFocus
               value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
+              onChange={(ev) => {
+                setTitle(ev.target.value);
               }}
               placeholder="My new page"
             />
@@ -164,9 +164,9 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
             <Input
               id="np-slug"
               value={effectiveSlug}
-              onChange={(e) => {
-                setSlug(e.target.value);
-                setSlugEdited(e.target.value !== "");
+              onChange={(ev) => {
+                setSlug(ev.target.value);
+                setSlugEdited(ev.target.value !== "");
               }}
               placeholder="my-new-page"
             />

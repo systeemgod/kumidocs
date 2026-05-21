@@ -42,7 +42,7 @@ export function rebuildIndex(): void {
 
 function buildDocs(paths: string[]): DocEntry[] {
   return paths
-    .filter((p) => p.endsWith(".md") && !p.startsWith("."))
+    .filter((filePath) => filePath.endsWith(".md") && !filePath.startsWith("."))
     .map((path) => {
       const { title, emoji, type } = parseFileEntry(path);
 
@@ -109,14 +109,14 @@ export function searchDocs(query: string, limit = 20): SearchResult[] {
   const results = (
     index.search(query) as unknown as (Record<string, unknown> & { score: number })[]
   ).slice(0, limit);
-  return results.map((r) => ({
-    path: r.path as string,
-    title: r.title as string,
-    emoji: r.emoji as string | undefined,
-    type: (r.type as FileType | undefined) ?? "doc",
-    description: r.description as string | undefined,
-    snippet: buildSnippet(r.path as string, query),
-    score: r.score,
+  return results.map((result) => ({
+    path: result.path as string,
+    title: result.title as string,
+    emoji: result.emoji as string | undefined,
+    type: (result.type as FileType | undefined) ?? "doc",
+    description: result.description as string | undefined,
+    snippet: buildSnippet(result.path as string, query),
+    score: result.score,
   }));
 }
 

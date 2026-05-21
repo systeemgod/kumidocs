@@ -66,7 +66,7 @@ const HIDDEN_DIR_NAMES = new Set(["images"]);
  */
 function buildPageTree(nodes: TreeNode[]): PageNode[] {
   const filtered = nodes.filter(
-    (n) => !HIDDEN_NAMES.has(n.name) && !(n.type === "dir" && HIDDEN_DIR_NAMES.has(n.name)),
+    (node) => !HIDDEN_NAMES.has(node.name) && !(node.type === "dir" && HIDDEN_DIR_NAMES.has(node.name)),
   );
 
   const fileMap = new Map<string, TreeNode>(); // baseName → file node
@@ -109,14 +109,14 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
   }
 
   // Sort: README first, then alphabetically by display title
-  return result.toSorted((a, b) => {
-    if (a.path === "README.md") {
+  return result.toSorted((nodeA, nodeB) => {
+    if (nodeA.path === "README.md") {
       return -1;
     }
-    if (b.path === "README.md") {
+    if (nodeB.path === "README.md") {
       return 1;
     }
-    return a.displayTitle.localeCompare(b.displayTitle, undefined, { sensitivity: "base" });
+    return nodeA.displayTitle.localeCompare(nodeB.displayTitle, undefined, { sensitivity: "base" });
   });
 }
 
@@ -200,11 +200,11 @@ function PageNodeRow({
             {/* Chevron — toggles expand without navigating */}
             <span
               className="shrink-0 w-3 h-3 flex items-center justify-center cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+              onClick={(ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
                 if (hasChildren) {
-                  setOpen((o) => !o);
+                  setOpen((prev) => !prev);
                 }
               }}
             >
@@ -239,17 +239,17 @@ function PageNodeRow({
             {/* Presence avatars — users currently on this page */}
             {presenceUsers.length > 0 && (
               <div className="flex items-center shrink-0 -space-x-1">
-                {presenceUsers.slice(0, 3).map((u) => (
-                  <Tooltip key={u.id}>
+                {presenceUsers.slice(0, 3).map((user) => (
+                  <Tooltip key={user.id}>
                     <TooltipTrigger asChild>
                       <UserAvatar
-                        name={u.name}
-                        email={u.email}
+                        name={user.name}
+                        email={user.email}
                         size="xs"
                         className="ring-1 ring-sidebar cursor-default"
                       />
                     </TooltipTrigger>
-                    <TooltipContent>{u.id === currentUser?.id ? "You" : u.name}</TooltipContent>
+                    <TooltipContent>{user.id === currentUser?.id ? "You" : user.name}</TooltipContent>
                   </Tooltip>
                 ))}
                 {presenceUsers.length > 3 && (
@@ -265,8 +265,8 @@ function PageNodeRow({
               <DropdownMenuTrigger asChild>
                 <button
                   className="opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 shrink-0 w-6 h-6 flex items-center justify-center rounded hover:bg-accent text-current transition-opacity"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(ev) => {
+                    ev.stopPropagation();
                   }}
                   onMouseEnter={() => {
                     setDotsHovered(true);

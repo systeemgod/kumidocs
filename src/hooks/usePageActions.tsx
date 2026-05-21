@@ -51,7 +51,7 @@ export function usePageActions(reloadTree: () => void) {
   const [parentOpen, setParentOpen] = useState(false);
   const [parentSearch, setParentSearch] = useState("");
   const comboboxRef = useRef<HTMLDivElement>(null);
-  const outsideHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const outsideHandlerRef = useRef<((ev: MouseEvent) => void) | null>(null);
 
   const closeParentDropdown = useCallback(() => {
     if (outsideHandlerRef.current) {
@@ -63,8 +63,8 @@ export function usePageActions(reloadTree: () => void) {
 
   // Close the parent combobox dropdown when clicking outside
   const openParentDropdown = useCallback(() => {
-    const handler = (e: MouseEvent) => {
-      if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
+    const handler = (ev: MouseEvent) => {
+      if (comboboxRef.current && !comboboxRef.current.contains(ev.target as Node)) {
         closeParentDropdown();
       }
     };
@@ -91,15 +91,15 @@ export function usePageActions(reloadTree: () => void) {
       const tree = (await res.json()) as RawNode[];
       // Flatten the nested tree into a flat list of file nodes
       const flatten = (nodes: RawNode[]): RawNode[] =>
-        nodes.flatMap((n) => (n.type === "dir" ? flatten(n.children ?? []) : [n]));
+        nodes.flatMap((node) => (node.type === "dir" ? flatten(node.children ?? []) : [node]));
       const pages: PageOption[] = flatten(tree)
-        .filter(({ path: p }) => p.endsWith(".md") && p !== filePath)
-        .map(({ path: p, fileEntry }) => ({
-          path: p,
-          dir: p.replace(/\.md$/iu, ""),
-          title: fileEntry?.title ?? p.replace(/\.md$/iu, ""),
+        .filter(({ path: pagePath }) => pagePath.endsWith(".md") && pagePath !== filePath)
+        .map(({ path: pagePath, fileEntry }) => ({
+          path: pagePath,
+          dir: pagePath.replace(/\.md$/iu, ""),
+          title: fileEntry?.title ?? pagePath.replace(/\.md$/iu, ""),
         }))
-        .toSorted((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+        .toSorted((pageA, pageB) => pageA.title.localeCompare(pageB.title, undefined, { sensitivity: "base" }));
       setMovePages(pages);
       const parentPageExists = pages.some((pg) => pg.dir === parent);
       setMoveParent(parent && parentPageExists ? parent : ROOT);
@@ -260,12 +260,12 @@ export function usePageActions(reloadTree: () => void) {
               <Label>Filename</Label>
               <Input
                 value={moveSlug}
-                onChange={(e) => {
-                  setMoveSlug(e.target.value);
+                onChange={(ev) => {
+                  setMoveSlug(ev.target.value);
                 }}
                 placeholder="page-name"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter") {
                     confirmMove().catch((error: unknown) => {
                       console.error("Move failed:", error);
                     });

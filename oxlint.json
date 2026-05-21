@@ -38,7 +38,6 @@
 		"oxc/no-async-await": "off",
 		"oxc/no-rest-spread-properties": "off",
 		"eslint/func-style": "off",
-		"eslint/id-length": "off",
 		"eslint/no-ternary": "off",
 		"import/no-relative-parent-imports": "off",
 		"eslint/no-continue": "off",
@@ -60,7 +59,6 @@
 		"eslint/no-use-before-define": "off",
 		"eslint/prefer-destructuring": "off",
 		"eslint/require-await": "off",
-	
 		"eslint/no-implicit-coercion": "off",
 		"eslint/max-params": "off",
 		"eslint/complexity": "off",

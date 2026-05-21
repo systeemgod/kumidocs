@@ -234,7 +234,7 @@ export function MarkdownEditor({
   // Available theme names for the properties dialog.
   const themeOptions = useMemo(() => {
     const builtin = Object.keys(BUILTIN_SLIDE_THEMES);
-    const custom = slideThemes ? Object.keys(slideThemes).filter((k) => !builtin.includes(k)) : [];
+    const custom = slideThemes ? Object.keys(slideThemes).filter((key) => !builtin.includes(key)) : [];
     return ["default", ...builtin, ...custom];
   }, [slideThemes]);
   // Track the last known cursor/selection so toolbar actions that steal focus
@@ -280,7 +280,7 @@ export function MarkdownEditor({
   const handleHeading = useCallback(
     (val: string) => {
       setHeadingValue(val);
-      const opt = HEADING_OPTIONS.find((o) => o.value === val);
+      const opt = HEADING_OPTIONS.find((option) => option.value === val);
       if (!opt || !taRef.current) {
         return;
       }
@@ -369,7 +369,7 @@ export function MarkdownEditor({
 
   const handleImageFiles = useCallback(
     (files: FileList | File[]) => {
-      const images = [...files].filter((f) => f.type.startsWith("image/"));
+      const images = [...files].filter((file) => file.type.startsWith("image/"));
       if (images.length === 0) {
         return;
       }
@@ -389,47 +389,47 @@ export function MarkdownEditor({
     [syncChange],
   );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    if ([...e.dataTransfer.items].some((i) => i.kind === "file" && i.type.startsWith("image/"))) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
+  const handleDragOver = useCallback((ev: React.DragEvent) => {
+    if ([...ev.dataTransfer.items].some((item) => item.kind === "file" && item.type.startsWith("image/"))) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = "copy";
     }
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      const files = e.dataTransfer.files;
+    (ev: React.DragEvent) => {
+      const files = ev.dataTransfer.files;
       if (files.length === 0) {
         return;
       }
-      const hasImage = [...files].some((f) => f.type.startsWith("image/"));
+      const hasImage = [...files].some((file) => file.type.startsWith("image/"));
       if (!hasImage) {
         return;
       }
-      e.preventDefault();
+      ev.preventDefault();
       handleImageFiles(files);
     },
     [handleImageFiles],
   );
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
+    (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
+        ev.preventDefault();
         onSave?.();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === "b") {
-        e.preventDefault();
+      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "b") {
+        ev.preventDefault();
         handleBold();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === "i") {
-        e.preventDefault();
+      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "i") {
+        ev.preventDefault();
         handleItalic();
       }
     },
     [onSave, handleBold, handleItalic],
   );
 
-  const handleEditorScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
-    const ta = e.currentTarget;
+  const handleEditorScroll = useCallback((ev: React.UIEvent<HTMLTextAreaElement>) => {
+    const ta = ev.currentTarget;
     const preview = previewRef.current;
     if (!preview) {
       return;
@@ -467,8 +467,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0 font-bold"
             onClick={handleBold}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Bold (Ctrl+B)"
@@ -480,8 +480,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0 italic"
             onClick={handleItalic}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Italic (Ctrl+I)"
@@ -493,8 +493,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={handleStrikethrough}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Strikethrough"
@@ -509,8 +509,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={handleCode}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Inline code"
@@ -522,8 +522,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={handleLink}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Link"
@@ -535,8 +535,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0 font-serif text-base leading-none"
             onClick={handleQuote}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Blockquote"
@@ -551,8 +551,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={handleUnordered}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Unordered list"
@@ -564,8 +564,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={handleNumbered}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Numbered list"
@@ -577,8 +577,8 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={handleTask}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Task list"
@@ -595,8 +595,8 @@ export function MarkdownEditor({
             onClick={() => {
               fileInputRef.current?.click();
             }}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Insert image"
@@ -613,8 +613,8 @@ export function MarkdownEditor({
             onClick={() => {
               handlePropsOpen(true);
             }}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title="Page properties"
@@ -630,10 +630,10 @@ export function MarkdownEditor({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => {
-              setShowPreview((v) => !v);
+              setShowPreview((prev) => !prev);
             }}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(ev) => {
+              ev.preventDefault();
             }}
             disabled={disabled}
             title={showPreview ? "Hide preview" : "Show preview"}
@@ -697,10 +697,10 @@ export function MarkdownEditor({
                   <Label>Theme</Label>
                   <Select
                     value={dlgMeta.theme ?? "default"}
-                    onValueChange={(v) => {
+                    onValueChange={(val) => {
                       applyMeta({
                         ...dlgMeta,
-                        theme: v === "default" ? undefined : v,
+                        theme: val === "default" ? undefined : val,
                       });
                     }}
                   >
@@ -708,9 +708,9 @@ export function MarkdownEditor({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {themeOptions.map((t) => (
-                        <SelectItem key={t} value={t} className="text-xs">
-                          {t.charAt(0).toUpperCase() + t.slice(1)}
+                      {themeOptions.map((theme) => (
+                        <SelectItem key={theme} value={theme} className="text-xs">
+                          {theme.charAt(0).toUpperCase() + theme.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -741,8 +741,8 @@ export function MarkdownEditor({
           <textarea
             ref={taRef}
             value={value}
-            onChange={(e) => {
-              onChange(e.target.value);
+            onChange={(ev) => {
+              onChange(ev.target.value);
             }}
             onSelect={saveSelection}
             onClick={saveSelection}
@@ -783,10 +783,10 @@ export function MarkdownEditor({
         accept="image/*"
         multiple
         className="hidden"
-        onChange={(e) => {
-          if (e.target.files) {
-            handleImageFiles(e.target.files);
-            e.target.value = "";
+        onChange={(ev) => {
+          if (ev.target.files) {
+            handleImageFiles(ev.target.files);
+            ev.target.value = "";
           }
         }}
       />

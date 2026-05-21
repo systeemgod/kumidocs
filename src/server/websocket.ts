@@ -61,14 +61,14 @@ function presenceUpdate(pageId: string): WsServerMessage {
     if (!ws) {
       continue;
     }
-    const u: PresenceUser = {
+    const presenceUser: PresenceUser = {
       id: ws.data.user.id,
       name: ws.data.user.displayName,
       email: ws.data.user.email,
     };
-    viewers.push(u);
+    viewers.push(presenceUser);
     if (sid === editorSid) {
-      editor = u;
+      editor = presenceUser;
     }
   }
 

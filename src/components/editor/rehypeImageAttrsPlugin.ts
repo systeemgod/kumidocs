@@ -32,11 +32,11 @@ const ALLOWED: ReadonlySet<string> = new Set([
 function parseBlock(raw: string): Record<string, string> | null {
   const attrs: Record<string, string> = {};
   let matched = false;
-  let m: RegExpExecArray | null;
+  let match: RegExpExecArray | null;
   PAIR_RE.lastIndex = 0;
-  while ((m = PAIR_RE.exec(raw)) !== null) {
-    const key = m[1];
-    const val = m[2];
+  while ((match = PAIR_RE.exec(raw)) !== null) {
+    const key = match[1];
+    const val = match[2];
     if (key !== undefined && val !== undefined && ALLOWED.has(key.toLowerCase())) {
       attrs[key.toLowerCase()] = val;
       matched = true;
@@ -47,14 +47,14 @@ function parseBlock(raw: string): Record<string, string> | null {
 
 // Djb2-inspired hash to fingerprint the applied style.
 function styleFingerprint(attrs: Record<string, string>): number {
-  const s = Object.entries(attrs)
-    .map(([k, v]) => `${k}:${v}`)
+  const str = Object.entries(attrs)
+    .map(([key, val]) => `${key}:${val}`)
     .join(";");
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) {
-    h = Math.trunc((h << 5) - h + (s.codePointAt(i) ?? 0));
+  let hashVal = 5381;
+  for (let idx = 0; idx < str.length; idx++) {
+    hashVal = Math.trunc((hashVal << 5) - hashVal + (str.codePointAt(idx) ?? 0));
   }
-  return (Math.abs(h) % 1_000_000) + 1;
+  return (Math.abs(hashVal) % 1_000_000) + 1;
 }
 
 // Apply a stylehash-N class to an element so Streamdown's memo comparators
@@ -62,7 +62,7 @@ function styleFingerprint(attrs: Record<string, string>): number {
 function applyHashToNode(el: Element, hash: string): void {
   const cls = el.properties.className;
   if (Array.isArray(cls)) {
-    const filtered = cls.filter((c) => typeof c !== "string" || !c.startsWith("stylehash-"));
+    const filtered = cls.filter((item) => typeof item !== "string" || !item.startsWith("stylehash-"));
     filtered.push(hash);
     el.properties.className = filtered;
   } else {
@@ -73,7 +73,7 @@ function applyHashToNode(el: Element, hash: string): void {
 
 // Returns the hash that was applied, so callers can propagate it up the tree.
 function applyAttrs(img: Element, attrs: Record<string, string>): string {
-  const parts = Object.entries(attrs).map(([k, v]) => `${k}: ${v}`);
+  const parts = Object.entries(attrs).map(([key, val]) => `${key}: ${val}`);
   const existing = typeof img.properties.style === "string" ? img.properties.style : "";
   img.properties.style = existing ? `${existing}; ${parts.join("; ")}` : parts.join("; ");
 
@@ -85,26 +85,26 @@ function applyAttrs(img: Element, attrs: Record<string, string>): string {
 
 function walk(node: Root | Element): void {
   const children = node.children as ElementContent[];
-  let i = 0;
-  while (i < children.length) {
-    const child = children[i];
+  let idx = 0;
+  while (idx < children.length) {
+    const child = children[idx];
 
     if (child === undefined || child.type !== "element" || child.tagName !== "img") {
       if (child !== undefined && "children" in child) {
         walk(child);
       }
-      i++;
+      idx++;
       continue;
     }
 
     // child is an <img> — look for an immediately following attribute block
-    const sibling = children[i + 1];
-    const m = sibling?.type === "text" ? ATTRS_RE.exec(sibling.value) : null;
-    const rawAttrs = m?.[1];
+    const sibling = children[idx + 1];
+    const match = sibling?.type === "text" ? ATTRS_RE.exec(sibling.value) : null;
+    const rawAttrs = match?.[1];
     const attrs = rawAttrs !== undefined ? parseBlock(rawAttrs) : null;
 
-    if (m === null || attrs === null) {
-      i++;
+    if (match === null || attrs === null) {
+      idx++;
       continue;
     }
 
@@ -116,13 +116,13 @@ function walk(node: Root | Element): void {
     if (node.type === "element") {
       applyHashToNode(node, hash);
     }
-    const remaining = (sibling as { value: string }).value.slice(m[0].length);
+    const remaining = (sibling as { value: string }).value.slice(match[0].length);
     if (remaining.trim()) {
-      children.splice(i + 1, 1, { type: "text", value: remaining });
+      children.splice(idx + 1, 1, { type: "text", value: remaining });
     } else {
-      children.splice(i + 1, 1);
+      children.splice(idx + 1, 1);
     }
-    i++;
+    idx++;
   }
 }
 

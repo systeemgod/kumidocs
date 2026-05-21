@@ -238,12 +238,12 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
   const fromDir = `${from.replace(/\.md$/iu, "")}/`;
   const toDir = `${to.replace(/\.md$/iu, "")}/`;
   const allPaths = getAllPaths();
-  const subFiles = allPaths.filter((p) => p.startsWith(fromDir));
+  const subFiles = allPaths.filter((filePath) => filePath.startsWith(fromDir));
 
   // Build the full list of (abs-from, abs-to) pairs for all fs.rename calls.
   const renameOps = [
     { relFrom: from, relTo: to },
-    ...subFiles.map((s) => ({ relFrom: s, relTo: toDir + s.slice(fromDir.length) })),
+    ...subFiles.map((subFile) => ({ relFrom: subFile, relTo: toDir + subFile.slice(fromDir.length) })),
   ];
 
   // Perform all renames; roll back completed ones if any step fails.
@@ -272,11 +272,11 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
     updateInIndex(op.relTo);
   }
 
-  const movedPaths = renameOps.map((o) => o.relFrom);
-  const newPaths = renameOps.map((o) => o.relTo);
+  const movedPaths = renameOps.map((op) => op.relFrom);
+  const newPaths = renameOps.map((op) => op.relTo);
 
   const msg = `docs: rename ${from} → ${to} by ${user.displayName}`;
-  const extraMoves = subFiles.map((s) => ({ from: s, to: toDir + s.slice(fromDir.length) }));
+  const extraMoves = subFiles.map((subFile) => ({ from: subFile, to: toDir + subFile.slice(fromDir.length) }));
   await gitMoveAndCommit(
     config,
     from,
@@ -290,16 +290,16 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
   for (const old of movedPaths) {
     broadcastPageDeleted(old);
   }
-  for (const n of newPaths) {
-    broadcastPageCreated(n, n);
+  for (const newPath of newPaths) {
+    broadcastPageCreated(newPath, newPath);
   }
   return Response.json({ sha: null, from, to });
 }
 
 // GET /api/search?q=<query>
 export function apiSearch(url: URL) {
-  const q = url.searchParams.get("q") ?? "";
-  return Response.json(searchDocs(q));
+  const query = url.searchParams.get("q") ?? "";
+  return Response.json(searchDocs(query));
 }
 
 // GET /api/avatar/:hash — proxies Gravatar so the client never contacts Gravatar directly.
@@ -380,8 +380,8 @@ export async function apiUploadImage(req: Request, user: User, config: Config): 
 // GET /api/images
 export async function apiImagesList(config: Config): Promise<Response> {
   const all = getAllPaths();
-  const imagePaths = all.filter((p) => p.startsWith("images/"));
-  const mdPaths = all.filter((p) => p.endsWith(".md"));
+  const imagePaths = all.filter((filePath) => filePath.startsWith("images/"));
+  const mdPaths = all.filter((filePath) => filePath.endsWith(".md"));
 
   const results = await Promise.all(
     imagePaths.map(async (repoPath) => {
@@ -392,8 +392,8 @@ export async function apiImagesList(config: Config): Promise<Response> {
 
       let size = 0;
       try {
-        const s = await stat(join(config.repoPath, repoPath));
-        size = s.size;
+        const fileStats = await stat(join(config.repoPath, repoPath));
+        size = fileStats.size;
       } catch {
         // file may be transiently unavailable
       }
@@ -435,7 +435,7 @@ export async function apiImageDelete(
   }
 
   // Block deletion if any .md file references this image by its sha256 hash
-  const mdPaths = all.filter((p) => p.endsWith(".md"));
+  const mdPaths = all.filter((filePath) => filePath.endsWith(".md"));
   const usedIn = mdPaths.filter((mdPath) => {
     const content = getFile(mdPath) ?? "";
     return content.includes(sha256);
@@ -469,10 +469,10 @@ export async function apiFileHistory(url: URL, config: Config) {
   }
   const commits = await gitFileLog(config, path);
   const enriched = await Promise.all(
-    commits.map(async (c, idx) => {
+    commits.map(async (commit, idx) => {
       const parentCommit = commits[idx + 1];
       const [after, before] = await Promise.all([
-        gitBlobAt(config, c.fullSha, path),
+        gitBlobAt(config, commit.fullSha, path),
         parentCommit ? gitBlobAt(config, parentCommit.fullSha, path) : Promise.resolve(""),
       ]);
       const patch = createTwoFilesPatch("", "", before, after, "", "", { context: 0 });
@@ -486,14 +486,14 @@ export async function apiFileHistory(url: URL, config: Config) {
         }
       }
       return {
-        sha: c.sha,
-        fullSha: c.fullSha,
-        message: c.message,
-        author: c.author,
-        date: c.date,
+        sha: commit.sha,
+        fullSha: commit.fullSha,
+        message: commit.message,
+        author: commit.author,
+        date: commit.date,
         added,
         removed,
-        authorEmail: c.author,
+        authorEmail: commit.author,
       };
     }),
   );
@@ -512,7 +512,7 @@ export async function apiFileDiff(url: URL, config: Config) {
   }
 
   const commits = await gitFileLog(config, path, 500);
-  const idx = commits.findIndex((c) => c.fullSha.startsWith(shortSha) || c.sha === shortSha);
+  const idx = commits.findIndex((commit) => commit.fullSha.startsWith(shortSha) || commit.sha === shortSha);
   if (idx === -1) {
     return Response.json({ error: "Commit not found in file history" }, { status: 404 });
   }

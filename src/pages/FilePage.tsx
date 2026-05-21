@@ -44,7 +44,7 @@ function pathToTitle(path: string): string {
   return (path.split("/").pop() ?? path)
     .replace(/\.md$/u, "")
     .replaceAll(/[-_]/gu, " ")
-    .replaceAll(/\b\w/gu, (c) => c.toUpperCase());
+    .replaceAll(/\b\w/gu, (char) => char.toUpperCase());
 }
 
 export function FilePage() {
@@ -81,11 +81,11 @@ export function FilePage() {
 
   // Toggle info panel from sidebar context menu (same-tab custom event)
   useMountEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<string>).detail;
+    const handler = (ev: Event) => {
+      const detail = (ev as CustomEvent<string>).detail;
       if (detail === filePath) {
-        setInfoOpen((v) => {
-          const next = !v;
+        setInfoOpen((prev) => {
+          const next = !prev;
           if (next) {
             localStorage.setItem("kumidocs:info-open", "true");
           } else {
@@ -483,20 +483,20 @@ export function FilePage() {
       }
 
       // ── Link hotspots (per-page) ──────────────────────────────────────
-      for (const a of el.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-        const rect = a.getBoundingClientRect();
+      for (const anchor of el.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+        const rect = anchor.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) {
           continue;
         }
-        const x = rect.left - rootRect.left;
+        const xPos = rect.left - rootRect.left;
         const yLocal = rect.top - rootRect.top;
         const pageIdx = Math.floor(yLocal / PAGE_H_PX);
         const yOnPage = yLocal - pageIdx * PAGE_H_PX;
-        if (x < 0 || yOnPage < 0) {
+        if (xPos < 0 || yOnPage < 0) {
           continue;
         }
         pdf.setPage(pageIdx + 1);
-        pdf.link(x, yOnPage, rect.width, rect.height, { url: a.href });
+        pdf.link(xPos, yOnPage, rect.width, rect.height, { url: anchor.href });
       }
 
       pdf.save(`${title}.pdf`);
@@ -560,9 +560,9 @@ export function FilePage() {
         slidePaginate={meta.paginate}
         slideThemes={slideThemes}
         slideThemeVars={meta.themeVars}
-        onMetaChange={(m) => {
-          metaRef.current = m;
-          setMeta(m);
+        onMetaChange={(updatedMeta) => {
+          metaRef.current = updatedMeta;
+          setMeta(updatedMeta);
         }}
       />
     );
@@ -682,17 +682,17 @@ export function FilePage() {
         <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
           {/* Viewers — deduplicated by id (same user may have multiple tabs open) */}
           <div className="flex -space-x-1">
-            {[...new Map(viewers.map((v) => [v.id, v])).values()].slice(0, 5).map((v) => (
-              <Tooltip key={v.id}>
+            {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()].slice(0, 5).map((viewer) => (
+              <Tooltip key={viewer.id}>
                 <TooltipTrigger asChild>
                   <UserAvatar
-                    name={v.name}
-                    email={v.email}
+                    name={viewer.name}
+                    email={viewer.email}
                     size="sm"
                     className="border border-background ring-1 ring-border"
                   />
                 </TooltipTrigger>
-                <TooltipContent>{v.name}</TooltipContent>
+                <TooltipContent>{viewer.name}</TooltipContent>
               </Tooltip>
             ))}
           </div>
@@ -704,8 +704,8 @@ export function FilePage() {
               variant={infoOpen ? "secondary" : "ghost"}
               className="h-7 gap-1 text-xs px-2"
               onClick={() => {
-                setInfoOpen((v) => {
-                  const next = !v;
+                setInfoOpen((prev) => {
+                  const next = !prev;
                   if (next) {
                     localStorage.setItem("kumidocs:info-open", "true");
                   } else {
@@ -744,8 +744,8 @@ export function FilePage() {
                         }
                       : undefined
                   }
-                  onMove={(p) => {
-                    openMove(p).catch((error: unknown) => {
+                  onMove={(movePath) => {
+                    openMove(movePath).catch((error: unknown) => {
                       console.error("Failed to open move dialog:", error);
                     });
                   }}

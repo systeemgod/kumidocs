@@ -75,17 +75,17 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
   }
 
   // Link hotspots
-  for (const a of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-    const rect = a.getBoundingClientRect();
+  for (const anchor of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const rect = anchor.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
       continue;
     }
-    const x = rect.left - rootRect.left;
-    const y = rect.top - rootRect.top;
-    if (x < 0 || y < 0) {
+    const xPos = rect.left - rootRect.left;
+    const yPos = rect.top - rootRect.top;
+    if (xPos < 0 || yPos < 0) {
       continue;
     }
-    pdf.link(x, y, rect.width, rect.height, { url: a.href });
+    pdf.link(xPos, yPos, rect.width, rect.height, { url: anchor.href });
   }
 }
 
@@ -102,10 +102,10 @@ function splitSlides(content: string): string[] {
   for (const line of content.split("\n")) {
     const trimmed = line.trimStart();
     if (fence === null) {
-      const m = /^(`{3,}|~{3,})/u.exec(trimmed);
-      if (m) {
+      const match = /^(`{3,}|~{3,})/u.exec(trimmed);
+      if (match) {
         // Opening a fenced code block — capture the fence character string
-        fence = m[1] ?? "```";
+        fence = match[1] ?? "```";
         current.push(line);
         continue;
       }
@@ -125,7 +125,7 @@ function splitSlides(content: string): string[] {
     current.push(line);
   }
   slides.push(current.join("\n").trim());
-  return slides.filter((s) => s.length > 0);
+  return slides.filter((slide) => slide.length > 0);
 }
 
 // ── Slide canvas size ─────────────────────────────────────────────────────────
@@ -179,8 +179,8 @@ export function ScaledSlide({
 
   // Extract first heading for template variable substitution
   const slideTitle = useMemo(() => {
-    const m = /^#+\s+(.+)$/mu.exec(slide.content);
-    return m?.[1]?.trim() ?? "";
+    const match = /^#+\s+(.+)$/mu.exec(slide.content);
+    return match?.[1]?.trim() ?? "";
   }, [slide.content]);
 
   // Build canvas inline style: custom theme bg/fg first, then per-slide directive overrides
@@ -292,8 +292,8 @@ export function SlideViewer({
   const [isExporting, setIsExporting] = useState(false);
   const [scrollMode, setScrollMode] = useState(!standalone);
   const [pointerVisible, setPointerVisible] = useState(false);
-  const [pointerPos, setPointerPos] = useState({ x: 0, y: 0 });
-  const [spotlightMenu, setSpotlightMenu] = useState<{ x: number; y: number } | null>(null);
+  const [pointerPos, setPointerPos] = useState({ xPos: 0, yPos: 0 });
+  const [spotlightMenu, setSpotlightMenu] = useState<{ xPos: number; yPos: number } | null>(null);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
@@ -302,17 +302,17 @@ export function SlideViewer({
 
   // ── Keyboard navigation ──────────────────────────────────────────────────
   const prev = useCallback(() => {
-    setIndex((i) => {
-      const next = Math.max(0, i - 1);
+    setIndex((idx) => {
+      const next = Math.max(0, idx - 1);
       slideElemsRef.current[next]?.scrollIntoView({ behavior: "smooth", block: "center" });
       return next;
     });
   }, []);
   const next = useCallback(() => {
-    setIndex((i) => {
-      const n = Math.min(total - 1, i + 1);
-      slideElemsRef.current[n]?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return n;
+    setIndex((idx) => {
+      const nextIdx = Math.min(total - 1, idx + 1);
+      slideElemsRef.current[nextIdx]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return nextIdx;
     });
   }, [total]);
 
@@ -323,16 +323,16 @@ export function SlideViewer({
   nextRef.current = next;
 
   useMountEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
+    const handler = (ev: KeyboardEvent) => {
+      const tag = (ev.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") {
         return;
       }
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") {
         prevRef.current();
       }
-      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
-        e.preventDefault();
+      if (ev.key === "ArrowRight" || ev.key === "ArrowDown" || ev.key === " ") {
+        ev.preventDefault();
         nextRef.current();
       }
     };
@@ -353,8 +353,8 @@ export function SlideViewer({
         return;
       }
       const { width, height } = entry.contentRect;
-      const s = Math.min((width - 192) / SLIDE_W, (height - 96) / SLIDE_H);
-      setScale(Math.max(0.1, s));
+      const newScale = Math.min((width - 192) / SLIDE_W, (height - 96) / SLIDE_H);
+      setScale(Math.max(0.1, newScale));
     });
     obs.observe(el);
     return () => {
@@ -442,8 +442,8 @@ export function SlideViewer({
         format: [SLIDE_W, SLIDE_H],
       });
       const slideEls = [...container.children] as HTMLElement[];
-      for (let i = 0; i < slideEls.length; i++) {
-        const el = slideEls[i];
+      for (let idx = 0; idx < slideEls.length; idx++) {
+        const el = slideEls[idx];
         if (!el) {
           continue;
         }
@@ -454,7 +454,7 @@ export function SlideViewer({
           useCORS: true,
           logging: false,
         });
-        if (i > 0) {
+        if (idx > 0) {
           pdf.addPage();
         }
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, SLIDE_W, SLIDE_H);
@@ -483,10 +483,10 @@ export function SlideViewer({
           opacity: 0,
         }}
       >
-        {parsedSlides.map((slide, i) => (
+        {parsedSlides.map((slide, idx) => (
           // Outer wrapper provides the pixel dimensions html2canvas measures
           <div
-            key={i}
+            key={idx}
             style={{
               width: SLIDE_W,
               height: SLIDE_H,
@@ -499,7 +499,7 @@ export function SlideViewer({
               scale={1}
               theme={theme}
               paginate={paginate}
-              slideNum={i + 1}
+              slideNum={idx + 1}
               total={total}
               slideThemes={slideThemes}
               themeVars={themeVars}
@@ -531,12 +531,12 @@ export function SlideViewer({
               }
               next();
             }}
-            onMouseMove={(e) => {
-              setPointerPos({ x: e.clientX, y: e.clientY });
+            onMouseMove={(ev) => {
+              setPointerPos({ xPos: ev.clientX, yPos: ev.clientY });
             }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setSpotlightMenu({ x: e.clientX, y: e.clientY });
+            onContextMenu={(ev) => {
+              ev.preventDefault();
+              setSpotlightMenu({ xPos: ev.clientX, yPos: ev.clientY });
             }}
           >
             <ScaledSlide
@@ -555,8 +555,8 @@ export function SlideViewer({
                 aria-hidden="true"
                 style={{
                   position: "fixed",
-                  left: pointerPos.x,
-                  top: pointerPos.y,
+                  left: pointerPos.xPos,
+                  top: pointerPos.yPos,
                   transform: "translate(-50%, -50%)",
                   width: 18,
                   height: 18,
@@ -574,13 +574,13 @@ export function SlideViewer({
               <div
                 style={{
                   position: "fixed",
-                  left: spotlightMenu.x,
-                  top: spotlightMenu.y,
+                  left: spotlightMenu.xPos,
+                  top: spotlightMenu.yPos,
                   zIndex: 10_001,
                 }}
                 className="min-w-[200px] rounded-md border border-border bg-popover text-popover-foreground shadow-lg py-1 text-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(ev) => {
+                  ev.stopPropagation();
                 }}
               >
                 <button
@@ -632,7 +632,7 @@ export function SlideViewer({
                   type="button"
                   className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
                   onClick={() => {
-                    setPointerVisible((v) => !v);
+                    setPointerVisible((isVisible) => !isVisible);
                     setSpotlightMenu(null);
                   }}
                 >
@@ -650,11 +650,11 @@ export function SlideViewer({
             ref={stageRef}
             className="flex-1 overflow-y-auto flex flex-col items-center py-6 gap-4"
           >
-            {parsedSlides.map((slide, i) => (
+            {parsedSlides.map((slide, idx) => (
               <div
-                key={i}
+                key={idx}
                 ref={(el) => {
-                  slideElemsRef.current[i] = el;
+                  slideElemsRef.current[idx] = el;
                 }}
                 style={{
                   position: "relative",
@@ -669,7 +669,7 @@ export function SlideViewer({
                   scale={scale}
                   theme={theme}
                   paginate={paginate}
-                  slideNum={i + 1}
+                  slideNum={idx + 1}
                   total={total}
                   slideThemes={slideThemes}
                   themeVars={themeVars}

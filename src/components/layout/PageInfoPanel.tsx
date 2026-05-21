@@ -40,12 +40,12 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
   // Group commits by calendar date with human-readable labels
   const commitGroups = useMemo(() => {
     const groups = new Map<string, { label: string; commits: CommitEntry[] }>();
-    for (const c of commits) {
-      const d = new Date(c.date);
-      d.setHours(0, 0, 0, 0);
-      const key = d.toISOString().slice(0, 10);
+    for (const commit of commits) {
+      const date = new Date(commit.date);
+      date.setHours(0, 0, 0, 0);
+      const key = date.toISOString().slice(0, 10);
       if (!groups.has(key)) {
-        const label = d.toLocaleDateString(undefined, {
+        const label = date.toLocaleDateString(undefined, {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -53,7 +53,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
         groups.set(key, { label, commits: [] });
       }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we just ensured this
-      groups.get(key)!.commits.push(c);
+      groups.get(key)!.commits.push(commit);
     }
     return [...groups.entries()];
   }, [commits]);
@@ -72,7 +72,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
 
   useMountEffect(() => {
     fetch(`/api/file/history?path=${encodeURIComponent(filePath)}`)
-      .then((r) => r.json() as Promise<CommitEntry[]>)
+      .then((res) => res.json() as Promise<CommitEntry[]>)
       .then((data) => {
         setCommits(data);
       })
@@ -89,7 +89,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
     setDiffOpen(true);
     setDiffData(null);
     fetch(`/api/file/diff?path=${encodeURIComponent(filePath)}&sha=${sha}`)
-      .then((r) => r.json() as Promise<DiffData>)
+      .then((res) => res.json() as Promise<DiffData>)
       .then((data) => {
         setDiffData(data);
       })
@@ -135,34 +135,34 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
               {/* Commits */}
               {!isCollapsed && (
                 <div className="space-y-0.5">
-                  {groupCommits.map((c) => (
+                  {groupCommits.map((commit) => (
                     <button
-                      key={c.sha}
+                      key={commit.sha}
                       className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
                       onClick={() => {
-                        openDiff(c.sha);
+                        openDiff(commit.sha);
                       }}
                     >
                       <UserAvatar
-                        name={emailToDisplayName(c.author)}
-                        email={c.authorEmail}
+                        name={emailToDisplayName(commit.author)}
+                        email={commit.authorEmail}
                         size="xs"
                         className="shrink-0 mt-0.5"
                       />
                       <span className="flex-1 min-w-0">
                         <span className="text-foreground line-clamp-2 block">
-                          {c.message}
+                          {commit.message}
                         </span>
-                        {(c.added !== undefined || c.removed !== undefined) && (
+                        {(commit.added !== undefined || commit.removed !== undefined) && (
                           <span className="flex gap-1 mt-0.5">
-                            {(c.added ?? 0) > 0 && (
+                            {(commit.added ?? 0) > 0 && (
                               <span className="text-green-600 dark:text-green-400 font-mono">
-                                +{c.added}
+                                +{commit.added}
                               </span>
                             )}
-                            {(c.removed ?? 0) > 0 && (
+                            {(commit.removed ?? 0) > 0 && (
                               <span className="text-red-600 dark:text-red-400 font-mono">
-                                -{c.removed}
+                                -{commit.removed}
                               </span>
                             )}
                           </span>

@@ -8,94 +8,94 @@ const CANVAS_H = 540;
 // ── Position helper ───────────────────────────────────────────────────────────
 
 function computePositionStyle(el: SlideThemeElement): React.CSSProperties {
-  const s: React.CSSProperties = { position: "absolute" };
+  const styles: React.CSSProperties = { position: "absolute" };
 
   if (el.type === "rect") {
     if (el.left !== undefined) {
-      s.left = el.left;
+      styles.left = el.left;
     }
     if (el.right !== undefined) {
-      s.right = el.right;
+      styles.right = el.right;
     }
     if (el.top !== undefined) {
-      s.top = el.top;
+      styles.top = el.top;
     }
     if (el.bottom !== undefined) {
-      s.bottom = el.bottom;
+      styles.bottom = el.bottom;
     }
     if (el.width !== undefined) {
-      s.width = el.width;
+      styles.width = el.width;
     } else if (el.left !== undefined && el.right !== undefined) {
-      s.width = CANVAS_W - el.left - el.right;
+      styles.width = CANVAS_W - el.left - el.right;
     }
     if (el.height !== undefined) {
-      s.height = el.height;
+      styles.height = el.height;
     } else if (el.top !== undefined && el.bottom !== undefined) {
-      s.height = CANVAS_H - el.top - el.bottom;
+      styles.height = CANVAS_H - el.top - el.bottom;
     }
   }
 
   if (el.type === "text") {
     if (el.centerX) {
-      s.left = "50%";
-      s.transform = "translateX(-50%)";
+      styles.left = "50%";
+      styles.transform = "translateX(-50%)";
     } else {
       if (el.left !== undefined) {
-        s.left = el.left;
+        styles.left = el.left;
       }
       if (el.right !== undefined) {
-        s.right = el.right;
+        styles.right = el.right;
       }
     }
     if (el.centerY) {
-      s.top = "50%";
-      s.transform = `${s.transform ? `${s.transform} ` : ""}translateY(-50%)`;
+      styles.top = "50%";
+      styles.transform = `${styles.transform ? `${styles.transform} ` : ""}translateY(-50%)`;
     } else {
       if (el.top !== undefined) {
-        s.top = el.top;
+        styles.top = el.top;
       }
       if (el.bottom !== undefined) {
-        s.bottom = el.bottom;
+        styles.bottom = el.bottom;
       }
     }
   }
 
   if (el.type === "image") {
     if (el.centerX) {
-      s.left = "50%";
-      s.transform = "translateX(-50%)";
+      styles.left = "50%";
+      styles.transform = "translateX(-50%)";
     } else {
       if (el.left !== undefined) {
-        s.left = el.left;
+        styles.left = el.left;
       }
       if (el.right !== undefined) {
-        s.right = el.right;
+        styles.right = el.right;
       }
     }
     if (el.centerY) {
-      s.top = "50%";
-      s.transform = `${s.transform ? `${s.transform} ` : ""}translateY(-50%)`;
+      styles.top = "50%";
+      styles.transform = `${styles.transform ? `${styles.transform} ` : ""}translateY(-50%)`;
     } else {
       if (el.top !== undefined) {
-        s.top = el.top;
+        styles.top = el.top;
       }
       if (el.bottom !== undefined) {
-        s.bottom = el.bottom;
+        styles.bottom = el.bottom;
       }
     }
     if (el.width !== undefined) {
-      s.width = el.width;
+      styles.width = el.width;
     } else if (!el.centerX && el.left !== undefined && el.right !== undefined) {
-      s.width = CANVAS_W - el.left - el.right;
+      styles.width = CANVAS_W - el.left - el.right;
     }
     if (el.height !== undefined) {
-      s.height = el.height;
+      styles.height = el.height;
     } else if (!el.centerY && el.top !== undefined && el.bottom !== undefined) {
-      s.height = CANVAS_H - el.top - el.bottom;
+      styles.height = CANVAS_H - el.top - el.bottom;
     }
   }
 
-  return s;
+  return styles;
 }
 
 // ── Template variable interpolation ──────────────────────────────────────────
@@ -109,7 +109,7 @@ function interpolate(
     .replaceAll("{{slideNum}}", String(vars.slideNum))
     .replaceAll("{{slideTotal}}", String(vars.slideTotal))
     .replaceAll("{{title}}", vars.title)
-    .replaceAll(/\{\{date:([^}]+)\}\}/gu, (_, fmt: string) => {
+    .replaceAll(/\{\{date:([^}]+)\}\}/gu, (_match, fmt: string) => {
       const now = new Date();
       return fmt
         .replaceAll("YYYY", String(now.getFullYear()))
@@ -118,8 +118,8 @@ function interpolate(
     })
     .replaceAll("{{date}}", new Date().toISOString().slice(0, 10));
   if (customVars) {
-    for (const [k, v] of Object.entries(customVars)) {
-      result = result.replaceAll(`{{${k}}}`, v);
+    for (const [key, val] of Object.entries(customVars)) {
+      result = result.replaceAll(`{{${key}}}`, val);
     }
   }
   return result;
@@ -164,18 +164,18 @@ interface SlideOverlayProps {
 export function SlideOverlay({ elements, slideNum, total, title, themeVars }: SlideOverlayProps) {
   return (
     <>
-      {elements.map((el, i) => {
+      {elements.map((el, idx) => {
         const posStyle = computePositionStyle(el);
 
         if (el.type === "rect") {
-          return <div key={i} style={{ background: el.fill, ...posStyle }} />;
+          return <div key={idx} style={{ background: el.fill, ...posStyle }} />;
         }
 
         if (el.type === "text") {
           const text = interpolate(el.content, { slideNum, slideTotal: total, title }, themeVars);
           return (
             <div
-              key={i}
+              key={idx}
               style={{
                 color: el.color,
                 fontSize: el.fontSize,
@@ -194,7 +194,7 @@ export function SlideOverlay({ elements, slideNum, total, title, themeVars }: Sl
         // el.type === 'image' — only remaining union member
         return (
           <img
-            key={i}
+            key={idx}
             src={patchSvgDimensions(el.src, el.width, el.height)}
             alt=""
             style={{

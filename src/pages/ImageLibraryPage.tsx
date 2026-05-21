@@ -101,10 +101,10 @@ function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: 
             <p className="text-muted-foreground italic">Not used in any page</p>
           ) : (
             <ul className="space-y-1">
-              {image.usedIn.map((p) => (
-                <li key={p}>
-                  <Link to={`/p/${p}`} className="text-primary hover:underline text-xs break-all">
-                    {p}
+              {image.usedIn.map((pagePath) => (
+                <li key={pagePath}>
+                  <Link to={`/p/${pagePath}`} className="text-primary hover:underline text-xs break-all">
+                    {pagePath}
                   </Link>
                 </li>
               ))}
@@ -178,7 +178,7 @@ export function ImageLibraryPage() {
 
   const fetchImages = useCallback(() => {
     fetch("/api/images")
-      .then((r) => r.json() as Promise<ImageEntry[]>)
+      .then((res) => res.json() as Promise<ImageEntry[]>)
       .then((data) => {
         setImages(data);
         setLoading(false);

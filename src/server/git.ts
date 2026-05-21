@@ -7,7 +7,7 @@ import { type Config } from "./config";
 // All operations that touch the .git/index or working tree run through this
 // queue so concurrent HTTP saves and the background pull loop never race.
 let gitTail: Promise<unknown> = Promise.resolve();
-function withGitLock<T>(fn: () => Promise<T>): Promise<T> {
+function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult> {
   const result = gitTail.then(fn);
   // Swallow errors on the tail so one failed op doesn't stall the queue.
   gitTail = result.then(
@@ -194,12 +194,12 @@ async function _fetchAndRebase(
         fs,
         dir: config.repoPath,
         trees: [TREE({ ref: before }), TREE({ ref: after })],
-        map: async (filepath, [A, B]) => {
-          if ((await A?.type()) === "tree" || (await B?.type()) === "tree") {
+        map: async (filepath, [entryA, entryB]) => {
+          if ((await entryA?.type()) === "tree" || (await entryB?.type()) === "tree") {
             return;
           }
-          const aOid = await A?.oid();
-          const bOid = await B?.oid();
+          const aOid = await entryA?.oid();
+          const bOid = await entryB?.oid();
           if (aOid !== bOid) {
             changed.push(filepath);
           }
@@ -241,12 +241,12 @@ export async function gitFileLog(
   limit = 50,
 ): Promise<CommitEntry[]> {
   const commits = await git.log({ fs, dir: config.repoPath, filepath, depth: limit });
-  return commits.map((c) => ({
-    sha: c.oid.slice(0, 7),
-    fullSha: c.oid,
-    message: c.commit.message.trim(),
-    author: c.commit.author.name,
-    date: new Date(c.commit.author.timestamp * 1000).toISOString(),
+  return commits.map((commit) => ({
+    sha: commit.oid.slice(0, 7),
+    fullSha: commit.oid,
+    message: commit.commit.message.trim(),
+    author: commit.commit.author.name,
+    date: new Date(commit.commit.author.timestamp * 1000).toISOString(),
   }));
 }
 

@@ -104,7 +104,7 @@ await loadPermissions();
 
 // Watch entire repo folder for on-disk changes and reload immediately
 const debounceMap = new Map<string, ReturnType<typeof setTimeout>>();
-watch(config.repoPath, { recursive: true }, (_, filename) => {
+watch(config.repoPath, { recursive: true }, (_event, filename) => {
   if (!filename) {
     return;
   }

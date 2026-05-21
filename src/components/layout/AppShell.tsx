@@ -37,18 +37,18 @@ export function AppShell() {
     if (!stored) {
       return SIDEBAR_DEFAULT;
     }
-    const n = Number(stored);
-    return Number.isFinite(n) ? Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, n)) : SIDEBAR_DEFAULT;
+    const num = Number(stored);
+    return Number.isFinite(num) ? Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, num)) : SIDEBAR_DEFAULT;
   });
   const [isDragging, setIsDragging] = useState(false);
   // Keep a ref so the stable mousemove closure always reads the live drag-start values
-  const dragStartRef = useRef<{ x: number; width: number } | null>(null);
+  const dragStartRef = useRef<{ startX: number; width: number } | null>(null);
 
   // Reload full file tree for sidebar.
   // Returns void so it's safe to pass as event handler or onCreated callback.
   const loadTree = useCallback((): void => {
     fetch("/api/tree")
-      .then((r) => r.json() as Promise<TreeNode[]>)
+      .then((res) => res.json() as Promise<TreeNode[]>)
       .then((data) => {
         setTree(data);
       })
@@ -60,7 +60,7 @@ export function AppShell() {
   // Load user/instance info
   useMountEffect(() => {
     fetch("/api/me")
-      .then((r) => r.json() as Promise<{ instanceName?: string; autoSaveDelay?: number }>)
+      .then((res) => res.json() as Promise<{ instanceName?: string; autoSaveDelay?: number }>)
       .then((data) => {
         if (data.instanceName) {
           setInstanceName(data.instanceName);
@@ -83,10 +83,10 @@ export function AppShell() {
         // Merge viewers + editor, deduplicated, minus self
         const all: PresenceUser[] = [];
         const seen = new Set<string>();
-        for (const u of msg.viewers) {
-          if (!seen.has(u.id) && u.id !== user?.id) {
-            all.push(u);
-            seen.add(u.id);
+        for (const viewer of msg.viewers) {
+          if (!seen.has(viewer.id) && viewer.id !== user?.id) {
+            all.push(viewer);
+            seen.add(viewer.id);
           }
         }
         if (msg.editor && !seen.has(msg.editor.id) && msg.editor.id !== user?.id) {
@@ -107,9 +107,9 @@ export function AppShell() {
 
   // Ctrl+K shortcut
   useMountEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
+    const handler = (ev: KeyboardEvent) => {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === "k") {
+        ev.preventDefault();
         setSearchOpen(true);
       }
     };
@@ -120,18 +120,18 @@ export function AppShell() {
   });
 
   const handleResizeMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      dragStartRef.current = { x: e.clientX, width: sidebarWidth };
+    (ev: React.MouseEvent) => {
+      ev.preventDefault();
+      dragStartRef.current = { startX: ev.clientX, width: sidebarWidth };
       setIsDragging(true);
       document.body.style.cursor = "col-resize";
       document.body.style.userSelect = "none";
 
-      const onMouseMove = (ev: MouseEvent) => {
+      const onMouseMove = (mouseEv: MouseEvent) => {
         if (!dragStartRef.current) {
           return;
         }
-        const delta = ev.clientX - dragStartRef.current.x;
+        const delta = mouseEv.clientX - dragStartRef.current.startX;
         const next = Math.max(
           SIDEBAR_MIN,
           Math.min(SIDEBAR_MAX, dragStartRef.current.width + delta),
@@ -139,9 +139,9 @@ export function AppShell() {
         setSidebarWidth(next);
       };
 
-      const onMouseUp = (ev: MouseEvent) => {
+      const onMouseUp = (mouseEv: MouseEvent) => {
         if (dragStartRef.current) {
-          const delta = ev.clientX - dragStartRef.current.x;
+          const delta = mouseEv.clientX - dragStartRef.current.startX;
           const next = Math.max(
             SIDEBAR_MIN,
             Math.min(SIDEBAR_MAX, dragStartRef.current.width + delta),

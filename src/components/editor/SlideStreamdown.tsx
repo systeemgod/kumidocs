@@ -67,7 +67,7 @@ const SlideAnchorComponent = (allProps: SlideAnchorProps): JSX.Element => {
 
 const COMPONENTS = {
   "kumi-emoji": KumiEmojiComponent,
-  a: SlideAnchorComponent,
+  "a": SlideAnchorComponent,
 };
 
 interface SlideStreamdownProps {

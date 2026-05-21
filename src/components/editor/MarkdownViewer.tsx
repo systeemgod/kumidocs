@@ -59,7 +59,7 @@ const AnchorComponent = (allProps: { href?: string; children?: ReactNode }): JSX
   );
 };
 
-const COMPONENTS = { "kumi-emoji": KumiEmojiComponent, a: AnchorComponent };
+const COMPONENTS = { "kumi-emoji": KumiEmojiComponent, "a": AnchorComponent };
 
 const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
   const { value } = allProps;
