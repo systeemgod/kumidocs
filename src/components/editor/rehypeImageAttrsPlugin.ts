@@ -88,46 +88,40 @@ function walk(node: Root | Element): void {
   let i = 0;
   while (i < children.length) {
     const child = children[i];
-    if (child === undefined) {
+
+    if (child === undefined || child.type !== "element" || child.tagName !== "img") {
+      if (child !== undefined && "children" in child) {
+        walk(child);
+      }
       i++;
       continue;
     }
 
-    if (child.type === "element" && child.tagName === "img") {
-      const sibling = children[i + 1];
-      if (sibling?.type === "text") {
-        const m = ATTRS_RE.exec(sibling.value);
-        if (m !== null) {
-          const rawAttrs = m[1];
-          if (rawAttrs === undefined) {
-            i++;
-            continue;
-          }
-          const attrs = parseBlock(rawAttrs);
-          if (attrs !== null) {
-            const hash = applyAttrs(child, attrs);
-            // Also bust the parent element's memo (MemoParagraph wraps MemoImg
-            // and has its own sameClassAndNode comparator — if the paragraph's
-            // className doesn't change, MemoParagraph skips re-rendering entirely
-            // and MemoImg never gets the updated props).
-            if (node.type === "element") {
-              applyHashToNode(node, hash);
-            }
-            const remaining = sibling.value.slice(m[0].length);
-            if (remaining.trim()) {
-              children.splice(i + 1, 1, { type: "text", value: remaining });
-            } else {
-              children.splice(i + 1, 1);
-            }
-            i++;
-            continue;
-          }
-        }
-      }
-    } else if ("children" in child) {
-      walk(child);
+    // child is an <img> — look for an immediately following attribute block
+    const sibling = children[i + 1];
+    const m = sibling?.type === "text" ? ATTRS_RE.exec(sibling.value) : null;
+    const rawAttrs = m?.[1];
+    const attrs = rawAttrs !== undefined ? parseBlock(rawAttrs) : null;
+
+    if (m === null || attrs === null) {
+      i++;
+      continue;
     }
 
+    const hash = applyAttrs(child, attrs);
+    // Also bust the parent element's memo (MemoParagraph wraps MemoImg
+    // and has its own sameClassAndNode comparator — if the paragraph's
+    // className doesn't change, MemoParagraph skips re-rendering entirely
+    // and MemoImg never gets the updated props).
+    if (node.type === "element") {
+      applyHashToNode(node, hash);
+    }
+    const remaining = (sibling as { value: string }).value.slice(m[0].length);
+    if (remaining.trim()) {
+      children.splice(i + 1, 1, { type: "text", value: remaining });
+    } else {
+      children.splice(i + 1, 1);
+    }
     i++;
   }
 }

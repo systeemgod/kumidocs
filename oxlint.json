@@ -72,7 +72,6 @@
 		"eslint/no-underscore-dangle": "off",
 		"eslint/no-negated-condition": "off",
 		"unicorn/no-negated-condition": "off",
-		"eslint/max-depth": "off",
 		"unicorn/consistent-existence-index-check": "off",
 		"eslint/no-bitwise": "off",
 		"eslint/new-cap": "off",
