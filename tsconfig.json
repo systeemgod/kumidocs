@@ -22,7 +22,8 @@
 		"noImplicitOverride": true,
 
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@root/*": ["./*"]
 		},
 
 		// Some stricter flags (disabled by default)

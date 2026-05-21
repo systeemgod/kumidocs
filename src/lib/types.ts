@@ -1,4 +1,4 @@
-export interface User {
+interface User {
 	id: string;
 	email: string;
 	name: string;
@@ -6,10 +6,10 @@ export interface User {
 	canEdit: boolean;
 }
 
-export type MarkdownType = 'doc' | 'slide';
-export type FileType = MarkdownType | 'code' | 'image' | 'other';
+type MarkdownType = 'doc' | 'slide';
+type FileType = MarkdownType | 'code' | 'image' | 'other';
 
-export interface FileEntry {
+interface FileEntry {
 	path: string;
 	type: FileType;
 	title: string;
@@ -17,7 +17,7 @@ export interface FileEntry {
 	description?: string;
 }
 
-export interface TreeNode {
+interface TreeNode {
 	path: string;
 	name: string;
 	type: 'file' | 'dir';
@@ -25,7 +25,7 @@ export interface TreeNode {
 	fileEntry?: FileEntry;
 }
 
-export interface SearchResult {
+interface SearchResult {
 	path: string;
 	title: string;
 	emoji?: string;
@@ -35,21 +35,21 @@ export interface SearchResult {
 	score: number;
 }
 
-export interface PresenceUser {
+interface PresenceUser {
 	id: string;
 	name: string;
 	email: string;
 }
 
 // WebSocket message types
-export type WsClientMessage =
+type WsClientMessage =
 	| { type: 'hello'; pageId: string; userId: string }
 	| { type: 'bye' }
 	| { type: 'editing_start'; pageId: string }
 	| { type: 'editing_stop'; pageId: string }
 	| { type: 'heartbeat' };
 
-export type WsServerMessage =
+type WsServerMessage =
 	| {
 			type: 'presence_update';
 			pageId: string;
@@ -68,25 +68,27 @@ export type WsServerMessage =
 	| { type: 'save_conflict_lost'; pageId: string; message: string }
 	| { type: 'heartbeat_ack' };
 
-export interface SidebarItem {
+interface SidebarItem {
 	title: string;
 	href: string;
 	children: SidebarItem[];
 	emoji?: string;
 }
 
-export interface CommitEntry {
+interface CommitEntry {
 	sha: string;
 	fullSha: string;
 	message: string;
-	author: string; // email
+	// Email address of the commit author
+	author: string;
 	authorEmail: string;
-	date: string; // ISO 8601
+	// ISO 8601 timestamp
+	date: string;
 	added?: number;
 	removed?: number;
 }
 
-export interface FileDiff {
+interface FileDiff {
 	sha: string;
 	message: string;
 	author: string;
@@ -94,3 +96,18 @@ export interface FileDiff {
 	before: string;
 	after: string;
 }
+
+export type {
+	User,
+	MarkdownType,
+	FileType,
+	FileEntry,
+	TreeNode,
+	SearchResult,
+	PresenceUser,
+	WsClientMessage,
+	WsServerMessage,
+	SidebarItem,
+	CommitEntry,
+	FileDiff,
+};

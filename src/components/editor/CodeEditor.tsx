@@ -1,18 +1,16 @@
 import CodeMirror, { EditorView } from '@uiw/react-codemirror';
-import { loadLanguage, type LanguageName } from '@uiw/codemirror-extensions-langs';
-import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
-import { useTheme } from '../../store/theme';
+import { type LanguageName, loadLanguage } from '@uiw/codemirror-extensions-langs';
+import { githubDark, githubLight } from '@uiw/codemirror-theme-github';
+import { useTheme } from '@/store/theme';
 
 interface CodeEditorProps {
 	value: string;
-	language: string; // raw file extension, e.g. "ts", "py", "json"
+	language: string;
 	readOnly?: boolean;
 	onChange?: (value: string) => void;
 	onSave?: () => void;
 }
 
-// Map raw file extensions to @uiw/codemirror-extensions-langs language names.
-// Many extensions match directly (ts, js, py, rs, etc.), so only exceptions are listed.
 const EXT_TO_LANG: Record<string, string> = {
 	mjs: 'js',
 	cjs: 'js',
@@ -30,49 +28,51 @@ const EXT_TO_LANG: Record<string, string> = {
 	tfvars: 'hcl',
 };
 
-function resolveLanguage(ext: string) {
+const resolveLanguage = (ext: string): NonNullable<ReturnType<typeof loadLanguage>>[] => {
 	const name = (EXT_TO_LANG[ext] ?? ext) as LanguageName;
 	try {
 		const lang = loadLanguage(name);
-		return lang ? [lang] : [];
+		let result: NonNullable<ReturnType<typeof loadLanguage>>[] = [];
+		if (lang) { result = [lang]; }
+		return result;
 	} catch {
 		return [];
 	}
-}
+};
 
-export function CodeEditor({
-	value,
-	language,
-	readOnly = false,
-	onChange,
-	onSave,
-}: CodeEditorProps) {
+const CodeEditor = (allProps: CodeEditorProps): JSX.Element => {
+	const { value, language, readOnly = false, onChange, onSave } = allProps;
 	const { theme } = useTheme();
+
+	let onSaveExtension: ReturnType<typeof EditorView.domEventHandlers>[] = [];
+	if (onSave) {
+		onSaveExtension = [
+			EditorView.domEventHandlers({
+				keydown(event) {
+					if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+						event.preventDefault();
+						onSave();
+					}
+				},
+			}),
+		];
+	}
 
 	const extensions = [
 		...resolveLanguage(language),
 		EditorView.lineWrapping,
-		// Ctrl+S / Cmd+S save shortcut
-		...(onSave
-			? [
-					EditorView.domEventHandlers({
-						keydown(e) {
-							if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-								e.preventDefault();
-								onSave();
-							}
-						},
-					}),
-				]
-			: []),
+		...onSaveExtension,
 	];
+
+	let resolvedTheme = githubLight;
+	if (theme === 'dark') { resolvedTheme = githubDark; }
 
 	return (
 		<div className="h-full overflow-auto text-sm [&_.cm-editor]:h-full [&_.cm-scroller]:min-h-full [&_.cm-editor.cm-focused]:outline-none">
 			<CodeMirror
 				value={value}
 				height="100%"
-				theme={theme === 'dark' ? githubDark : githubLight}
+				theme={resolvedTheme}
 				extensions={extensions}
 				readOnly={readOnly}
 				basicSetup={{
@@ -87,4 +87,6 @@ export function CodeEditor({
 			/>
 		</div>
 	);
-}
+};
+
+export { CodeEditor };

@@ -5,14 +5,13 @@
  * Every emoji cell is rendered by <EmojiIcon> for visual consistency with the rest
  * of the app. SVGs are baked into the JS bundle — zero HTTP requests.
  */
-import { useState, useMemo, useRef, memo } from 'react';
-import { EmojiIcon } from './EmojiIcon';
+import { memo, useMemo, useState } from 'react';
 import EMOJI_SVGS from './emoji/emojis';
-import data from './emoji/emojimart-data-all-15.json';
+import { EmojiIcon } from './EmojiIcon';
 import { Input } from './input';
 import { ScrollArea } from './scroll-area';
-import { cn } from '../../lib/utils';
-import { useMountEffect } from '../../hooks/useMountEffect';
+import { cn } from '@/lib/utils';
+import data from './emoji/emojimart-data-all-15.json';
 
 // ── Typed subset of emojimart-data-all-15.json ───────────────────────────────
 
@@ -27,7 +26,8 @@ interface EmojiEntry {
 }
 interface CategoryEntry {
 	id: string;
-	emojis: string[]; // emoji IDs
+	// Emoji IDs
+	emojis: string[];
 }
 interface MartData {
 	categories: CategoryEntry[];
@@ -39,71 +39,141 @@ const emojiData = data as unknown as MartData;
 // ── Category display config ───────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
-	people: { label: 'Smileys & People', icon: '😀' },
-	nature: { label: 'Animals & Nature', icon: '🐾' },
-	foods: { label: 'Food & Drink', icon: '🍕' },
-	activity: { label: 'Activities', icon: '⚽' },
-	places: { label: 'Travel & Places', icon: '✈️' },
-	objects: { label: 'Objects', icon: '💡' },
-	symbols: { label: 'Symbols', icon: '💫' },
-	flags: { label: 'Flags', icon: '🏁' },
+	'people': { label: 'Smileys & People', icon: '😀' },
+	'nature': { label: 'Animals & Nature', icon: '🐾' },
+	'foods': { label: 'Food & Drink', icon: '🍕' },
+	'activity': { label: 'Activities', icon: '⚽' },
+	'places': { label: 'Travel & Places', icon: '✈️' },
+	'objects': { label: 'Objects', icon: '💡' },
+	'symbols': { label: 'Symbols', icon: '💫' },
+	'flags': { label: 'Flags', icon: '🏁' },
 };
 
 // ── Pre-built indexes (run once at module load, not per render) ───────────────
 
-// Per-category emoji arrays
 const CATEGORY_EMOJIS: Record<string, { native: string; name: string }[]> = {};
 for (const cat of emojiData.categories) {
-	CATEGORY_EMOJIS[cat.id] = cat.emojis
-		.map((id) => {
-			const e = emojiData.emojis[id];
-			const native = e?.skins[0]?.native;
-			return native ? { native, name: e.name } : null;
-		})
-		.filter((item) => item !== null && item.native in EMOJI_SVGS) as {
-		native: string;
-		name: string;
-	}[];
+	CATEGORY_EMOJIS[cat.id] = cat.emojis.flatMap((id): { native: string; name: string }[] => {
+		const entry = emojiData.emojis[id];
+		if (!entry) { return []; }
+		const [skin] = entry.skins;
+		if (!skin) { return []; }
+		if (!(skin.native in EMOJI_SVGS)) { return []; }
+		return [{ native: skin.native, name: entry.name }];
+	});
 }
 
-// Flat search index: { native, searchText } — built once
-const SEARCH_INDEX = Object.values(emojiData.emojis)
-	.map((e) => {
-		const native = e.skins[0]?.native;
-		if (!native || !(native in EMOJI_SVGS)) return null;
-		return {
-			native,
-			name: e.name,
-			searchText: `${e.name} ${e.keywords.join(' ')}`.toLowerCase(),
-		};
-	})
-	.filter(Boolean) as { native: string; name: string; searchText: string }[];
+const SEARCH_INDEX = Object.values(emojiData.emojis).flatMap(
+	(entry): { native: string; name: string; searchText: string }[] => {
+		const [skin] = entry.skins;
+		if (!skin) { return []; }
+		if (!(skin.native in EMOJI_SVGS)) { return []; }
+		return [{
+			native: skin.native,
+			name: entry.name,
+			searchText: `${entry.name} ${entry.keywords.join(' ')}`.toLowerCase(),
+		}];
+	},
+);
+
+const MAX_SEARCH_RESULTS = 96;
+const EMOJI_CELL_SIZE = 36;
+
+const getInitialCategory = (): string => {
+	const [first] = emojiData.categories;
+	if (first) { return first.id; }
+	return 'people';
+};
 
 // ── Memoised emoji cell ───────────────────────────────────────────────────────
 
-// Only changed cells re-render when the grid updates.
-const EmojiCell = memo(function EmojiCell({
-	native,
-	name,
-	onSelect,
-}: {
+interface EmojiCellProps {
 	native: string;
 	name: string;
 	onSelect: (native: string) => void;
-}) {
+}
+
+const EmojiCellInner = (allProps: EmojiCellProps): JSX.Element => {
+	const { native, name, onSelect } = allProps;
 	return (
 		<button
 			type="button"
 			title={name}
-			onClick={() => {
-				onSelect(native);
-			}}
+			onClick={(): void => { onSelect(native); }}
 			className="w-12 h-12 rounded flex items-center justify-center hover:bg-accent transition-colors"
 		>
-			<EmojiIcon emoji={native} size={36} />
+			<EmojiIcon emoji={native} size={EMOJI_CELL_SIZE} />
 		</button>
 	);
-});
+};
+
+const EmojiCell = memo(EmojiCellInner);
+
+// ── Category tabs ─────────────────────────────────────────────────────────────
+
+interface CategoryTabsProps {
+	activeCategory: string;
+	onCategoryChange: (cat: string) => void;
+}
+
+const CategoryTabsInner = (allProps: CategoryTabsProps): JSX.Element => {
+	const { activeCategory, onCategoryChange } = allProps;
+	return (
+		<div className="flex gap-0.5 px-2 pb-1.5">
+			{emojiData.categories.map((cat): JSX.Element => {
+				const cfg = CATEGORY_CONFIG[cat.id];
+				let catLabel = cat.id;
+				if (cfg && cfg.label) { catLabel = cfg.label; }
+				let tabClass = 'hover:bg-accent/50 opacity-60 hover:opacity-100';
+				if (activeCategory === cat.id) { tabClass = 'bg-accent'; }
+				return (
+					<button
+						key={cat.id}
+						type="button"
+						title={catLabel}
+						onClick={(): void => { onCategoryChange(cat.id); }}
+						className={cn(
+							'shrink-0 w-12 h-12 rounded flex items-center justify-center transition-colors',
+							tabClass,
+						)}
+					>
+						{cfg && <EmojiIcon emoji={cfg.icon} size={EMOJI_CELL_SIZE} />}
+					</button>
+				);
+			})}
+		</div>
+	);
+};
+
+const CategoryTabs = memo(CategoryTabsInner);
+
+// ── Emoji grid ────────────────────────────────────────────────────────────────
+
+interface EmojiGridProps {
+	displayEmojis: { native: string; name: string }[];
+	onSelect: (emoji: string) => void;
+}
+
+const EmojiGridInner = (allProps: EmojiGridProps): JSX.Element => {
+	const { displayEmojis, onSelect } = allProps;
+	return (
+		<ScrollArea className="h-[323px]">
+			<div
+				className="grid p-1.5 gap-0.5"
+				style={{ gridTemplateColumns: 'repeat(8, minmax(0, 1fr))' }}
+			>
+				{displayEmojis.map(({ native, name }): JSX.Element => (
+					<EmojiCell key={native} native={native} name={name} onSelect={onSelect} />
+				))}
+			</div>
+			{displayEmojis.length === 0 && (
+				<p className="py-8 text-center text-xs text-muted-foreground">No results</p>
+			)}
+		</ScrollArea>
+	);
+};
+
+const EmojiGrid = memo(EmojiGridInner);
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -112,93 +182,33 @@ interface EmojiPickerProps {
 	autoFocus?: boolean;
 }
 
-export function EmojiPicker({ onEmojiSelect, autoFocus }: EmojiPickerProps) {
+const EmojiPickerInner = (allProps: EmojiPickerProps): JSX.Element => {
+	const { onEmojiSelect, autoFocus } = allProps;
 	const [search, setSearch] = useState('');
-	const [activeCategory, setActiveCategory] = useState(
-		() => emojiData.categories[0]?.id ?? 'people',
-	);
-	const inputRef = useRef<HTMLInputElement>(null);
-
-	// Focus the search input once the popover animation has settled
-	useMountEffect(() => {
-		if (!autoFocus) return;
-		const t = setTimeout(() => {
-			inputRef.current?.focus();
-		}, 60);
-		return () => {
-			clearTimeout(t);
-		};
-	});
-
-	const displayEmojis = useMemo(() => {
-		const q = search.trim().toLowerCase();
-		if (!q) return CATEGORY_EMOJIS[activeCategory] ?? [];
-		return SEARCH_INDEX.filter((e) => e.searchText.includes(q)).slice(0, 96);
+	const [activeCategory, setActiveCategory] = useState(getInitialCategory);
+	const displayEmojis = useMemo((): { native: string; name: string }[] => {
+		const query = search.trim().toLowerCase();
+		if (!query) { return CATEGORY_EMOJIS[activeCategory] ?? []; }
+		return SEARCH_INDEX.filter((entry) => entry.searchText.includes(query)).slice(0, MAX_SEARCH_RESULTS);
 	}, [search, activeCategory]);
-
 	return (
 		<div className="w-[420px] rounded-lg border border-border bg-popover shadow-lg flex flex-col overflow-hidden">
-			{/* Search */}
 			<div className="px-2 pt-2 pb-1.5">
 				<Input
-					ref={inputRef}
+					autoFocus={autoFocus}
 					value={search}
-					onChange={(e) => {
-						setSearch(e.target.value);
-					}}
+					onChange={(event): void => { setSearch(event.target.value); }}
 					placeholder="Search emoji…"
 					className="h-10 text-sm"
 				/>
 			</div>
-
-			{/* Category tabs — hidden while searching */}
-			{!search && (
-				<div className="flex gap-0.5 px-2 pb-1.5">
-					{emojiData.categories.map((cat) => {
-						const cfg = CATEGORY_CONFIG[cat.id];
-						return (
-							<button
-								key={cat.id}
-								type="button"
-								title={cfg?.label ?? cat.id}
-								onClick={() => {
-									setActiveCategory(cat.id);
-								}}
-								className={cn(
-									'shrink-0 w-12 h-12 rounded flex items-center justify-center transition-colors',
-									activeCategory === cat.id
-										? 'bg-accent'
-										: 'hover:bg-accent/50 opacity-60 hover:opacity-100',
-								)}
-							>
-								{cfg && <EmojiIcon emoji={cfg.icon} size={36} />}
-							</button>
-						);
-					})}
-				</div>
-			)}
-
+			{!search && <CategoryTabs activeCategory={activeCategory} onCategoryChange={setActiveCategory} />}
 			<div className="h-px bg-border" />
-
-			{/* Emoji grid */}
-			<ScrollArea className="h-[323px]">
-				<div
-					className="grid p-1.5 gap-0.5"
-					style={{ gridTemplateColumns: 'repeat(8, minmax(0, 1fr))' }}
-				>
-					{displayEmojis.map(({ native, name }) => (
-						<EmojiCell
-							key={native}
-							native={native}
-							name={name}
-							onSelect={onEmojiSelect}
-						/>
-					))}
-				</div>
-				{displayEmojis.length === 0 && (
-					<p className="py-8 text-center text-xs text-muted-foreground">No results</p>
-				)}
-			</ScrollArea>
+			<EmojiGrid displayEmojis={displayEmojis} onSelect={onEmojiSelect} />
 		</div>
 	);
-}
+};
+
+const EmojiPicker = memo(EmojiPickerInner);
+
+export { EmojiPicker };

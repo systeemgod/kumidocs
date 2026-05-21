@@ -1,10 +1,12 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
-import { useMountEffect } from '../hooks/useMountEffect';
-import type { User } from '../lib/types';
-import type { SlideThemeMap } from '../lib/slide';
+import { type ReactNode, createContext, useCallback, useContext, useState } from 'react';
+import { type SlideThemeMap } from '@/lib/slide';
+import { type User } from '@/lib/types';
+import { useMountEffect } from '@/hooks/useMountEffect';
+
+const HTTP_UNAUTHORIZED = 401;
 
 interface UserContextValue {
-	user: User | null;
+	user?: User;
 	loading: boolean;
 	needsEmailSetup: boolean;
 	slideThemes: SlideThemeMap;
@@ -12,13 +14,10 @@ interface UserContextValue {
 }
 
 const UserContext = createContext<UserContextValue>({
-	user: null,
 	loading: true,
 	needsEmailSetup: false,
 	slideThemes: {},
-	setEmailAndRefetch: () => {
-		window.location.reload();
-	},
+	setEmailAndRefetch: () => { globalThis.location.reload(); },
 });
 
 interface MeResponse extends User {
@@ -27,52 +26,71 @@ interface MeResponse extends User {
 	slideThemes?: SlideThemeMap;
 }
 
-async function fetchMe(): Promise<{
-	user: User | null;
+interface FetchMeResult {
+	user?: User;
 	slideThemes: SlideThemeMap;
 	needs401: boolean;
-}> {
-	try {
-		const r = await fetch('/api/me');
-		if (r.status === 401) return { user: null, slideThemes: {}, needs401: true };
-		if (!r.ok) return { user: null, slideThemes: {}, needs401: false };
-		const data = (await r.json()) as MeResponse;
-		const { slideThemes, ...userFields } = data;
-		return { user: userFields as User, slideThemes: slideThemes ?? {}, needs401: false };
-	} catch {
-		return { user: null, slideThemes: {}, needs401: false };
-	}
 }
 
-export function UserProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useState<User | null>(null);
+const handleFetchError = (err: unknown): FetchMeResult => {
+	const needs401 = (err as { status?: number }).status === HTTP_UNAUTHORIZED;
+	return { slideThemes: {}, needs401 };
+};
+
+const parseData = (data: MeResponse): FetchMeResult => {
+	const { id, email, name, displayName, canEdit, slideThemes: themeData } = data;
+	const user: User = { id, email, name, displayName, canEdit };
+	return { user, slideThemes: themeData ?? {}, needs401: false };
+};
+
+const handleHttpResponse = (response: Response): Response => {
+	if (response.status === HTTP_UNAUTHORIZED) {
+		throw Object.assign(new Error('unauthorized'), { status: HTTP_UNAUTHORIZED });
+	}
+	if (!response.ok) { throw new Error('request failed'); }
+	return response;
+};
+
+const fetchMe = (): Promise<FetchMeResult> =>
+	fetch('/api/me')
+		.then(handleHttpResponse)
+		.then((response) => response.json() as Promise<MeResponse>)
+		.then(parseData)
+		.catch(handleFetchError);
+
+const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
+	const { children } = allProps;
+	const [user, setUser] = useState<User | undefined>();
 	const [loading, setLoading] = useState(true);
 	const [needsEmailSetup, setNeedsEmailSetup] = useState(false);
 	const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
 
 	useMountEffect(() => {
-		void fetchMe().then(({ user: u, slideThemes: st, needs401 }) => {
-			setUser(u);
-			setSlideThemes(st);
+		fetchMe().then(({ user: fetchedUser, slideThemes: fetchedThemes, needs401 }) => {
+			setUser(fetchedUser);
+			setSlideThemes(fetchedThemes);
 			setNeedsEmailSetup(needs401);
-			setLoading(false);
-		});
+			return setLoading(false);
+		}).catch(() => setLoading(false));
 	});
 
-	const setEmailAndRefetch = useCallback((email: string) => {
-		document.cookie = `kumidocs_email=${encodeURIComponent(email.trim().toLowerCase())}; path=/; SameSite=Lax`;
-		window.location.reload();
+	const setEmailAndRefetch = useCallback((email: string): void => {
+		globalThis.cookieStore.set({
+			name: 'kumidocs_email',
+			value: encodeURIComponent(email.trim().toLowerCase()),
+			path: '/',
+			sameSite: 'lax',
+		}).then(() => globalThis.location.reload()).catch(() => globalThis.location.reload());
 	}, []);
 
 	return (
-		<UserContext.Provider
-			value={{ user, loading, needsEmailSetup, slideThemes, setEmailAndRefetch }}
-		>
+		<UserContext.Provider value={{ user, loading, needsEmailSetup, slideThemes, setEmailAndRefetch }}>
 			{children}
 		</UserContext.Provider>
 	);
-}
+};
 
-export function useUser() {
-	return useContext(UserContext);
-}
+const useUser = (): UserContextValue => useContext(UserContext);
+
+export type { UserContextValue };
+export { UserProvider, useUser };

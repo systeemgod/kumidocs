@@ -8,7 +8,7 @@
  */
 
 /** Whitelisted KumiDocs frontmatter fields. */
-export interface PageMeta {
+interface PageMeta {
 	emoji?: string;
 	slides?: boolean;
 	/** Deck-level theme for slide presentations: 'default' | 'dark' | 'corporate' | 'minimal' | 'gradient' */
@@ -19,51 +19,63 @@ export interface PageMeta {
 	themeVars?: Record<string, string>;
 }
 
+/** Apply a single key/value pair parsed from frontmatter to the PageMeta accumulator. */
+const applyKv = (data: PageMeta, key: string, val: string): void => {
+	const trimmedVal = val.trim();
+	if (key === 'emoji') { data.emoji = trimmedVal; }
+	if (key === 'slides' && trimmedVal === 'true') { data.slides = true; }
+	if (key === 'theme') { data.theme = trimmedVal; }
+	if (key === 'paginate' && trimmedVal === 'true') { data.paginate = true; }
+	if (key.startsWith('theme-var-')) {
+		const THEME_VAR_PREFIX = 'theme-var-';
+		const varName = key.slice(THEME_VAR_PREFIX.length);
+		if (varName) { (data.themeVars ??= {})[varName] = trimmedVal; }
+	}
+};
+
 /** Parse only the whitelisted KumiDocs frontmatter fields from a raw markdown string. */
-export function parseFrontmatter(raw: string): { data: PageMeta; content: string } {
-	const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw);
-	if (!match) return { data: {}, content: raw };
-	const block = match[1] ?? '';
-	const content = raw.slice(match[0].length);
+const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
+	const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/u.exec(raw);
+	if (!match) { return { data: {}, content: raw }; }
+	const fullMatch = match.at(0) ?? '';
+	const block = match.at(1) ?? '';
+	const content = raw.slice(fullMatch.length);
 	const data: PageMeta = {};
 	for (const line of block.split('\n')) {
-		const kv = /^([\w-]+):\s*(.*)$/.exec(line.trim());
-		if (!kv) continue;
-		const key = kv[1];
-		const val = kv[2] ?? '';
-		if (!key) continue;
-		if (key === 'emoji') data.emoji = val.trim();
-		if (key === 'slides' && val.trim() === 'true') data.slides = true;
-		if (key === 'theme') data.theme = val.trim();
-		if (key === 'paginate' && val.trim() === 'true') data.paginate = true;
-		if (key.startsWith('theme-var-')) {
-			const varName = key.slice('theme-var-'.length);
-			if (varName) (data.themeVars ??= {})[varName] = val.trim();
+		const kv = /^([\w-]+):\s*(.*)$/u.exec(line.trim());
+		if (kv) {
+			const key = kv.at(1);
+			const val = kv.at(2) ?? '';
+			if (key) { applyKv(data, key, val); }
 		}
 	}
 	return { data, content };
-}
+};
 
 /** Serialise only the whitelisted KumiDocs frontmatter fields back to a YAML block. */
-export function buildFrontmatter(meta: PageMeta): string {
+const buildFrontmatter = (meta: PageMeta): string => {
 	const lines: string[] = [];
-	if (meta.emoji) lines.push(`emoji: ${meta.emoji}`);
-	if (meta.slides) lines.push('slides: true');
-	if (meta.theme && meta.theme !== 'default') lines.push(`theme: ${meta.theme}`);
-	if (meta.paginate) lines.push('paginate: true');
+	if (meta.emoji) { lines.push(`emoji: ${meta.emoji}`); }
+	if (meta.slides) { lines.push('slides: true'); }
+	if (meta.theme && meta.theme !== 'default') { lines.push(`theme: ${meta.theme}`); }
+	if (meta.paginate) { lines.push('paginate: true'); }
 	if (meta.themeVars) {
-		for (const [k, v] of Object.entries(meta.themeVars)) {
-			lines.push(`theme-var-${k}: ${v}`);
+		for (const [varKey, varValue] of Object.entries(meta.themeVars)) {
+			lines.push(`theme-var-${varKey}: ${varValue}`);
 		}
 	}
-	if (lines.length === 0) return '';
+	if (lines.length === 0) { return ''; }
 	return `---\n${lines.join('\n')}\n---\n`;
-}
+};
 
-/** Return the text of the first `# Heading` line in a markdown body, or null. */
-export function extractHeadingTitle(body: string): string | null {
+/** Return the text of the first `# Heading` line in a markdown body, or undefined. */
+const extractHeadingTitle = (body: string): string | undefined => {
+	const HEADING_PREFIX = '# ';
 	for (const line of body.split('\n')) {
-		if (line.startsWith('# ')) return line.slice(2).trim();
+		if (line.startsWith(HEADING_PREFIX)) { return line.slice(HEADING_PREFIX.length).trim(); }
 	}
-	return null;
-}
+};
+
+export type { PageMeta };
+export { parseFrontmatter, buildFrontmatter, extractHeadingTitle };
+

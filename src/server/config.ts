@@ -1,7 +1,17 @@
+import pkg from '@root/package.json';
 import { resolve } from 'node:path';
-import pkg from '../../package.json';
 
-export interface Config {
+// ExitRequest - thrown instead of process.exit() for clean exit handling
+class ExitRequestError extends Error {
+	public readonly exitCode: number;
+	public constructor(exitCode: number) {
+		super('Exit requested');
+		this.name = 'ExitRequestError';
+		this.exitCode = exitCode;
+	}
+}
+
+interface Config {
 	repoPath: string;
 	port: number;
 	authHeader: string;
@@ -30,24 +40,27 @@ interface OptionDef {
 
 // ── Coercers ──────────────────────────────────────────────────────────────────
 
-function fatal(message: string): never {
-	console.error(`Error: ${message}`);
-	process.exit(1);
-}
+const PORT_MAX = 65_535;
 
-function coercePort(raw: string): number {
-	const n = Number(raw);
-	if (!Number.isInteger(n) || n < 1 || n > 65535)
+const fatal = (message: string): never => {
+	throw new Error(message);
+};
+
+const coercePort = (raw: string): number => {
+	const parsed = Number(raw);
+	if (!Number.isInteger(parsed) || parsed < 1 || parsed > PORT_MAX) {
 		fatal(`--port expects an integer 1–65535, got: ${JSON.stringify(raw)}`);
-	return n;
-}
+	}
+	return parsed;
+};
 
-function coerceMs(flag: string, raw: string): number {
-	const n = Number(raw);
-	if (!Number.isInteger(n) || n < 0)
+const coerceMs = (flag: string, raw: string): number => {
+	const parsed = Number(raw);
+	if (!Number.isInteger(parsed) || parsed < 0) {
 		fatal(`${flag} expects a non-negative integer (ms), got: ${JSON.stringify(raw)}`);
-	return n;
-}
+	}
+	return parsed;
+};
 
 // ── Options table ─────────────────────────────────────────────────────────────
 
@@ -87,7 +100,7 @@ const OPTIONS: OptionDef[] = [
 	{
 		flags: ['--auto-save-delay'],
 		key: 'autoSaveDelay',
-		coerce: (v) => coerceMs('--auto-save-delay', v),
+		coerce: (value) => coerceMs('--auto-save-delay', value),
 		env: 'KUMIDOCS_AUTO_SAVE_DELAY',
 		default: 5000,
 		description: 'Auto-save debounce delay in ms',
@@ -95,20 +108,23 @@ const OPTIONS: OptionDef[] = [
 	{
 		flags: ['--pull-interval'],
 		key: 'pullInterval',
-		coerce: (v) => coerceMs('--pull-interval', v),
+		coerce: (value) => coerceMs('--pull-interval', value),
 		env: 'KUMIDOCS_PULL_INTERVAL',
-		default: 60000,
+		default: 60_000,
 		description: 'Background git pull interval in ms',
 	},
 ];
 
 // ── Help / version ────────────────────────────────────────────────────────────
 
-function defaultValue(opt: OptionDef): Config[keyof Config] {
-	return typeof opt.default === 'function' ? opt.default() : opt.default;
-}
+const defaultValue = (opt: OptionDef): Config[keyof Config] => {
+	if (typeof opt.default === 'function') { return opt.default(); }
+	return opt.default;
+};
 
-function printHelp(): void {
+const FLAG_COLUMN_WIDTH = 22;
+
+const printHelp = (): void => {
 	const lines = [
 		`kumidocs v${pkg.version} — ${pkg.description}`,
 		'',
@@ -121,51 +137,54 @@ function printHelp(): void {
 		'Options:',
 	];
 	for (const opt of OPTIONS) {
-		const flagStr = opt.flags.join(', ').padEnd(22);
+		const flagStr = opt.flags.join(', ').padEnd(FLAG_COLUMN_WIDTH);
 		lines.push(
 			`  ${flagStr} ${opt.description} (default: ${String(defaultValue(opt))}, env: ${opt.env})`,
 		);
 	}
 	lines.push('  -h, --help               Show this help');
 	lines.push('  -v, --version            Show version');
-	console.log(lines.join('\n'));
-}
+	process.stdout.write(`${lines.join('\n')}\n`);
+};
 
 // ── Parser ────────────────────────────────────────────────────────────────────
 
 // TypeScript cannot verify that opt.coerce(raw) returns Config[K] for a specific
-// key K at the call-site because it reasons over the union of all keys. The runtime
-// is always correct; this cast confines the unsoundness to one place.
-function setConfigKey(config: Config, key: keyof Config, value: Config[keyof Config]): void {
+// Key K at the call-site because it reasons over the union of all keys. The runtime
+// Is always correct; this cast confines the unsoundness to one place.
+const setConfigKey = (config: Config, key: keyof Config, value: Config[keyof Config]): void => {
 	(config as Record<keyof Config, Config[keyof Config]>)[key] = value;
-}
+};
 
-export function loadConfig(): Config {
+const applyEnv = (opt: OptionDef, envValue: string | undefined): Config[keyof Config] => {
+	if (envValue) { return opt.coerce(envValue); }
+	return defaultValue(opt);
+};
+
+const loadConfig = (): Config => {
 	const args = process.argv.slice(2);
 
 	if (args.includes('--help') || args.includes('-h')) {
 		printHelp();
-		process.exit(0);
+		throw new ExitRequestError(0);
 	}
 	if (args.includes('--version') || args.includes('-v')) {
-		console.log(pkg.version);
-		process.exit(0);
+		process.stdout.write(`${pkg.version}\n`);
+		throw new ExitRequestError(0);
 	}
 
 	const cliOverrides: Partial<Config> = {};
 
-	for (let i = 0; i < args.length; i++) {
-		const arg = args[i];
-		const opt = OPTIONS.find((o) => o.flags.includes(arg ?? ''));
+	for (let argIdx = 0; argIdx < args.length; argIdx += 1) {
+		const arg = args[argIdx];
+		const opt = OPTIONS.find((option) => option.flags.includes(arg ?? ''));
 		if (opt) {
-			const raw = args[i + 1];
-			if (raw === undefined) fatal(`${String(opt.flags[0])} requires a value.`);
+			const raw = args.at(argIdx + 1);
+			if (!raw) { fatal(`${String(opt.flags.at(0))} requires a value.`); }
 			(cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = opt.coerce(raw);
-			i++;
-			continue;
-		}
-		// Bare positional argument → treat as --repo
-		if (arg && !arg.startsWith('-') && cliOverrides.repoPath === undefined) {
+			argIdx += 1;
+		} else if (arg && !arg.startsWith('-') && !cliOverrides.repoPath) {
+			// Bare positional argument - treat as --repo
 			cliOverrides.repoPath = resolve(arg);
 		}
 	}
@@ -174,12 +193,10 @@ export function loadConfig(): Config {
 	const config = {} as Config;
 	for (const opt of OPTIONS) {
 		const cli = cliOverrides[opt.key];
-		const env = process.env[opt.env];
-		setConfigKey(
-			config,
-			opt.key,
-			cli ?? (env !== undefined ? opt.coerce(env) : defaultValue(opt)),
-		);
+		setConfigKey(config, opt.key, cli ?? applyEnv(opt, Bun.env[opt.env]));
 	}
 	return config;
-}
+};
+
+export type { Config };
+export { ExitRequestError, loadConfig };

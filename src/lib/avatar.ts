@@ -7,26 +7,37 @@
  *   - src/components/ui/avatar.tsx             (initials fallback when no Gravatar)
  */
 
-/** Derive a display name from an email address.
- *  "max.faxalv@example.com" → "Max Faxalv"
- *  "max@foorack.com"     → "Max"
+/**
+ * Derive a display name from an email address.
+ * "max.faxalv@example.com" → "Max Faxalv"
+ * "max@foorack.com"     → "Max"
  */
-export function emailToDisplayName(email: string): string {
-	const local = email.split('@')[0] ?? email;
+const emailToDisplayName = (email: string): string => {
+	const FIRST_PART = 0;
+	const local = email.split('@')[FIRST_PART] ?? email;
 	return local
 		.split('.')
-		.map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ''))
+		.map((word) => {
+			if (!word) { return ''; }
+			const FIRST_CHAR = 0;
+			const AFTER_FIRST = 1;
+			return word.charAt(FIRST_CHAR).toUpperCase() + word.slice(AFTER_FIRST);
+		})
 		.join(' ')
 		.trim();
-}
+};
 
-/** djb2-style hash of name → deterministic HSL background color. */
-export function avatarColor(name: string): string {
+/** Djb2-style hash of name → deterministic HSL background color. */
+const avatarColor = (name: string): string => {
+	const DJB2_MULTIPLIER = 31;
+	const HUE_DEGREES = 360;
 	let hash = 1;
-	for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-	const hue = Math.abs(hash) % 360;
+	for (let idx = 0; idx < name.length; idx += 1) {
+		hash = (name.codePointAt(idx) ?? 0) + hash * DJB2_MULTIPLIER;
+	}
+	const hue = Math.abs(hash) % HUE_DEGREES;
 	return `hsl(${hue.toString()}, 60%, 42%)`;
-}
+};
 
 /**
  * Returns 1–2 uppercase initials for a display name.
@@ -34,10 +45,16 @@ export function avatarColor(name: string): string {
  * - Multi-word  → first char of first word + first char of last word  ("Jane Doe" → "JD")
  * - Single word → first two chars of the word                         ("Foorack"  → "FO")
  */
-export function avatarInitials(name: string): string {
-	const parts = name.trim().split(/\s+/).filter(Boolean);
-	if (parts.length >= 2) {
-		return ((parts[0]?.[0] ?? '') + (parts[parts.length - 1]?.[0] ?? '')).toUpperCase();
+const avatarInitials = (name: string): string => {
+	const MULTI_WORD_MIN = 2;
+	const INITIALS_LENGTH = 2;
+	const parts = name.trim().split(/\s+/u).filter(Boolean);
+	if (parts.length >= MULTI_WORD_MIN) {
+		const firstPart = parts.at(0) ?? '?';
+		const lastPart = parts.at(-1) ?? '?';
+		return (firstPart.charAt(0) + lastPart.charAt(0)).toUpperCase();
 	}
-	return (name.slice(0, 2) || '?').toUpperCase();
-}
+	return (name.slice(0, INITIALS_LENGTH) || '?').toUpperCase();
+};
+
+export { emailToDisplayName, avatarColor, avatarInitials };

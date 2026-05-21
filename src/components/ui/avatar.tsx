@@ -1,9 +1,8 @@
-import * as React from 'react';
-import { useMemo } from 'react';
-import { Avatar as AvatarPrimitive } from 'radix-ui';
-import { sha256 } from '@noble/hashes/sha2.js';
-import { cn } from '@/lib/utils';
+import { type ComponentProps, useMemo } from 'react';
 import { avatarColor, avatarInitials } from '@/lib/avatar';
+import { Avatar as AvatarPrimitive } from 'radix-ui';
+import { cn } from '@/lib/utils';
+import { sha256 } from '@noble/hashes/sha2.js';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -14,7 +13,9 @@ const sizeMap: Record<AvatarSize, { circle: string; text: string }> = {
 	lg: { circle: 'h-10 w-10', text: 'text-xs' },
 };
 
-export interface UserAvatarProps extends React.ComponentProps<typeof AvatarPrimitive.Root> {
+const HEX_RADIX = 16;
+
+interface UserAvatarProps extends ComponentProps<typeof AvatarPrimitive.Root> {
 	/** Display name — used for initials fallback and background color. */
 	name: string;
 	/** User email — Gravatar SHA-256 hash is computed internally. */
@@ -23,12 +24,12 @@ export interface UserAvatarProps extends React.ComponentProps<typeof AvatarPrimi
 }
 
 /** Compute a SHA-256 hex digest of a string — works in any context (no secure origin required). */
-function sha256hex(input: string): string {
+const sha256hex = (input: string): string => {
 	const bytes = sha256(new TextEncoder().encode(input.trim().toLowerCase()));
-	return Array.from(bytes)
-		.map((b) => b.toString(16).padStart(2, '0'))
+	return [...bytes]
+		.map((byte) => byte.toString(HEX_RADIX).padStart(2, '0'))
 		.join('');
-}
+};
 
 /**
  * A self-contained user avatar.
@@ -40,21 +41,26 @@ function sha256hex(input: string): string {
  *   <UserAvatar name="Jane Doe" size="sm" />
  *   <UserAvatar name={user.displayName} email={user.email} />
  */
-export function UserAvatar({ name, email, size = 'md', className, ...props }: UserAvatarProps) {
+const UserAvatar = (allProps: UserAvatarProps): JSX.Element => {
+	const { name, email, size = 'md', className } = allProps;
 	const { circle, text } = sizeMap[size];
 	const displayInitials = avatarInitials(name);
 	const color = avatarColor(name);
-	const gravatarHash = useMemo(() => (email?.includes('@') ? sha256hex(email) : null), [email]);
+	const gravatarHash = useMemo((): string | undefined => {
+		if (!email) { return; }
+		if (!email.includes('@')) { return; }
+		return sha256hex(email);
+	}, [email]);
 
 	return (
 		<AvatarPrimitive.Root
+			{...allProps}
 			className={cn(
 				'relative flex shrink-0 overflow-hidden rounded-full select-none',
 				circle,
 				className,
 			)}
 			style={{ outline: `2px solid ${color}`, outlineOffset: '1px' }}
-			{...props}
 		>
 			{gravatarHash && (
 				<AvatarPrimitive.Image
@@ -74,4 +80,7 @@ export function UserAvatar({ name, email, size = 'md', className, ...props }: Us
 			</AvatarPrimitive.Fallback>
 		</AvatarPrimitive.Root>
 	);
-}
+};
+
+export type { UserAvatarProps };
+export { UserAvatar };

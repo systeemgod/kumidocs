@@ -1,9 +1,10 @@
+import './index.css';
+import { App } from './App';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
 
-const elemOrNull = document.getElementById('root');
-if (!elemOrNull) throw new Error('Root element #root not found in document');
+const elemOrNull = document.querySelector('#root');
+if (!elemOrNull) { throw new Error('Root element #root not found in document'); }
 const elem = elemOrNull;
 
 const app = (
@@ -12,7 +13,7 @@ const app = (
 	</StrictMode>
 );
 
-// import.meta.hot is available in Bun dev (HMR) mode; undefined after production bundling
+// Import.meta.hot is available in Bun dev (HMR) mode; undefined after production bundling
 // Note: import.meta.hot.data must be accessed directly (Bun restriction — no aliasing via variable)
 interface HotData {
 	root?: ReturnType<typeof createRoot>;

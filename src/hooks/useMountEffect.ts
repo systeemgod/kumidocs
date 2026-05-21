@@ -1,6 +1,6 @@
-import { useEffect, type EffectCallback } from 'react';
+import { type EffectCallback, useEffect } from 'react';
 
-export function useMountEffect(effect: EffectCallback) {
-	/* eslint-disable react-hooks/exhaustive-deps */
+export const useMountEffect = (effect: EffectCallback): void => {
+	// oxlint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(effect, []);
-}
+};

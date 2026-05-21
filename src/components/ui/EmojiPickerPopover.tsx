@@ -4,12 +4,12 @@
  * Renders the trigger as a button (visible only in edit mode) around a EmojiIcon.
  * The picker renders all emojis via EmojiIcon (bundled Fluent Emoji SVGs).
  */
-import { useState, useCallback } from 'react';
-import { Popover } from 'radix-ui';
-import { EmojiPicker } from './EmojiPicker';
+import { useCallback, useState } from 'react';
 import { EmojiIcon } from './EmojiIcon';
-import { cn } from '../../lib/utils';
-import type { FileType } from '@/lib/types';
+import { EmojiPicker } from './EmojiPicker';
+import { type FileType } from '@/lib/types';
+import { Popover } from 'radix-ui';
+import { cn } from '@/lib/utils';
 
 interface EmojiPickerPopoverProps {
 	/** Currently selected emoji (undefined = use fileType default). */
@@ -25,14 +25,14 @@ interface EmojiPickerPopoverProps {
 	className?: string;
 }
 
-export function EmojiPickerPopover({
+const EmojiPickerPopover = ({
 	emoji,
 	fileType,
 	size = 24,
 	onSelect,
 	editable = true,
 	className,
-}: EmojiPickerPopoverProps) {
+}: EmojiPickerPopoverProps): JSX.Element => {
 	const [open, setOpen] = useState(false);
 
 	const handleSelect = useCallback(
@@ -45,7 +45,7 @@ export function EmojiPickerPopover({
 
 	const icon = <EmojiIcon emoji={emoji} fileType={fileType} size={size} />;
 
-	if (!editable) return icon;
+	if (!editable) { return icon; }
 
 	return (
 		<Popover.Root open={open} onOpenChange={setOpen}>
@@ -70,4 +70,6 @@ export function EmojiPickerPopover({
 			</Popover.Portal>
 		</Popover.Root>
 	);
-}
+};
+
+export { EmojiPickerPopover };

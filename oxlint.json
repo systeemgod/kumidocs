@@ -21,15 +21,22 @@
 	"rules": {
 		"eslint/max-statements": "off",
 		"eslint/sort-keys": "off",
+		"eslint/no-magic-numbers": ["error", { "ignore": [-1, 0, 1, 2], "ignoreArrayIndexes": true, "ignoreDefaultValues": true, "ignoreClassFieldValues": true }],
+		"import/consistent-type-specifier-style": ["error", "prefer-inline"],
 		"import/no-named-export": "off",
+		"import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
 		"import/no-nodejs-modules": "off",
 		"import/prefer-default-export": "off",
-		"unicorn/prefer-module": "off"
+		"typescript/no-import-type-side-effects": "off",
+		"unicorn/prefer-module": "off",
+		"unicorn/filename-case": "off",
+		"promise/prefer-await-to-then": "off"
 	},
 	"env": {
+		"browser": true,
 		"builtin": true,
 		"node": true
 	},
-	"globals": {},
-	"ignorePatterns": ["**/*.d.ts"]
+	"globals": { "Bun": true },
+	"ignorePatterns": ["**/*.d.ts", "src/components/ui/emoji/emojis.ts"]
 }

@@ -1,8 +1,8 @@
-import type { User } from '../lib/types';
-import type { SlideThemeMap } from '../lib/slide';
-import { emailToDisplayName } from '../lib/avatar';
+import { type SlideThemeMap } from '@/lib/slide';
+import { type User } from '@/lib/types';
+import { emailToDisplayName } from '@/lib/avatar';
 
-export interface KumiDocsPermissions {
+interface KumiDocsPermissions {
 	instanceName?: string;
 	editors?: string[];
 	slideThemes?: SlideThemeMap;
@@ -10,53 +10,55 @@ export interface KumiDocsPermissions {
 
 let perms: KumiDocsPermissions = {};
 
-export function setPermissions(p: KumiDocsPermissions): void {
-	perms = p;
-}
+const setPermissions = (permissions: KumiDocsPermissions): void => {
+	perms = permissions;
+};
 
-export function getPermissions(): KumiDocsPermissions {
-	return perms;
-}
+const getPermissions = (): KumiDocsPermissions => perms;
 
 /** Parse the `kumidocs_email` cookie value from a Cookie header string. */
-function cookieEmail(cookieHeader: string | null): string | null {
-	if (!cookieHeader) return null;
+const cookieEmail = (cookieHeader: string | null): string | undefined => {
+	if (!cookieHeader) { return; }
 	for (const part of cookieHeader.split(';')) {
-		const [k, ...v] = part.trim().split('=');
-		if (k?.trim() === 'kumidocs_email') {
-			const raw = decodeURIComponent(v.join('=').trim());
-			return raw || null;
+		const [cookieName, ...cookieValueParts] = part.trim().split('=');
+		if (cookieName && cookieName.trim() === 'kumidocs_email') {
+			const raw = decodeURIComponent(cookieValueParts.join('=').trim());
+			if (raw) { return raw; }
 		}
 	}
-	return null;
+};
+
+interface JWTPayload {
+	email?: string;
+	preferred_username?: string;
 }
 
-export function parseUser(headers: Headers, authHeader: string): User | null {
-	const value = headers.get(authHeader) ?? cookieEmail(headers.get('cookie'));
-	if (!value) return null;
+const JWT_SEGMENT_COUNT = 3;
 
-	let email: string;
-
-	// Detect JWT (two dots = three Base64url segments)
+/** Decode an email string from a raw auth header value (JWT or plain string). Returns undefined if JWT has no email claim. */
+const resolveEmail = (value: string): string | undefined => {
 	const parts = value.split('.');
-	if (parts.length === 3) {
+	if (parts.length === JWT_SEGMENT_COUNT) {
 		try {
-			const paddedPart = (parts[1] ?? '').replace(/-/g, '+').replace(/_/g, '/');
-			interface JWTPayload {
-				email?: string;
-				preferred_username?: string;
-			}
+			const paddedPart = (parts.at(1) ?? '').replaceAll('-', '+').replaceAll('_', '/');
 			const payload = JSON.parse(atob(paddedPart)) as JWTPayload;
 			const raw = payload.email ?? payload.preferred_username;
-			if (!raw) return null; // JWT present but no usable email claim
-			email = raw.trim().toLowerCase();
+			// JWT present but no usable email claim
+			if (!raw) { return; }
+			return raw.trim().toLowerCase();
 		} catch {
-			// fall through to plain string handling
-			email = value.trim().toLowerCase();
+			// Fall through to plain string handling
 		}
-	} else {
-		email = value.trim().toLowerCase();
 	}
+	return value.trim().toLowerCase();
+};
+
+const parseUser = (headers: Headers, authHeader: string): User | undefined => {
+	const value = headers.get(authHeader) ?? cookieEmail(headers.get('cookie'));
+	if (!value) { return; }
+
+	const email = resolveEmail(value);
+	if (!email) { return; }
 
 	const displayName = emailToDisplayName(email);
 	const editors = perms.editors ?? [];
@@ -65,4 +67,8 @@ export function parseUser(headers: Headers, authHeader: string): User | null {
 	const canEdit = editors.length === 0 || editors.includes(email);
 
 	return { id: email, email, name: displayName, displayName, canEdit };
-}
+};
+
+export type { KumiDocsPermissions };
+export { setPermissions, getPermissions, parseUser };
+

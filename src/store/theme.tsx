@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { type ReactNode, createContext, useContext, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -14,42 +14,39 @@ const ThemeContext = createContext<ThemeContextValue>({
 	},
 });
 
-function getInitialTheme(): Theme {
+const applyTheme = (theme: Theme): void => {
+	document.documentElement.classList.toggle('dark', theme === 'dark');
+	localStorage.setItem('kumidocs:theme', theme);
+};
+
+const getInitialTheme = (): Theme => {
 	const stored = localStorage.getItem('kumidocs:theme');
-	const theme: Theme =
-		stored === 'light' || stored === 'dark'
-			? stored
-			: window.matchMedia('(prefers-color-scheme: dark)').matches
-				? 'dark'
-				: 'light';
+	let theme: Theme = 'light';
+	if (stored === 'light' || stored === 'dark') {
+		theme = stored;
+	} else if (globalThis.matchMedia('(prefers-color-scheme: dark)').matches) {
+		theme = 'dark';
+	}
 	applyTheme(theme);
 	return theme;
-}
+};
 
-function applyTheme(theme: Theme) {
-	const root = document.documentElement;
-	if (theme === 'dark') {
-		root.classList.add('dark');
-	} else {
-		root.classList.remove('dark');
-	}
-	localStorage.setItem('kumidocs:theme', theme);
-}
-
-export function ThemeProvider({ children }: { children: ReactNode }) {
+const ThemeProvider = (allProps: { children: ReactNode }): JSX.Element => {
+	const { children } = allProps;
 	const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
-	const toggle = () => {
-		setTheme((t) => {
-			const next = t === 'dark' ? 'light' : 'dark';
+	const toggle = (): void => {
+		setTheme((prev) => {
+			let next: Theme = 'light';
+			if (prev === 'light') { next = 'dark'; }
 			applyTheme(next);
 			return next;
 		});
 	};
 
 	return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;
-}
+};
 
-export function useTheme() {
-	return useContext(ThemeContext);
-}
+const useTheme = (): ThemeContextValue => useContext(ThemeContext);
+
+export { ThemeProvider, useTheme };

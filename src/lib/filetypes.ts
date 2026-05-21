@@ -1,8 +1,8 @@
-import type { FileType } from './types';
+import { type FileType } from './types';
 
-export const IMAGE_TYPES = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
+const IMAGE_TYPES = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
 
-export const CODE_TYPES = new Set([
+const CODE_TYPES = new Set([
 	'.txt',
 	'.ts',
 	'.tsx',
@@ -66,12 +66,18 @@ export const CODE_TYPES = new Set([
 	'.cfg',
 ]);
 
+const NO_DOT = -1;
+const AFTER_DOT = 1;
+
 /** Extract lowercase extension from a path (e.g. "test.tsx" → "tsx", "README.md" → "md", "nodot" → ""). */
-export function pathExtension(path: string): string {
+const pathExtension = (path: string): string => {
 	const dot = path.lastIndexOf('.');
 	const slash = path.lastIndexOf('/');
-	return dot > slash && dot !== -1 ? path.slice(dot + 1).toLowerCase() : '';
-}
+	if (dot > slash && dot !== NO_DOT) {
+		return path.slice(dot + AFTER_DOT).toLowerCase();
+	}
+	return '';
+};
 
 /**
  * Map file extension to FileType.
@@ -82,12 +88,15 @@ export function pathExtension(path: string): string {
  *   - 'image' for known image file extensions
  *   - 'other' for everything else
  */
-export function extensionToType(ext: string): FileType {
-	ext = ext.startsWith('.') ? ext : `.${ext}`;
-	ext = ext.toLowerCase();
-	if (IMAGE_TYPES.has(ext)) return 'image';
-	if (CODE_TYPES.has(ext)) return 'code';
-	if (ext === '.md' || ext === '') return 'doc';
-
+const extensionToType = (inputExt: string): FileType => {
+	let ext = inputExt.toLowerCase();
+	if (!ext.startsWith('.')) {
+		ext = `.${ext}`;
+	}
+	if (IMAGE_TYPES.has(ext)) { return 'image'; }
+	if (CODE_TYPES.has(ext)) { return 'code'; }
+	if (ext === '.md' || ext === '') { return 'doc'; }
 	return 'other';
-}
+};
+
+export { IMAGE_TYPES, CODE_TYPES, pathExtension, extensionToType };

@@ -1,28 +1,67 @@
-import { SearchRegular } from '@fluentui/react-icons';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { EmojiIcon } from '@/components/ui/EmojiIcon';
 import { Popover as PopoverPrimitive } from 'radix-ui';
-import { EmojiIcon } from '../ui/EmojiIcon';
-import { useTheme } from '../../store/theme';
-import { useUser } from '../../store/user';
-import { UserAvatar } from '../ui/avatar';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-import { Kbd, KbdGroup } from '../ui/kbd';
+import { SearchRegular } from '@fluentui/react-icons';
+import { UserAvatar } from '@/components/ui/avatar';
+import { useTheme } from '@/store/theme';
+import { useUser } from '@/store/user';
 
 interface TopBarProps {
 	instanceName: string;
 	onSearchOpen: () => void;
 }
 
-export function TopBar({ instanceName, onSearchOpen }: TopBarProps) {
+const ThemeToggle = (): JSX.Element => {
 	const { theme, toggle } = useTheme();
-	const { user } = useUser();
+	let emoji = '☀️';
+	if (theme === 'dark') { emoji = '🌙'; }
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggle}>
+					<EmojiIcon emoji={emoji} size={16} />
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent>Toggle theme</TooltipContent>
+		</Tooltip>
+	);
+};
 
+const UserProfile = (): JSX.Element => {
+	const { user } = useUser();
+	if (!user) { return <></>; }
+	return (
+		<div className="flex items-center gap-3">
+			<span className="text-xs text-foreground select-none">{user.displayName}</span>
+			<PopoverPrimitive.Root>
+				<PopoverPrimitive.Trigger asChild>
+					<button className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+						<UserAvatar name={user.displayName} email={user.email} size="md" />
+					</button>
+				</PopoverPrimitive.Trigger>
+				<PopoverPrimitive.Portal>
+					<PopoverPrimitive.Content align="end" sideOffset={8} className="z-50 w-64 rounded-lg border border-border bg-popover p-4 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+						<div className="flex flex-col items-center gap-3">
+							<UserAvatar name={user.displayName} email={user.email} size="lg" />
+							<div className="text-center">
+								<p className="text-sm font-semibold text-foreground">{user.displayName}</p>
+								<p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
+							</div>
+						</div>
+					</PopoverPrimitive.Content>
+				</PopoverPrimitive.Portal>
+			</PopoverPrimitive.Root>
+		</div>
+	);
+};
+
+const TopBar = (allProps: TopBarProps): JSX.Element => {
+	const { instanceName, onSearchOpen } = allProps;
 	return (
 		<header className="h-11 border-b border-border bg-background/95 backdrop-blur flex items-center px-3 gap-2 shrink-0 z-10">
-			<span className="font-semibold text-sm text-foreground select-none mr-2">
-				{instanceName}
-			</span>
-
+			<span className="font-semibold text-sm text-foreground select-none mr-2">{instanceName}</span>
 			<Button
 				variant="ghost"
 				size="sm"
@@ -36,63 +75,12 @@ export function TopBar({ instanceName, onSearchOpen }: TopBarProps) {
 					<Kbd>K</Kbd>
 				</KbdGroup>
 			</Button>
-
 			<div className="ml-auto flex items-center gap-1">
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggle}>
-							{theme === 'dark' ? (
-								<EmojiIcon emoji="🌙" size={16} />
-							) : (
-								<EmojiIcon emoji="☀️" size={16} />
-							)}
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>Toggle theme</TooltipContent>
-				</Tooltip>
-
-				{user && (
-					<div className="flex items-center gap-3">
-						<span className="text-xs text-foreground select-none">
-							{user.displayName}
-						</span>
-						<PopoverPrimitive.Root>
-							<PopoverPrimitive.Trigger asChild>
-								<button className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-									<UserAvatar
-										name={user.displayName}
-										email={user.email}
-										size="md"
-									/>
-								</button>
-							</PopoverPrimitive.Trigger>
-							<PopoverPrimitive.Portal>
-								<PopoverPrimitive.Content
-									align="end"
-									sideOffset={8}
-									className="z-50 w-64 rounded-lg border border-border bg-popover p-4 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-								>
-									<div className="flex flex-col items-center gap-3">
-										<UserAvatar
-											name={user.displayName}
-											email={user.email}
-											size="lg"
-										/>
-										<div className="text-center">
-											<p className="text-sm font-semibold text-foreground">
-												{user.displayName}
-											</p>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{user.email}
-											</p>
-										</div>
-									</div>
-								</PopoverPrimitive.Content>
-							</PopoverPrimitive.Portal>
-						</PopoverPrimitive.Root>
-					</div>
-				)}
+				<ThemeToggle />
+				<UserProfile />
 			</div>
 		</header>
 	);
-}
+};
+
+export { TopBar };

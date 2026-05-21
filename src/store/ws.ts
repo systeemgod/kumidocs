@@ -1,28 +1,32 @@
-import { useRef, useLayoutEffect } from 'react';
-import { useMountEffect } from '../hooks/useMountEffect';
-import type { WsClientMessage, WsServerMessage } from '../lib/types';
+import { type WsClientMessage, type WsServerMessage } from '@/lib/types';
+import { useLayoutEffect, useRef } from 'react';
+import { useMountEffect } from '@/hooks/useMountEffect';
 
 type WsListener = (msg: WsServerMessage) => void;
 
-class WsClient {
-	private ws: WebSocket | null = null;
-	private listeners = new Set<WsListener>();
-	private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-	private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-	private currentPageId: string | null = null;
-	private userId: string | null = null;
+const RECONNECT_DELAY_MS = 3000;
+const HEARTBEAT_INTERVAL_MS = 30_000;
 
-	connect(userId: string) {
+class WsClient {
+	private ws?: WebSocket;
+	private listeners = new Set<WsListener>();
+	private reconnectTimer?: ReturnType<typeof setTimeout>;
+	private heartbeatTimer?: ReturnType<typeof setInterval>;
+	private currentPageId?: string;
+	private userId?: string;
+
+	public connect(userId: string): void {
 		this.userId = userId;
-		if (this.ws?.readyState === WebSocket.OPEN) return;
+		if (this.ws && this.ws.readyState === WebSocket.OPEN) { return; }
 		this.doConnect();
 	}
 
-	private doConnect() {
-		const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+	private doConnect(): void {
+		let proto = 'ws:';
+		if (location.protocol === 'https:') { proto = 'wss:'; }
 		this.ws = new WebSocket(`${proto}//${location.host}/ws`);
 
-		this.ws.onopen = () => {
+		this.ws.addEventListener('open', (): void => {
 			if (this.currentPageId && this.userId) {
 				this.send({
 					type: 'hello',
@@ -31,104 +35,104 @@ class WsClient {
 				});
 			}
 			this.startHeartbeat();
-		};
+		});
 
-		this.ws.onmessage = (e) => {
+		this.ws.addEventListener('message', (event: MessageEvent): void => {
 			try {
-				const msg = JSON.parse(e.data as string) as WsServerMessage;
-				for (const l of this.listeners) l(msg);
-			} catch (err: unknown) {
-				console.error('WebSocket message parse error:', err);
+				const msg = JSON.parse(event.data as string) as WsServerMessage;
+				for (const listener of this.listeners) { listener(msg); }
+			} catch (error: unknown) {
+				process.stderr.write(`WebSocket message parse error: ${String(error)}\n`);
 			}
-		};
+		});
 
-		this.ws.onclose = () => {
+		this.ws.addEventListener('close', (): void => {
 			this.stopHeartbeat();
-			// Reconnect after 3s
-			this.reconnectTimer = setTimeout(() => {
+			this.reconnectTimer = setTimeout((): void => {
 				this.doConnect();
-			}, 3000);
-		};
+			}, RECONNECT_DELAY_MS);
+		});
 
-		this.ws.onerror = () => {
-			this.ws?.close();
-		};
+		this.ws.addEventListener('error', (): void => {
+			if (this.ws) { this.ws.close(); }
+		});
 	}
 
-	send(msg: WsClientMessage) {
-		if (this.ws?.readyState === WebSocket.OPEN) {
+	public send(msg: WsClientMessage): void {
+		if (this.ws && this.ws.readyState === WebSocket.OPEN) {
 			this.ws.send(JSON.stringify(msg));
 		}
 	}
 
-	joinPage(pageId: string) {
-		if (this.currentPageId === pageId) return;
+	public joinPage(pageId: string): void {
+		if (this.currentPageId === pageId) { return; }
 		this.currentPageId = pageId;
 		if (this.userId) {
 			this.send({ type: 'hello', pageId, userId: this.userId });
 		}
 	}
 
-	leavePage(): void {
-		if (!this.currentPageId) return;
-		this.currentPageId = null;
+	public leavePage(): void {
+		if (!this.currentPageId) { return; }
+		delete this.currentPageId;
 		this.send({ type: 'bye' });
 	}
 
-	startEditing(pageId: string) {
+	public startEditing(pageId: string): void {
 		this.send({ type: 'editing_start', pageId });
 	}
 
-	stopEditing(pageId: string) {
+	public stopEditing(pageId: string): void {
 		this.send({ type: 'editing_stop', pageId });
 	}
 
-	addListener(fn: WsListener) {
+	public addListener(fn: WsListener): void {
 		this.listeners.add(fn);
 	}
 
-	removeListener(fn: WsListener) {
+	public removeListener(fn: WsListener): void {
 		this.listeners.delete(fn);
 	}
 
-	private startHeartbeat() {
+	private startHeartbeat(): void {
 		this.stopHeartbeat();
-		this.heartbeatTimer = setInterval(() => {
+		this.heartbeatTimer = setInterval((): void => {
 			this.send({ type: 'heartbeat' });
-		}, 30_000);
+		}, HEARTBEAT_INTERVAL_MS);
 	}
 
-	private stopHeartbeat() {
+	private stopHeartbeat(): void {
 		if (this.heartbeatTimer) {
 			clearInterval(this.heartbeatTimer);
-			this.heartbeatTimer = null;
+			delete this.heartbeatTimer;
 		}
 	}
 
-	disconnect() {
-		if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+	public disconnect(): void {
+		if (this.reconnectTimer) { clearTimeout(this.reconnectTimer); delete this.reconnectTimer; }
 		this.stopHeartbeat();
-		this.ws?.close();
+		if (this.ws) { this.ws.close(); }
 	}
 }
 
-// Singleton
-export const wsClient = new WsClient();
+const wsClient = new WsClient();
 
-export function useWsListener(handler: WsListener) {
+const useWsListener = (handler: WsListener): void => {
 	const handlerRef = useRef(handler);
 
-	useLayoutEffect(() => {
+	useLayoutEffect((): void => {
 		handlerRef.current = handler;
 	});
 
-	useMountEffect(() => {
-		const fn: WsListener = (msg) => {
+	useMountEffect((): (() => void) => {
+		const listener: WsListener = (msg): void => {
 			handlerRef.current(msg);
 		};
-		wsClient.addListener(fn);
-		return () => {
-			wsClient.removeListener(fn);
+		wsClient.addListener(listener);
+		return (): void => {
+			wsClient.removeListener(listener);
 		};
 	});
-}
+};
+
+export { wsClient, useWsListener };
