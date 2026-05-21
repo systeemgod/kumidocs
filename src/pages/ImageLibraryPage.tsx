@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { type ReactNode, useState, useCallback } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { DeleteRegular, DismissRegular } from "@fluentui/react-icons";
 import { toast } from "sonner";
@@ -195,6 +195,63 @@ export function ImageLibraryPage() {
 
   const selectedImage = filename ? images.find((img) => img.filename === filename) : undefined;
 
+  let imageGridContent: ReactNode;
+  if (loading) {
+    imageGridContent = <div className="text-sm text-muted-foreground">Loading…</div>;
+  } else if (images.length === 0) {
+    imageGridContent = (
+      <div className="text-sm text-muted-foreground">
+        No images yet. Drag an image into the editor or use the toolbar button to upload one.
+      </div>
+    );
+  } else {
+    imageGridContent = (
+      <div className="grid grid-cols-[repeat(auto-fill,160px)] gap-4">
+        {images.map((img) => (
+          <button
+            key={img.filename}
+            className={`group relative rounded-lg border overflow-hidden text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              filename === img.filename
+                ? "border-primary ring-1 ring-primary"
+                : "border-border hover:border-primary/60"
+            }`}
+            onClick={() => {
+              void navigate(
+                filename === img.filename ? "/i" : `/i/${encodeURIComponent(img.filename)}`,
+                { replace: true },
+              );
+            }}
+          >
+            {/* Thumbnail */}
+            <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+              <img
+                src={img.url}
+                alt={img.filename}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="px-2 py-1.5 bg-background">
+              <p className="text-xs font-mono truncate text-foreground" title={img.filename}>
+                {img.filename}
+              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-xs text-muted-foreground">{formatBytes(img.size)}</span>
+                {img.usedIn.length > 0 && (
+                  <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+                    {img.usedIn.length}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Page header */}
@@ -208,57 +265,7 @@ export function ImageLibraryPage() {
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Grid */}
         <div className="flex-1 min-w-0 overflow-y-auto p-6">
-          {loading ? (
-            <div className="text-sm text-muted-foreground">Loading…</div>
-          ) : images.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
-              No images yet. Drag an image into the editor or use the toolbar button to upload one.
-            </div>
-          ) : (
-            <div className="grid grid-cols-[repeat(auto-fill,160px)] gap-4">
-              {images.map((img) => (
-                <button
-                  key={img.filename}
-                  className={`group relative rounded-lg border overflow-hidden text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    filename === img.filename
-                      ? "border-primary ring-1 ring-primary"
-                      : "border-border hover:border-primary/60"
-                  }`}
-                  onClick={() => {
-                    void navigate(
-                      filename === img.filename ? "/i" : `/i/${encodeURIComponent(img.filename)}`,
-                      { replace: true },
-                    );
-                  }}
-                >
-                  {/* Thumbnail */}
-                  <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
-                    <img
-                      src={img.url}
-                      alt={img.filename}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Footer */}
-                  <div className="px-2 py-1.5 bg-background">
-                    <p className="text-xs font-mono truncate text-foreground" title={img.filename}>
-                      {img.filename}
-                    </p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-xs text-muted-foreground">{formatBytes(img.size)}</span>
-                      {img.usedIn.length > 0 && (
-                        <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
-                          {img.usedIn.length}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+          {imageGridContent}
         </div>
 
         {/* Detail panel */}

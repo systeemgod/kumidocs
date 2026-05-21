@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { type ReactNode, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { MoreHorizontalRegular, SaveRegular, InfoRegular } from "@fluentui/react-icons";
@@ -520,6 +520,71 @@ export function FilePage() {
     return <NotFound />;
   }
 
+  let editButtonClass: string;
+  if (editMode) {
+    editButtonClass = "bg-background text-foreground shadow-sm";
+  } else if (editLocked && editLocked.id !== user.id) {
+    editButtonClass = "text-muted-foreground opacity-40 cursor-not-allowed";
+  } else {
+    editButtonClass = "text-muted-foreground hover:text-foreground";
+  }
+
+  let saveBadgeClass: string;
+  if (saveStatus === "saved") {
+    saveBadgeClass = " border-green-600 text-green-600 dark:border-green-500 dark:text-green-500";
+  } else if (saveStatus === "error") {
+    saveBadgeClass = " border-destructive text-destructive";
+  } else {
+    saveBadgeClass = "";
+  }
+
+  let editorContent: ReactNode;
+  if (fileType === "code") {
+    editorContent = (
+      <CodeEditor
+        value={content}
+        language={rawExt}
+        readOnly={!editMode}
+        onChange={editMode ? handleChange : undefined}
+        onSave={editMode ? handleSave : undefined}
+      />
+    );
+  } else if (editMode) {
+    editorContent = (
+      <MarkdownEditor
+        value={rawContent}
+        onChange={handleChange}
+        onSave={handleSave}
+        fileType={fileType}
+        slideTheme={meta.theme}
+        slidePaginate={meta.paginate}
+        slideThemes={slideThemes}
+        slideThemeVars={meta.themeVars}
+        onMetaChange={(m) => {
+          metaRef.current = m;
+          setMeta(m);
+        }}
+      />
+    );
+  } else if (fileType === "slide") {
+    editorContent = (
+      <SlideViewer
+        value={content}
+        filename={title}
+        theme={meta.theme}
+        paginate={meta.paginate}
+        slideThemes={slideThemes}
+        themeVars={meta.themeVars}
+      />
+    );
+  } else {
+    editorContent = (
+      <ScrollArea className="h-full">
+        <MarkdownViewer value={content} />
+      </ScrollArea>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Remote change banner */}
@@ -587,7 +652,7 @@ export function FilePage() {
               Read
             </button>
             <button
-              className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editMode ? "bg-background text-foreground shadow-sm" : editLocked && editLocked.id !== user.id ? "text-muted-foreground opacity-40 cursor-not-allowed" : "text-muted-foreground hover:text-foreground"}`}
+              className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editButtonClass}`}
               onClick={() => {
                 if (!editMode && !(editLocked && editLocked.id !== user.id)) {
                   enterEdit();
@@ -604,13 +669,7 @@ export function FilePage() {
         {editMode && (
           <Badge
             variant="outline"
-            className={`text-xs h-5 shrink-0${
-              saveStatus === "saved"
-                ? " border-green-600 text-green-600 dark:border-green-500 dark:text-green-500"
-                : saveStatus === "error"
-                  ? " border-destructive text-destructive"
-                  : ""
-            }`}
+            className={`text-xs h-5 shrink-0${saveBadgeClass}`}
           >
             {saveStatus === "saved" && "Saved"}
             {saveStatus === "saving" && "Saving…"}
@@ -708,43 +767,7 @@ export function FilePage() {
       {/* Content area */}
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-hidden flex flex-col">
-          {fileType === "code" ? (
-            <CodeEditor
-              value={content}
-              language={rawExt}
-              readOnly={!editMode}
-              onChange={editMode ? handleChange : undefined}
-              onSave={editMode ? handleSave : undefined}
-            />
-          ) : editMode ? (
-            <MarkdownEditor
-              value={rawContent}
-              onChange={handleChange}
-              onSave={handleSave}
-              fileType={fileType}
-              slideTheme={meta.theme}
-              slidePaginate={meta.paginate}
-              slideThemes={slideThemes}
-              slideThemeVars={meta.themeVars}
-              onMetaChange={(m) => {
-                metaRef.current = m;
-                setMeta(m);
-              }}
-            />
-          ) : fileType === "slide" ? (
-            <SlideViewer
-              value={content}
-              filename={title}
-              theme={meta.theme}
-              paginate={meta.paginate}
-              slideThemes={slideThemes}
-              themeVars={meta.themeVars}
-            />
-          ) : (
-            <ScrollArea className="h-full">
-              <MarkdownViewer value={content} />
-            </ScrollArea>
-          )}
+          {editorContent}
         </div>
         {infoOpen && !editMode && (
           <PageInfoPanel

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { type ReactNode, useState, useMemo } from "react";
 import { useMountEffect } from "../../hooks/useMountEffect";
 import { parseDiff, Diff, Hunk } from "react-diff-view";
 import "react-diff-view/style/index.css";
@@ -101,6 +101,85 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
       });
   };
 
+  let commitHistoryContent: ReactNode;
+  if (loading) {
+    commitHistoryContent = (
+      <p className="text-xs text-muted-foreground py-2">Loading…</p>
+    );
+  } else if (commits.length === 0) {
+    commitHistoryContent = (
+      <p className="text-xs text-muted-foreground py-2">No commits yet.</p>
+    );
+  } else {
+    commitHistoryContent = (
+      <div className="space-y-1">
+        {commitGroups.map(([key, { label, commits: groupCommits }]) => {
+          const isCollapsed = collapsedGroups.has(key);
+          return (
+            <div key={key}>
+              {/* Date group header */}
+              <button
+                className="w-full flex items-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-accent/40 select-none"
+                onClick={() => {
+                  toggleGroup(key);
+                }}
+              >
+                {isCollapsed ? (
+                  <ChevronRightRegular className="w-3 h-3 shrink-0" />
+                ) : (
+                  <ChevronDownRegular className="w-3 h-3 shrink-0" />
+                )}
+                <span className="font-medium">{label}</span>
+                <span className="ml-auto tabular-nums">{groupCommits.length}</span>
+              </button>
+              {/* Commits */}
+              {!isCollapsed && (
+                <div className="space-y-0.5">
+                  {groupCommits.map((c) => (
+                    <button
+                      key={c.sha}
+                      className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
+                      onClick={() => {
+                        openDiff(c.sha);
+                      }}
+                    >
+                      <UserAvatar
+                        name={emailToDisplayName(c.author)}
+                        email={c.authorEmail}
+                        size="xs"
+                        className="shrink-0 mt-0.5"
+                      />
+                      <span className="flex-1 min-w-0">
+                        <span className="text-foreground line-clamp-2 block">
+                          {c.message}
+                        </span>
+                        {(c.added !== undefined || c.removed !== undefined) && (
+                          <span className="flex gap-1 mt-0.5">
+                            {(c.added ?? 0) > 0 && (
+                              <span className="text-green-600 dark:text-green-400 font-mono">
+                                +{c.added}
+                              </span>
+                            )}
+                            {(c.removed ?? 0) > 0 && (
+                              <span className="text-red-600 dark:text-red-400 font-mono">
+                                -{c.removed}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </span>
+                      <ChevronRightRegular className="w-3 h-3 shrink-0 mt-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="w-72 shrink-0 border-l border-border bg-sidebar flex flex-col h-full overflow-hidden">
       <div className="px-3 py-2 border-b border-border shrink-0">
@@ -140,77 +219,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Commit history
             </p>
-            {loading ? (
-              <p className="text-xs text-muted-foreground py-2">Loading…</p>
-            ) : commits.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-2">No commits yet.</p>
-            ) : (
-              <div className="space-y-1">
-                {commitGroups.map(([key, { label, commits: groupCommits }]) => {
-                  const isCollapsed = collapsedGroups.has(key);
-                  return (
-                    <div key={key}>
-                      {/* Date group header */}
-                      <button
-                        className="w-full flex items-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-accent/40 select-none"
-                        onClick={() => {
-                          toggleGroup(key);
-                        }}
-                      >
-                        {isCollapsed ? (
-                          <ChevronRightRegular className="w-3 h-3 shrink-0" />
-                        ) : (
-                          <ChevronDownRegular className="w-3 h-3 shrink-0" />
-                        )}
-                        <span className="font-medium">{label}</span>
-                        <span className="ml-auto tabular-nums">{groupCommits.length}</span>
-                      </button>
-                      {/* Commits */}
-                      {!isCollapsed && (
-                        <div className="space-y-0.5">
-                          {groupCommits.map((c) => (
-                            <button
-                              key={c.sha}
-                              className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
-                              onClick={() => {
-                                openDiff(c.sha);
-                              }}
-                            >
-                              <UserAvatar
-                                name={emailToDisplayName(c.author)}
-                                email={c.authorEmail}
-                                size="xs"
-                                className="shrink-0 mt-0.5"
-                              />
-                              <span className="flex-1 min-w-0">
-                                <span className="text-foreground line-clamp-2 block">
-                                  {c.message}
-                                </span>
-                                {(c.added !== undefined || c.removed !== undefined) && (
-                                  <span className="flex gap-1 mt-0.5">
-                                    {(c.added ?? 0) > 0 && (
-                                      <span className="text-green-600 dark:text-green-400 font-mono">
-                                        +{c.added}
-                                      </span>
-                                    )}
-                                    {(c.removed ?? 0) > 0 && (
-                                      <span className="text-red-600 dark:text-red-400 font-mono">
-                                        -{c.removed}
-                                      </span>
-                                    )}
-                                  </span>
-                                )}
-                              </span>
-                              <ChevronRightRegular className="w-3 h-3 shrink-0 mt-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            {commitHistoryContent}
           </div>
         </div>
       </ScrollArea>
