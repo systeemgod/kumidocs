@@ -24,7 +24,7 @@ import { PageInfoPanel } from '../components/layout/PageInfoPanel';
 import { wsClient, useWsListener } from '../store/ws';
 import { useUser } from '../store/user';
 import type { PresenceUser } from '../lib/types';
-import NotFound from './NotFound';
+import { NotFound } from './NotFound';
 import { extensionToType, pathExtension } from '@/lib/filetypes';
 import type { PageMeta as DocMeta } from '@/lib/frontmatter';
 import { parseFrontmatter, buildFrontmatter, extractHeadingTitle } from '@/lib/frontmatter';

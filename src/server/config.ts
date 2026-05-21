@@ -179,7 +179,7 @@ const loadConfig = (): Config => {
 		const arg = args[argIdx];
 		const opt = OPTIONS.find((option) => option.flags.includes(arg ?? ''));
 		if (opt) {
-			const raw = args.at(argIdx + 1);
+			const raw = args.at(argIdx + 1) ?? '';
 			if (!raw) { fatal(`${String(opt.flags.at(0))} requires a value.`); }
 			(cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = opt.coerce(raw);
 			argIdx += 1;

@@ -58,11 +58,11 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
 
-	useLayoutEffect((): void => {
+	useLayoutEffect(() => {
 		if (!query.trim()) { setResults([]); return; }
 		const timer = setTimeout((): void => {
 			setLoading(true);
-			return fetch(`/api/search?q=${encodeURIComponent(query)}`)
+			fetch(`/api/search?q=${encodeURIComponent(query)}`)
 				.then((res): SearchResult[] | Promise<SearchResult[]> => {
 					if (!res.ok) {
 						process.stderr.write(`Search HTTP ${String(res.status)}\n`);

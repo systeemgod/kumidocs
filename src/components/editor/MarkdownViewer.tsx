@@ -1,5 +1,6 @@
 import { type ReactNode, memo } from 'react';
 import { Streamdown, defaultRehypePlugins } from 'streamdown';
+import { type PluggableList } from 'unified';
 import { EmojiIcon } from '@/components/ui/EmojiIcon';
 import { cjk } from '@streamdown/cjk';
 import { code } from '@streamdown/code';
@@ -16,7 +17,7 @@ interface MarkdownViewerProps {
 const sanitizePlugin = defaultRehypePlugins.sanitize;
 if (!sanitizePlugin) { throw new Error('streamdown sanitize plugin is required'); }
 
-const REHYPE_PLUGINS = [
+const REHYPE_PLUGINS: PluggableList = [
 	sanitizePlugin,
 	[harden, { allowedLinkPrefixes: ['*'], allowedImagePrefixes: ['*'] }],
 	rehypeHeadingIdsPlugin,

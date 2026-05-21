@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { FilePageRoute } from '@/pages/FilePageRoute';
-import { ImageLibraryPage } from '@/pages/ImageLibraryPage';
+import ImageLibraryPage from '@/pages/ImageLibraryPage';
 import { NotFound } from '@/pages/NotFound';
 import { Providers } from '@/Providers';
 import { ThemeLibraryPage } from '@/pages/ThemeLibraryPage';

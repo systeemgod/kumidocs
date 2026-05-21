@@ -1,4 +1,5 @@
 import { Streamdown, defaultRehypePlugins } from 'streamdown';
+import { type PluggableList } from 'unified';
 import { EmojiIcon } from '@/components/ui/EmojiIcon';
 import { type ReactNode } from 'react';
 import { cjk } from '@streamdown/cjk';
@@ -12,7 +13,7 @@ import { rehypeImageAttrsPlugin } from '@/components/editor/rehypeImageAttrsPlug
 const sanitizePlugin = defaultRehypePlugins.sanitize;
 if (!sanitizePlugin) { throw new Error('Streamdown sanitize plugin is not available'); }
 
-const REHYPE_PLUGINS = [
+const REHYPE_PLUGINS: PluggableList = [
 	sanitizePlugin,
 	[harden, { allowedLinkPrefixes: ['*'], allowedImagePrefixes: ['*'] }],
 	rehypeHeadingIdsPlugin,

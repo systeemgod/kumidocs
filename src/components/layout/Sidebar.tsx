@@ -126,7 +126,7 @@ function PageNodeRow({
 	node: PageNode;
 	depth: number;
 	presenceByPage: Map<string, PresenceUser[]>;
-	currentUser: User | null;
+	currentUser: User | undefined;
 	onNewSubPage: (parentDir: string) => void;
 	onMove: (path: string) => void;
 	onDelete: (path: string, title: string) => void;
