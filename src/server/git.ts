@@ -1,18 +1,18 @@
 import git, { TREE } from 'isomorphic-git';
-import { promises as fs } from 'fs';
+import { promises as fs } from 'node:fs';
 import http from 'isomorphic-git/http/node';
-import type { Config } from './config';
+import { type Config } from './config';
 
 // ── Serial queue ──────────────────────────────────────────────────────────────
 // All operations that touch the .git/index or working tree run through this
 // queue so concurrent HTTP saves and the background pull loop never race.
-let gitTail = Promise.resolve<unknown>(undefined);
+let gitTail: Promise<unknown> = Promise.resolve();
 function withGitLock<T>(fn: () => Promise<T>): Promise<T> {
 	const result = gitTail.then(fn);
 	// Swallow errors on the tail so one failed op doesn't stall the queue.
 	gitTail = result.then(
-		() => undefined,
-		() => undefined,
+		() => {},
+		() => {},
 	);
 	return result;
 }
@@ -67,7 +67,7 @@ async function _stageAndCommit(
 		const status = await git.statusMatrix({ fs, dir: config.repoPath, ...statusOpts });
 		// stage=1 means index equals HEAD (nothing staged for this file)
 		const hasChanges = status.some(
-			([, , , stage]: [string, number, number, number]) => stage !== 1,
+			(row: [string, number, number, number]) => row[3] !== 1,
 		);
 		if (!hasChanges) {
 			const sha = await git.resolveRef({ fs, dir: config.repoPath, ref: 'HEAD' });
@@ -83,12 +83,12 @@ async function _stageAndCommit(
 
 		const result = await pushWithRetry(config, sha);
 		return { ...result, committed: true };
-	} catch (err) {
+	} catch (error) {
 		try {
 			const sha = await git.resolveRef({ fs, dir: config.repoPath, ref: 'HEAD' });
-			return { sha: sha.slice(0, 7), error: String(err) };
+			return { sha: sha.slice(0, 7), error: String(error) };
 		} catch {
-			return { sha: 'unknown', error: String(err) };
+			return { sha: 'unknown', error: String(error) };
 		}
 	}
 }
@@ -197,14 +197,14 @@ async function _fetchAndRebase(
 				dir: config.repoPath,
 				trees: [TREE({ ref: before }), TREE({ ref: after })],
 				map: async (filepath, [A, B]) => {
-					if ((await A?.type()) === 'tree' || (await B?.type()) === 'tree') return;
+					if ((await A?.type()) === 'tree' || (await B?.type()) === 'tree') { return; }
 					const aOid = await A?.oid();
 					const bOid = await B?.oid();
-					if (aOid !== bOid) changed.push(filepath);
+					if (aOid !== bOid) { changed.push(filepath); }
 				},
 			});
-		} catch (err: unknown) {
-			console.warn('Failed to enumerate changed files after pull:', err);
+		} catch (error: unknown) {
+			console.warn('Failed to enumerate changed files after pull:', error);
 		}
 	}
 

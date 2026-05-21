@@ -1,9 +1,9 @@
-import { join, extname, dirname, resolve } from 'path';
-import { readFile, writeFile, mkdir, rename, stat } from 'fs/promises';
-import { createHash } from 'crypto';
+import { join, extname, dirname, resolve } from 'node:path';
+import { readFile, writeFile, mkdir, rename, stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { createTwoFilesPatch } from 'diff';
-import type { Config } from './config';
-import type { User } from '../lib/types';
+import { type Config } from './config';
+import { type User } from '../lib/types';
 import {
 	getFile,
 	getAllPaths,
@@ -38,7 +38,7 @@ import { getPermissions } from './auth';
 function isSafePath(repoPath: string, userPath: string): boolean {
 	const safeBase = resolve(repoPath);
 	const full = resolve(repoPath, userPath);
-	return full === safeBase || full.startsWith(safeBase + '/');
+	return full === safeBase || full.startsWith(`${safeBase}/`);
 }
 
 // GET /api/me
@@ -59,11 +59,11 @@ export function apiTree() {
 // GET /api/file?path=<path>
 export async function apiFileGet(url: URL, config: Config) {
 	const path = decodeURIComponent(url.searchParams.get('path') ?? '');
-	if (!path) return Response.json({ error: 'path required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, path)) return new Response('Forbidden', { status: 403 });
+	if (!path) { return Response.json({ error: 'path required' }, { status: 400 }); }
+	if (!isSafePath(config.repoPath, path)) { return new Response('Forbidden', { status: 403 }); }
 
 	const content = getFile(path);
-	if (content === undefined) return Response.json({ error: 'Not found' }, { status: 404 });
+	if (content === undefined) { return Response.json({ error: 'Not found' }, { status: 404 }); }
 
 	const sha = await getHeadSha(config);
 	return Response.json({ path, content, sha });
@@ -71,11 +71,11 @@ export async function apiFileGet(url: URL, config: Config) {
 
 // PUT /api/file?path=<path>   body: { content: string }
 export async function apiFilePut(url: URL, req: Request, user: User, config: Config) {
-	if (!user.canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+	if (!user.canEdit) { return Response.json({ error: 'Forbidden' }, { status: 403 }); }
 
 	const path = decodeURIComponent(url.searchParams.get('path') ?? '');
-	if (!path) return Response.json({ error: 'path required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, path)) return new Response('Forbidden', { status: 403 });
+	if (!path) { return Response.json({ error: 'path required' }, { status: 400 }); }
+	if (!isSafePath(config.repoPath, path)) { return new Response('Forbidden', { status: 403 }); }
 
 	// Enforce the WebSocket edit lock: reject writes from users who don't hold it
 	// if another active session is currently editing this page.
@@ -122,7 +122,7 @@ export async function apiFilePut(url: URL, req: Request, user: User, config: Con
 
 // POST /api/file   body: { path: string, content: string }
 export async function apiFileCreate(req: Request, user: User, config: Config) {
-	if (!user.canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+	if (!user.canEdit) { return Response.json({ error: 'Forbidden' }, { status: 403 }); }
 
 	let body: { path?: string; content?: string };
 	try {
@@ -136,10 +136,11 @@ export async function apiFileCreate(req: Request, user: User, config: Config) {
 
 	const path = body.path ?? '';
 	const content = body.content ?? '';
-	if (!path) return Response.json({ error: 'path required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, path)) return new Response('Forbidden', { status: 403 });
-	if (getFile(path) !== undefined)
+	if (!path) { return Response.json({ error: 'path required' }, { status: 400 }); }
+	if (!isSafePath(config.repoPath, path)) { return new Response('Forbidden', { status: 403 }); }
+	if (getFile(path) !== undefined) {
 		return Response.json({ error: 'File already exists' }, { status: 409 });
+	}
 
 	await writeFileToRepo(path, content, config);
 	updateInIndex(path);
@@ -159,12 +160,12 @@ export async function apiFileCreate(req: Request, user: User, config: Config) {
 
 // DELETE /api/file?path=<path>
 export async function apiFileDelete(url: URL, user: User, config: Config) {
-	if (!user.canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+	if (!user.canEdit) { return Response.json({ error: 'Forbidden' }, { status: 403 }); }
 
 	const path = decodeURIComponent(url.searchParams.get('path') ?? '');
-	if (!path) return Response.json({ error: 'path required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, path)) return new Response('Forbidden', { status: 403 });
-	if (getFile(path) === undefined) return Response.json({ error: 'Not found' }, { status: 404 });
+	if (!path) { return Response.json({ error: 'path required' }, { status: 400 }); }
+	if (!isSafePath(config.repoPath, path)) { return new Response('Forbidden', { status: 403 }); }
+	if (getFile(path) === undefined) { return Response.json({ error: 'Not found' }, { status: 404 }); }
 
 	await deleteFileFromRepo(path, config);
 	removeFromIndex(path);
@@ -184,7 +185,7 @@ export async function apiFileDelete(url: URL, user: User, config: Config) {
 
 // POST /api/file/rename   body: { from: string, to: string }
 export async function apiFileRename(req: Request, user: User, config: Config) {
-	if (!user.canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+	if (!user.canEdit) { return Response.json({ error: 'Forbidden' }, { status: 403 }); }
 
 	let body: { from?: string; to?: string };
 	try {
@@ -194,15 +195,16 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
 	}
 
 	const { from, to } = body;
-	if (!from || !to) return Response.json({ error: 'from and to required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, from) || !isSafePath(config.repoPath, to))
+	if (!from || !to) { return Response.json({ error: 'from and to required' }, { status: 400 }); }
+	if (!isSafePath(config.repoPath, from) || !isSafePath(config.repoPath, to)) {
 		return new Response('Forbidden', { status: 403 });
-	if (from === to) return Response.json({ sha: null, from, to });
+	}
+	if (from === to) { return Response.json({ sha: null, from, to }); }
 
 	// Collect all files that must move: the page itself plus any sub-pages living
 	// under the matching directory (e.g. "docs.md" → also move all "docs/*").
-	const fromDir = from.replace(/\.md$/i, '') + '/';
-	const toDir = to.replace(/\.md$/i, '') + '/';
+	const fromDir = `${from.replace(/\.md$/iu, '')}/`;
+	const toDir = `${to.replace(/\.md$/iu, '')}/`;
 	const allPaths = getAllPaths();
 	const subFiles = allPaths.filter((p) => p.startsWith(fromDir));
 
@@ -220,14 +222,14 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
 			await rename(join(config.repoPath, op.relFrom), join(config.repoPath, op.relTo));
 			completed.push(op);
 		}
-	} catch (err: unknown) {
+	} catch (error: unknown) {
 		// Roll back in reverse order
-		for (const op of completed.reverse()) {
+		for (const op of completed.toReversed()) {
 			await rename(join(config.repoPath, op.relTo), join(config.repoPath, op.relFrom)).catch(
-				() => undefined,
+				() => {},
 			);
 		}
-		console.error('apiFileRename: fs.rename failed, rolled back:', err);
+			console.error('apiFileRename: fs.rename failed, rolled back:', error);
 		return Response.json({ error: 'Failed to rename files' }, { status: 500 });
 	}
 
@@ -253,8 +255,8 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
 		extraMoves,
 	);
 
-	for (const old of movedPaths) broadcastPageDeleted(old);
-	for (const n of newPaths) broadcastPageCreated(n, n);
+	for (const old of movedPaths) { broadcastPageDeleted(old); }
+	for (const n of newPaths) { broadcastPageCreated(n, n); }
 	return Response.json({ sha: null, from, to });
 }
 
@@ -267,7 +269,7 @@ export function apiSearch(url: URL) {
 // GET /api/avatar/:hash — proxies Gravatar so the client never contacts Gravatar directly.
 // The hash must be a 64-char lowercase hex string (SHA-256).
 export async function apiAvatarProxy(hash: string): Promise<Response> {
-	if (!/^[0-9a-f]{64}$/.test(hash)) {
+	if (!/^[0-9a-f]{64}$/u.test(hash)) {
 		return new Response('Invalid hash', { status: 400 });
 	}
 	const upstream = await fetch(`https://gravatar.com/avatar/${hash}?s=80&d=404`);
@@ -291,7 +293,7 @@ export function apiSidebar() {
 
 // POST /api/upload/image
 export async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
-	if (!user.canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+	if (!user.canEdit) { return Response.json({ error: 'Forbidden' }, { status: 403 }); }
 
 	const MAX = 25 * 1024 * 1024;
 
@@ -303,13 +305,15 @@ export async function apiUploadImage(req: Request, user: User, config: Config): 
 	}
 
 	const file = formData.get('file') as File | null;
-	if (!file) return Response.json({ error: 'No file provided' }, { status: 400 });
-	if (file.size > MAX)
+	if (!file) { return Response.json({ error: 'No file provided' }, { status: 400 }); }
+	if (file.size > MAX) {
 		return Response.json({ error: 'File too large (max 25 MB)' }, { status: 413 });
+	}
 
 	const ext = extname(file.name).toLowerCase();
-	if (!IMAGE_TYPES.has(ext))
+	if (!IMAGE_TYPES.has(ext)) {
 		return Response.json({ error: 'File type not allowed' }, { status: 415 });
+	}
 
 	const bytes = await file.arrayBuffer();
 	const sha256 = createHash('sha256').update(Buffer.from(bytes)).digest('hex');
@@ -372,10 +376,10 @@ export async function apiImageDelete(
 	user: User,
 	config: Config,
 ): Promise<Response> {
-	if (!user.canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+	if (!user.canEdit) { return Response.json({ error: 'Forbidden' }, { status: 403 }); }
 
 	// Validate: only alphanumeric/hyphen SHA256 hex + extension, no path traversal
-	if (!/^[0-9a-f]+\.[a-z0-9]+$/.test(filename)) {
+	if (!/^[0-9a-f]+\.[a-z0-9]+$/u.test(filename)) {
 		return Response.json({ error: 'Invalid filename' }, { status: 400 });
 	}
 
@@ -415,8 +419,8 @@ export async function apiImageDelete(
 // GET /api/file/history?path=<path>
 export async function apiFileHistory(url: URL, config: Config) {
 	const path = decodeURIComponent(url.searchParams.get('path') ?? '');
-	if (!path) return Response.json({ error: 'path required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, path)) return new Response('Forbidden', { status: 403 });
+	if (!path) { return Response.json({ error: 'path required' }, { status: 400 }); }
+	if (!isSafePath(config.repoPath, path)) { return new Response('Forbidden', { status: 403 }); }
 	const commits = await gitFileLog(config, path);
 	const enriched = await Promise.all(
 		commits.map(async (c, idx) => {
@@ -429,11 +433,15 @@ export async function apiFileHistory(url: URL, config: Config) {
 			let added = 0;
 			let removed = 0;
 			for (const line of patch.split('\n')) {
-				if (line.startsWith('+') && !line.startsWith('+++')) added++;
-				else if (line.startsWith('-') && !line.startsWith('---')) removed++;
+				if (line.startsWith('+') && !line.startsWith('+++')) { added++; }
+				else if (line.startsWith('-') && !line.startsWith('---')) { removed++; }
 			}
 			return {
-				...c,
+				sha: c.sha,
+				fullSha: c.fullSha,
+				message: c.message,
+				author: c.author,
+				date: c.date,
 				added,
 				removed,
 				authorEmail: c.author,
@@ -447,17 +455,19 @@ export async function apiFileHistory(url: URL, config: Config) {
 export async function apiFileDiff(url: URL, config: Config) {
 	const path = decodeURIComponent(url.searchParams.get('path') ?? '');
 	const shortSha = url.searchParams.get('sha') ?? '';
-	if (!path || !shortSha)
+	if (!path || !shortSha) {
 		return Response.json({ error: 'path and sha required' }, { status: 400 });
-	if (!isSafePath(config.repoPath, path)) return new Response('Forbidden', { status: 403 });
+	}
+	if (!isSafePath(config.repoPath, path)) { return new Response('Forbidden', { status: 403 }); }
 
 	const commits = await gitFileLog(config, path, 500);
 	const idx = commits.findIndex((c) => c.fullSha.startsWith(shortSha) || c.sha === shortSha);
-	if (idx === -1)
+	if (idx === -1) {
 		return Response.json({ error: 'Commit not found in file history' }, { status: 404 });
+	}
 
 	const commit = commits[idx];
-	if (!commit) return Response.json({ error: 'Internal error' }, { status: 500 });
+	if (!commit) { return Response.json({ error: 'Internal error' }, { status: 500 }); }
 	const parentCommit = commits[idx + 1];
 
 	const after = await gitBlobAt(config, commit.fullSha, path);
@@ -486,7 +496,7 @@ export async function apiFileDiff(url: URL, config: Config) {
 
 // GET /images/:filename
 export async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
-	if (!isSafePath(config.repoPath, assetPath)) return new Response('Forbidden', { status: 403 });
+	if (!isSafePath(config.repoPath, assetPath)) { return new Response('Forbidden', { status: 403 }); }
 
 	const fullPath = resolve(config.repoPath, assetPath);
 	const MIME: Record<string, string> = {

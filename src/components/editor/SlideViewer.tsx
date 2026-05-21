@@ -15,12 +15,11 @@ import {
 import { Button } from '../ui/button';
 import { SlideMarkdownViewer } from './SlideMarkdownViewer';
 import { SlideOverlay } from './SlideOverlay';
-import { parseSlideDirectives, resolveTheme, isBgDark } from '@/lib/slide';
-import type { ParsedSlide, SlideThemeMap } from '@/lib/slide';
+import { parseSlideDirectives, resolveTheme, isBgDark, type ParsedSlide, type SlideThemeMap } from '@/lib/slide';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/store/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
-import type { jsPDF as JsPDF } from 'jspdf';
+import { type jsPDF as JsPDF } from 'jspdf';
 
 // ── PDF selectable layer ─────────────────────────────────────────────────────
 // Walks the DOM of a rendered slide and adds invisible text + link hotspots
@@ -32,8 +31,8 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
 	// Invisible text
 	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
 	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-		const text = (node.textContent ?? '').replace(/\s+/g, ' ').trim();
-		if (!text || !node.parentElement) continue;
+		const text = (node.textContent ?? '').replaceAll(/\s+/gu, ' ').trim();
+		if (!text || !node.parentElement) { continue; }
 		// Skip text nodes inside SVG (rendered as vector paths, not text)
 		let ancestor: Element | null = node.parentElement;
 		let inSvg = false;
@@ -44,13 +43,13 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
 			}
 			ancestor = ancestor.parentElement;
 		}
-		if (inSvg) continue;
+		if (inSvg) { continue; }
 		const range = document.createRange();
 		range.selectNode(node);
 		const br = range.getBoundingClientRect();
-		if (br.width <= 0 || br.height <= 0) continue;
-		const fsPx = parseFloat(window.getComputedStyle(node.parentElement).fontSize);
-		pdf.setFontSize(isNaN(fsPx) ? 12 : fsPx);
+		if (br.width <= 0 || br.height <= 0) { continue; }
+		const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
+		pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
 		// Stretch/compress char spacing so the invisible text spans the same
 		// pixel width as the actual DOM render, compensating for font differences.
 		const pdfWidth = pdf.getTextWidth(text);
@@ -64,12 +63,12 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
 	}
 
 	// Link hotspots
-	for (const a of Array.from(root.querySelectorAll<HTMLAnchorElement>('a[href]'))) {
+	for (const a of root.querySelectorAll<HTMLAnchorElement>('a[href]')) {
 		const rect = a.getBoundingClientRect();
-		if (rect.width <= 0 || rect.height <= 0) continue;
+		if (rect.width <= 0 || rect.height <= 0) { continue; }
 		const x = rect.left - rootRect.left;
 		const y = rect.top - rootRect.top;
-		if (x < 0 || y < 0) continue;
+		if (x < 0 || y < 0) { continue; }
 		pdf.link(x, y, rect.width, rect.height, { url: a.href });
 	}
 }
@@ -87,7 +86,7 @@ function splitSlides(content: string): string[] {
 	for (const line of content.split('\n')) {
 		const trimmed = line.trimStart();
 		if (fence === null) {
-			const m = /^(`{3,}|~{3,})/.exec(trimmed);
+			const m = /^(`{3,}|~{3,})/u.exec(trimmed);
 			if (m) {
 				// Opening a fenced code block — capture the fence character string
 				fence = m[1] ?? '```';
@@ -102,8 +101,8 @@ function splitSlides(content: string): string[] {
 			}
 		} else {
 			// Inside a fence — check if this line closes it
-			const closeRe = new RegExp(`^${fence[0] ?? '`'}{${String(fence.length)},}\\s*$`);
-			if (closeRe.test(trimmed)) fence = null;
+			const closeRe = new RegExp(`^${fence[0] ?? '`'}{${String(fence.length)},}\\s*$`, 'u');
+			if (closeRe.test(trimmed)) { fence = null; }
 		}
 		current.push(line);
 	}
@@ -162,7 +161,7 @@ export function ScaledSlide({
 
 	// Extract first heading for template variable substitution
 	const slideTitle = useMemo(() => {
-		const m = /^#+\s+(.+)$/m.exec(slide.content);
+		const m = /^#+\s+(.+)$/mu.exec(slide.content);
 		return m?.[1]?.trim() ?? '';
 	}, [slide.content]);
 
@@ -308,8 +307,8 @@ export function SlideViewer({
 	useMountEffect(() => {
 		const handler = (e: KeyboardEvent) => {
 			const tag = (e.target as HTMLElement).tagName;
-			if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevRef.current();
+			if (tag === 'INPUT' || tag === 'TEXTAREA') { return; }
+			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { prevRef.current(); }
 			if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
 				e.preventDefault();
 				nextRef.current();
@@ -324,9 +323,9 @@ export function SlideViewer({
 	// ── Scale slide canvas to fit the stage ──────────────────────────────────
 	useMountEffect(() => {
 		const el = stageRef.current;
-		if (!el) return;
+		if (!el) { return; }
 		const obs = new ResizeObserver(([entry]) => {
-			if (!entry) return;
+			if (!entry) { return; }
 			const { width, height } = entry.contentRect;
 			const s = Math.min((width - 192) / SLIDE_W, (height - 96) / SLIDE_H);
 			setScale(Math.max(0.1, s));
@@ -342,7 +341,7 @@ export function SlideViewer({
 		const handler = () => {
 			const active = !!document.fullscreenElement;
 			setIsFullscreen(active);
-			if (!active) setIsSpotlight(false);
+			if (!active) { setIsSpotlight(false); }
 		};
 		document.addEventListener('fullscreenchange', handler);
 		return () => {
@@ -352,9 +351,9 @@ export function SlideViewer({
 
 	const toggleFullscreen = useCallback(() => {
 		if (document.fullscreenElement) {
-			document.exitFullscreen().catch(() => undefined);
+			document.exitFullscreen().catch(() => {});
 		} else {
-			fullscreenRef.current?.requestFullscreen().catch(() => undefined);
+			fullscreenRef.current?.requestFullscreen().catch(() => {});
 		}
 	}, []);
 
@@ -363,10 +362,10 @@ export function SlideViewer({
 	// and a ResizeObserver immediately on mount of the spotlight overlay div.
 	const spotlightCleanupRef = useRef<(() => void) | null>(null);
 	const spotlightSetScale = useCallback((el: HTMLDivElement | null) => {
-		if (!el) return;
-		el.requestFullscreen().catch(() => undefined);
+		if (!el) { return; }
+		el.requestFullscreen().catch(() => {});
 		const obs = new ResizeObserver(([entry]) => {
-			if (!entry) return;
+			if (!entry) { return; }
 			const { width, height } = entry.contentRect;
 			setSpotlightScale(Math.max(0.1, Math.min(width / SLIDE_W, height / SLIDE_H)));
 		});
@@ -394,11 +393,11 @@ export function SlideViewer({
 
 	// ── PDF export ───────────────────────────────────────────────────────────
 	const exportPdf = useCallback(async () => {
-		if (isExporting) return;
+		if (isExporting) { return; }
 		setIsExporting(true);
 		try {
 			const container = offscreenRef.current;
-			if (!container) return;
+			if (!container) { return; }
 			const { default: html2canvas } = await import('html2canvas-pro');
 			const { jsPDF } = await import('jspdf');
 			const pdf = new jsPDF({
@@ -406,10 +405,10 @@ export function SlideViewer({
 				unit: 'px',
 				format: [SLIDE_W, SLIDE_H],
 			});
-			const slideEls = Array.from(container.children) as HTMLElement[];
+			const slideEls = [...container.children] as HTMLElement[];
 			for (let i = 0; i < slideEls.length; i++) {
 				const el = slideEls[i];
-				if (!el) continue;
+				if (!el) { continue; }
 				const canvas = await html2canvas(el, {
 					width: SLIDE_W,
 					height: SLIDE_H,
@@ -417,7 +416,7 @@ export function SlideViewer({
 					useCORS: true,
 					logging: false,
 				});
-				if (i > 0) pdf.addPage();
+				if (i > 0) { pdf.addPage(); }
 				pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, SLIDE_W, SLIDE_H);
 				overlaySelectableLayer(pdf, el);
 			}
@@ -526,7 +525,7 @@ export function SlideViewer({
 									boxShadow:
 										'0 0 10px 8px rgba(255, 60, 60, 0.85), 0 0 36px 16px rgba(255, 0, 0, 0.5)',
 									pointerEvents: 'none',
-									zIndex: 10000,
+									zIndex: 10_000,
 								}}
 							/>
 						)}
@@ -537,7 +536,7 @@ export function SlideViewer({
 									position: 'fixed',
 									left: spotlightMenu.x,
 									top: spotlightMenu.y,
-									zIndex: 10001,
+									zIndex: 10_001,
 								}}
 								className="min-w-[200px] rounded-md border border-border bg-popover text-popover-foreground shadow-lg py-1 text-sm"
 								onClick={(e) => {
@@ -548,7 +547,7 @@ export function SlideViewer({
 									type="button"
 									className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
 									onClick={() => {
-										document.exitFullscreen().catch(() => undefined);
+										document.exitFullscreen().catch(() => {});
 										setSpotlightMenu(null);
 									}}
 								>

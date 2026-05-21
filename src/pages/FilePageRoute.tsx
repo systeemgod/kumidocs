@@ -1,4 +1,4 @@
-import FilePage from '@/pages/FilePage';
+import { FilePage } from '@/pages/FilePage';
 import { useParams } from 'react-router-dom';
 import { useUser } from '@/store/user';
 

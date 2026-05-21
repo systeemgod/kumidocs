@@ -1,7 +1,7 @@
 import MiniSearch from 'minisearch';
 import matter from 'gray-matter';
 import { getAllPaths, getFile, parseFileEntry } from './filestore';
-import type { FileType, SearchResult } from '../lib/types';
+import { type FileType, type SearchResult } from '../lib/types';
 
 interface DocEntry {
 	id: string;
@@ -29,10 +29,10 @@ export function initSearch(): void {
 }
 
 export function rebuildIndex(): void {
-	if (!index) return;
+	if (!index) { return; }
 	index.removeAll();
 	const docs = buildDocs(getAllPaths());
-	if (docs.length > 0) index.addAll(docs);
+	if (docs.length > 0) { index.addAll(docs); }
 	console.log(`Search: indexed ${String(docs.length)} documents`);
 }
 
@@ -47,19 +47,20 @@ function buildDocs(paths: string[]): DocEntry[] {
 			try {
 				const parsed = matter(body);
 				body = parsed.content;
-				if (typeof parsed.data.description === 'string' && parsed.data.description.trim())
-					description = parsed.data.description.trim();
+			if (typeof parsed.data.description === 'string' && parsed.data.description.trim()) {
+				description = parsed.data.description.trim();
+			}
 			} catch {
 				// keep raw content if frontmatter parse fails
 			}
 
 			const stripped = body
-				.replace(/```[\s\S]*?```/g, ' ')
-				.replace(/`[^`]+`/g, ' ')
-				.replace(/^#{1,6}\s+/gm, '')
-				.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-				.replace(/[*_~>|]/g, '')
-				.replace(/\s+/g, ' ')
+				.replaceAll(/```[\s\S]*?```/gu, ' ')
+				.replaceAll(/`[^`]+`/gu, ' ')
+				.replaceAll(/^#{1,6}\s+/gmu, '')
+				.replaceAll(/\[([^\]]+)\]\([^)]+\)/gu, '$1')
+				.replaceAll(/[*_~>|]/gu, '')
+				.replaceAll(/\s+/gu, ' ')
 				.trim();
 
 			return { id: path, path, title, emoji, description, type, content: stripped };
@@ -67,7 +68,7 @@ function buildDocs(paths: string[]): DocEntry[] {
 }
 
 export function updateInIndex(path: string): void {
-	if (!index || !path.endsWith('.md')) return;
+	if (!index || !path.endsWith('.md')) { return; }
 	try {
 		index.remove({ id: path } as DocEntry);
 	} catch {
@@ -78,23 +79,23 @@ export function updateInIndex(path: string): void {
 	if (doc) {
 		try {
 			index.add(doc);
-		} catch (err: unknown) {
-			console.warn('Failed to add to index:', err);
+		} catch (error: unknown) {
+			console.warn('Failed to add to index:', error);
 		}
 	}
 }
 
 export function removeFromIndex(path: string): void {
-	if (!index) return;
+	if (!index) { return; }
 	try {
 		index.remove({ id: path } as DocEntry);
-	} catch (err: unknown) {
-		console.warn('Failed to remove from index:', err);
+	} catch (error: unknown) {
+		console.warn('Failed to remove from index:', error);
 	}
 }
 
 export function searchDocs(query: string, limit = 20): SearchResult[] {
-	if (!index || !query.trim()) return [];
+	if (!index || !query.trim()) { return []; }
 	const results = (
 		index.search(query) as unknown as (Record<string, unknown> & { score: number })[]
 	).slice(0, limit);
@@ -111,15 +112,15 @@ export function searchDocs(query: string, limit = 20): SearchResult[] {
 
 function buildSnippet(path: string, query: string): string {
 	const content = getFile(path) ?? '';
-	const body = content.replace(/^---[\s\S]*?---\n/, '');
+	const body = content.replace(/^---[\s\S]*?---\n/u, '');
 	const word = query.split(' ')[0]?.toLowerCase() ?? '';
 	const idx = body.toLowerCase().indexOf(word);
-	if (idx === -1) return body.replace(/\n/g, ' ').slice(0, 140) + '…';
+	if (idx === -1) { return `${body.replaceAll('\n', ' ').slice(0, 140)}…`; }
 	const start = Math.max(0, idx - 60);
 	const end = Math.min(body.length, idx + 120);
 	return (
 		(start > 0 ? '…' : '') +
-		body.slice(start, end).replace(/\n/g, ' ') +
+		body.slice(start, end).replaceAll('\n', ' ') +
 		(end < body.length ? '…' : '')
 	);
 }

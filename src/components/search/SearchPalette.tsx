@@ -75,6 +75,10 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
 					setResults(data);
 					setLoading(false);
 					return data;
+				})
+				.catch((error: unknown) => {
+					console.error('Search failed:', error);
+					setLoading(false);
 				});
 		}, SEARCH_DELAY_MS);
 		return (): void => { clearTimeout(timer); };

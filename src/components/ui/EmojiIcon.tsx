@@ -15,8 +15,7 @@
  * The `size` prop controls pixel dimensions for both paths, working around
  * the issue where Fluent Color SVGs ignore Tailwind `w-N h-N` classes.
  */
-import type { FC, CSSProperties } from 'react';
-import { Fragment } from 'react';
+import { type FC, type CSSProperties, Fragment } from 'react';
 import EMOJI_SVGS from './emoji/emojis';
 import {
 	TextBulletListSquare24Color,
@@ -25,7 +24,7 @@ import {
 	Code24Color,
 	QuestionCircle24Color,
 } from '@fluentui/react-icons';
-import type { FileType } from '@/lib/types';
+import { type FileType } from '@/lib/types';
 
 // File type strings for EmojiIcon — well-known values listed for autocomplete, open to any string
 const FILE_TYPE_ICONS: Record<string, FC<{ style?: CSSProperties; className?: string }>> = {
@@ -62,7 +61,7 @@ export function EmojiIcon({ emoji, fileType, icon, size = 16, className }: Emoji
 	// Emoji path — check for overrides first
 	if (emoji) {
 		const svgDataUri = EMOJI_SVGS[emoji];
-		if (svgDataUri)
+		if (svgDataUri) {
 			return (
 				<span style={wrapStyle} className={className}>
 					<img
@@ -77,6 +76,7 @@ export function EmojiIcon({ emoji, fileType, icon, size = 16, className }: Emoji
 					/>
 				</span>
 			);
+		}
 		// Fallback: native text for skin-tone variants, flags, etc. not in the bundle
 		return (
 			<span
@@ -146,6 +146,6 @@ export function TitleWithEmoji({ title }: { title: string }) {
 	if (lastIndex < title.length) {
 		parts.push(<Fragment key={lastIndex}>{title.slice(lastIndex)}</Fragment>);
 	}
-	if (parts.length === 0) return <>{title}</>;
+	if (parts.length === 0) { return <>{title}</>; }
 	return <>{parts}</>;
 }

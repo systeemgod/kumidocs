@@ -24,9 +24,9 @@ interface ImageEntry {
 }
 
 function formatBytes(bytes: number): string {
-	if (bytes < 1024) return String(bytes) + ' B';
-	if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-	return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+	if (bytes < 1024) { return `${String(bytes)} B`; }
+	if (bytes < 1024 * 1024) { return `${(bytes / 1024).toFixed(1)} KB`; }
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // ── Image Detail Panel ────────────────────────────────────────────────────────
@@ -46,14 +46,14 @@ function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: 
 			onDeleted();
 			void navigate('/i', { replace: true });
 		} else {
-			const err = (await res.json().catch(() => ({ error: 'Delete failed' }))) as {
+			const error = (await res.json().catch(() => ({ error: 'Delete failed' }))) as {
 				error: string;
 				usedIn?: string[];
 			};
-			if (err.usedIn && err.usedIn.length > 0) {
-				toast.error(`In use by: ${err.usedIn.join(', ')}`);
+			if (error.usedIn && error.usedIn.length > 0) {
+				toast.error(`In use by: ${error.usedIn.join(', ')}`);
 			} else {
-				toast.error(err.error);
+				toast.error(error.error);
 			}
 		}
 	}, [image.filename, onDeleted, navigate]);
@@ -174,7 +174,7 @@ function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: 
 
 // ── Image Library Page ────────────────────────────────────────────────────────
 
-export default function ImageLibraryPage() {
+export function ImageLibraryPage() {
 	const { filename } = useParams<{ filename?: string }>();
 	const navigate = useNavigate();
 	const [images, setImages] = useState<ImageEntry[]>([]);

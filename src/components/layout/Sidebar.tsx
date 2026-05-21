@@ -29,7 +29,7 @@ import {
 import { toast } from 'sonner';
 import { usePageActions } from '../../hooks/usePageActions';
 import { useUser } from '../../store/user';
-import type { TreeNode, FileEntry, PresenceUser, User } from '../../lib/types';
+import { type TreeNode, type FileEntry, type PresenceUser, type User } from '../../lib/types';
 
 interface SidebarProps {
 	tree: TreeNode[];
@@ -76,7 +76,7 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
 		if (node.type === 'dir') {
 			dirMap.set(node.name, node);
 		} else {
-			fileMap.set(node.name.replace(/\.md$/i, ''), node);
+			fileMap.set(node.name.replace(/\.md$/iu, ''), node);
 		}
 	}
 
@@ -87,7 +87,7 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
 		const dir = dirMap.get(baseName);
 		result.push({
 			path: fileNode.path,
-			displayTitle: fileNode.fileEntry?.title ?? baseName.replace(/[-_]/g, ' '),
+			displayTitle: fileNode.fileEntry?.title ?? baseName.replaceAll(/[-_]/gu, ' '),
 			fileEntry: fileNode.fileEntry,
 			children: dir ? buildPageTree(dir.children ?? []) : [],
 			isVirtual: false,
@@ -96,10 +96,10 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
 
 	// Orphan dirs (no matching .md) → virtual ghost page
 	for (const [name, dirNode] of dirMap) {
-		if (fileMap.has(name)) continue;
+		if (fileMap.has(name)) { continue; }
 		result.push({
 			path: `${dirNode.path}.md`,
-			displayTitle: name.replace(/[-_]/g, ' '),
+			displayTitle: name.replaceAll(/[-_]/gu, ' '),
 			fileEntry: undefined,
 			children: buildPageTree(dirNode.children ?? []),
 			isVirtual: true,
@@ -107,9 +107,9 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
 	}
 
 	// Sort: README first, then alphabetically by display title
-	return result.sort((a, b) => {
-		if (a.path === 'README.md') return -1;
-		if (b.path === 'README.md') return 1;
+	return result.toSorted((a, b) => {
+		if (a.path === 'README.md') { return -1; }
+		if (b.path === 'README.md') { return 1; }
 		return a.displayTitle.localeCompare(b.displayTitle, undefined, { sensitivity: 'base' });
 	});
 }
@@ -138,7 +138,7 @@ function PageNodeRow({
 	const [dotsHovered, setDotsHovered] = useState(false);
 	const [dotsOpen, setDotsOpen] = useState(false);
 
-	const href = `/p/${node.path}`.replace(/\.md$/i, '');
+	const href = `/p/${node.path}`.replace(/\.md$/iu, '');
 	const isActive = location.pathname === href;
 	const othersOnPage = presenceByPage.get(node.path) ?? [];
 	const presenceUsers =
@@ -150,7 +150,7 @@ function PageNodeRow({
 			: othersOnPage;
 	const indent = 8 + depth * 14;
 	const parentDir = node.path.includes('/')
-		? node.path.substring(0, node.path.lastIndexOf('/'))
+		? node.path.slice(0, node.path.lastIndexOf('/'))
 		: '';
 
 	const handleDuplicate = async () => {
@@ -161,7 +161,7 @@ function PageNodeRow({
 				return;
 			}
 			const data = (await res.json()) as { content: string };
-			const base = node.path.replace(/\.md$/i, '');
+			const base = node.path.replace(/\.md$/iu, '');
 			const newPath = `${base}-copy.md`;
 			const saveRes = await fetch('/api/file', {
 				method: 'POST',
@@ -199,7 +199,7 @@ function PageNodeRow({
 							onClick={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								if (hasChildren) setOpen((o) => !o);
+								if (hasChildren) { setOpen((o) => !o); }
 							}}
 						>
 							{hasChildren &&
@@ -353,8 +353,8 @@ export function Sidebar({
 	const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
 
 	const handleOpenMove = (path: string) => {
-		openMove(path).catch((err: unknown) => {
-			console.error('Failed to open move dialog:', err);
+		openMove(path).catch((error: unknown) => {
+			console.error('Failed to open move dialog:', error);
 		});
 	};
 

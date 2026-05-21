@@ -1,8 +1,8 @@
-import { readdir, readFile, writeFile, unlink, mkdir } from 'fs/promises';
-import { join, dirname, extname, relative } from 'path';
+import { readdir, readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
+import { join, dirname, extname, relative } from 'node:path';
 import matter from 'gray-matter';
-import type { Config } from './config';
-import type { FileEntry, TreeNode } from '../lib/types';
+import { type Config } from './config';
+import { type FileEntry, type TreeNode } from '../lib/types';
 import { CODE_TYPES, IMAGE_TYPES, extensionToType, pathExtension } from '@/lib/filetypes';
 import { extractHeadingTitle } from '@/lib/frontmatter';
 
@@ -15,7 +15,7 @@ export function markWritten(relPath: string): void {
 	recentlyWritten.add(relPath);
 }
 export function consumeWritten(relPath: string): boolean {
-	if (!recentlyWritten.has(relPath)) return false;
+	if (!recentlyWritten.has(relPath)) { return false; }
 	recentlyWritten.delete(relPath);
 	return true;
 }
@@ -51,7 +51,7 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
 
 	await Promise.all(
 		entries.map(async (entry) => {
-			if (IGNORED_NAMES.has(entry.name)) return;
+			if (IGNORED_NAMES.has(entry.name)) { return; }
 			const fullPath = join(dirPath, entry.name);
 			const relPath = relative(basePath, fullPath);
 
@@ -59,7 +59,7 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
 				await scanDir(basePath, fullPath);
 			} else if (entry.isFile()) {
 				const ext = extname(entry.name).toLowerCase();
-				if (IGNORED_EXT.has(ext)) return;
+				if (IGNORED_EXT.has(ext)) { return; }
 				// Only read text files; for others store empty string as marker
 				if (ext === '.md' || CODE_TYPES.has(ext) || ext === '') {
 					try {
@@ -82,7 +82,7 @@ export function getFile(path: string): string | undefined {
 }
 
 export function getAllPaths(): string[] {
-	return [...fileCache.keys()].sort();
+	return [...fileCache.keys()].toSorted();
 }
 
 export async function writeFileToRepo(
@@ -137,7 +137,7 @@ export function moveInCache(from: string, to: string): void {
 
 // Build file tree for /api/tree
 export function buildFileTree(): TreeNode[] {
-	if (treeCache) return treeCache;
+	if (treeCache) { return treeCache; }
 
 	const allPaths = getAllPaths();
 	// Filter out hidden / internal files and the images/ directory (shown via Image Library)
@@ -151,14 +151,14 @@ export function buildFileTree(): TreeNode[] {
 	const root: TreeNode[] = [];
 	const nodeMap = new Map<string, TreeNode>();
 
-	for (const p of visible.sort()) {
+	for (const p of visible.toSorted()) {
 		const parts = p.split('/');
 		let current = root;
 		let cumPath = '';
 
 		for (let i = 0; i < parts.length; i++) {
 			const part = parts[i];
-			if (!part) continue;
+			if (!part) { continue; }
 			cumPath = cumPath ? `${cumPath}/${part}` : part;
 			const isLast = i === parts.length - 1;
 
@@ -175,7 +175,7 @@ export function buildFileTree(): TreeNode[] {
 					nodeMap.set(cumPath, dirNode);
 				}
 				const children = dirNode.children;
-				if (children) current = children;
+				if (children) { current = children; }
 			}
 		}
 	}
@@ -192,8 +192,8 @@ export { extractHeadingTitle };
 export function parseFileEntry(path: string): FileEntry {
 	const ext = pathExtension(path);
 	const fileName = path.split('/').pop() ?? path;
-	const baseName = fileName.replace(/\.md$/, '');
-	const titleFromName = baseName.replace(/[-_]/g, ' ');
+	const baseName = fileName.replace(/\.md$/u, '');
+	const titleFromName = baseName.replaceAll(/[-_]/gu, ' ');
 
 	let type: FileEntry['type'] = extensionToType(ext);
 	let title = titleFromName;
@@ -206,13 +206,14 @@ export function parseFileEntry(path: string): FileEntry {
 		try {
 			const parsed = matter(content);
 			const headingTitle = extractHeadingTitle(parsed.content);
-			if (headingTitle) title = headingTitle;
-			if (parsed.data.emoji) emoji = parsed.data.emoji as string;
-			if (parsed.data.slides === true) type = 'slide';
-			if (typeof parsed.data.description === 'string' && parsed.data.description.trim())
+			if (headingTitle) { title = headingTitle; }
+			if (parsed.data.emoji) { emoji = parsed.data.emoji as string; }
+			if (parsed.data.slides === true) { type = 'slide'; }
+			if (typeof parsed.data.description === 'string' && parsed.data.description.trim()) {
 				description = parsed.data.description.trim();
-		} catch (err: unknown) {
-			console.warn('Failed to parse frontmatter:', err);
+			}
+		} catch (error: unknown) {
+			console.warn('Failed to parse frontmatter:', error);
 		}
 	}
 

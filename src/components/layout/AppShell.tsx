@@ -8,7 +8,7 @@ import { Toaster } from '../ui/sonner';
 import { useUser } from '../../store/user';
 import { wsClient, useWsListener } from '../../store/ws';
 import { useMountEffect } from '../../hooks/useMountEffect';
-import type { TreeNode, PresenceUser } from '../../lib/types';
+import { type TreeNode, type PresenceUser } from '../../lib/types';
 
 // Connects the WS client once on mount (rendered only when user is available)
 function WsConnector({ userId }: { userId: string }) {
@@ -31,10 +31,10 @@ export function AppShell() {
 	const [autoSaveDelay, setAutoSaveDelay] = useState(5000);
 	const [presenceByPage, setPresenceByPage] = useState<Map<string, PresenceUser[]>>(new Map());
 	const [newPageOpen, setNewPageOpen] = useState(false);
-	const [newPageParentDir, setNewPageParentDir] = useState<string | undefined>(undefined);
+	const [newPageParentDir, setNewPageParentDir] = useState<string | undefined>();
 	const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
 		const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-		if (!stored) return SIDEBAR_DEFAULT;
+		if (!stored) { return SIDEBAR_DEFAULT; }
 		const n = Number(stored);
 		return Number.isFinite(n)
 			? Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, n))
@@ -52,8 +52,8 @@ export function AppShell() {
 			.then((data) => {
 				setTree(data);
 			})
-			.catch((err: unknown) => {
-				console.error('Failed to load file tree:', err);
+			.catch((error: unknown) => {
+				console.error('Failed to load file tree:', error);
 			});
 	}, []);
 
@@ -62,11 +62,11 @@ export function AppShell() {
 		fetch('/api/me')
 			.then((r) => r.json() as Promise<{ instanceName?: string; autoSaveDelay?: number }>)
 			.then((data) => {
-				if (data.instanceName) setInstanceName(data.instanceName);
-				if (data.autoSaveDelay) setAutoSaveDelay(data.autoSaveDelay);
+				if (data.instanceName) { setInstanceName(data.instanceName); }
+				if (data.autoSaveDelay) { setAutoSaveDelay(data.autoSaveDelay); }
 			})
-			.catch((err: unknown) => {
-				console.error('Failed to load instance info:', err);
+			.catch((error: unknown) => {
+				console.error('Failed to load instance info:', error);
 			});
 		loadTree();
 	});
@@ -128,7 +128,7 @@ export function AppShell() {
 			document.body.style.userSelect = 'none';
 
 			const onMouseMove = (ev: MouseEvent) => {
-				if (!dragStartRef.current) return;
+				if (!dragStartRef.current) { return; }
 				const delta = ev.clientX - dragStartRef.current.x;
 				const next = Math.max(
 					SIDEBAR_MIN,

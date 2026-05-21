@@ -74,7 +74,7 @@ export function usePageActions(reloadTree: () => void) {
 	}, [closeParentDropdown]);
 
 	const openMove = useCallback(async (filePath: string) => {
-		const parts = filePath.replace(/\.md$/, '').split('/');
+		const parts = filePath.replace(/\.md$/u, '').split('/');
 		const slug = parts.pop() ?? '';
 		const parent = parts.join('/');
 		setMoveFrom(filePath);
@@ -96,10 +96,10 @@ export function usePageActions(reloadTree: () => void) {
 				.filter(({ path: p }) => p.endsWith('.md') && p !== filePath)
 				.map(({ path: p, fileEntry }) => ({
 					path: p,
-					dir: p.replace(/\.md$/i, ''),
-					title: fileEntry?.title ?? p.replace(/\.md$/i, ''),
+					dir: p.replace(/\.md$/iu, ''),
+					title: fileEntry?.title ?? p.replace(/\.md$/iu, ''),
 				}))
-				.sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+				.toSorted((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
 			setMovePages(pages);
 			const parentPageExists = pages.some((pg) => pg.dir === parent);
 			setMoveParent(parent && parentPageExists ? parent : ROOT);
@@ -111,8 +111,8 @@ export function usePageActions(reloadTree: () => void) {
 	}, []);
 
 	const confirmMove = useCallback(async () => {
-		const slug = moveSlug.trim().replace(/\.md$/, '');
-		if (!slug) return;
+		const slug = moveSlug.trim().replace(/\.md$/u, '');
+		if (!slug) { return; }
 		const parent = moveParent === ROOT ? '' : moveParent;
 		const toPath = parent ? `${parent}/${slug}.md` : `${slug}.md`;
 		const res = await fetch('/api/file/rename', {
@@ -123,8 +123,8 @@ export function usePageActions(reloadTree: () => void) {
 		if (res.ok) {
 			toast.success('Page moved');
 			reloadTree();
-			navigate(`/p/${toPath}`)?.catch((err: unknown) => {
-				console.error('Navigation failed after move:', err);
+			navigate(`/p/${toPath}`)?.catch((error: unknown) => {
+				console.error('Navigation failed after move:', error);
 			});
 		} else {
 			toast.error('Move failed');
@@ -150,8 +150,8 @@ export function usePageActions(reloadTree: () => void) {
 		if (res.ok) {
 			toast.success('Page deleted');
 			reloadTree();
-			navigate('/p/README.md')?.catch((err: unknown) => {
-				console.error('Navigation failed after delete:', err);
+			navigate('/p/README.md')?.catch((error: unknown) => {
+				console.error('Navigation failed after delete:', error);
 			});
 		} else {
 			toast.error('Delete failed');
@@ -273,8 +273,8 @@ export function usePageActions(reloadTree: () => void) {
 								placeholder="page-name"
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
-										confirmMove().catch((err: unknown) => {
-											console.error('Move failed:', err);
+										confirmMove().catch((error: unknown) => {
+											console.error('Move failed:', error);
 										});
 									}
 								}}
@@ -293,8 +293,8 @@ export function usePageActions(reloadTree: () => void) {
 						</Button>
 						<Button
 							onClick={() => {
-								confirmMove().catch((err: unknown) => {
-									console.error('Move failed:', err);
+								confirmMove().catch((error: unknown) => {
+									console.error('Move failed:', error);
 								});
 							}}
 						>
@@ -327,8 +327,8 @@ export function usePageActions(reloadTree: () => void) {
 						<Button
 							variant="destructive"
 							onClick={() => {
-								confirmDelete().catch((err: unknown) => {
-									console.error('Delete failed:', err);
+								confirmDelete().catch((error: unknown) => {
+									console.error('Delete failed:', error);
 								});
 							}}
 						>

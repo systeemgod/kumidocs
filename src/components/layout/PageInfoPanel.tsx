@@ -11,7 +11,7 @@ import {
 	DismissRegular,
 	DocumentRegular,
 } from '@fluentui/react-icons';
-import type { CommitEntry } from '../../lib/types';
+import { type CommitEntry } from '../../lib/types';
 import { emailToDisplayName } from '../../lib/avatar';
 import { UserAvatar } from '../ui/avatar';
 
@@ -61,8 +61,8 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
 	const toggleGroup = (key: string) => {
 		setCollapsedGroups((prev) => {
 			const next = new Set(prev);
-			if (next.has(key)) next.delete(key);
-			else next.add(key);
+			if (next.has(key)) { next.delete(key); }
+			else { next.add(key); }
 			return next;
 		});
 	};

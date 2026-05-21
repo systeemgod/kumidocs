@@ -13,7 +13,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
 import { EmojiIcon } from '../ui/EmojiIcon';
-import type { MarkdownType } from '@/lib/types';
+import { type MarkdownType } from '@/lib/types';
 
 interface NewPageDialogProps {
 	open: boolean;
@@ -27,10 +27,10 @@ function slugify(title: string): string {
 	return title
 		.toLowerCase()
 		.trim()
-		.replace(/\s+/g, '-')
-		.replace(/[^a-z0-9-_]/g, '')
-		.replace(/--+/g, '-')
-		.replace(/^-+|-+$/g, '');
+		.replaceAll(/\s+/gu, '-')
+		.replaceAll(/[^a-z0-9-_]/gu, '')
+		.replaceAll(/--+/gu, '-')
+		.replaceAll(/^-+|-+$/gu, '');
 }
 
 export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDialogProps) {
@@ -45,11 +45,11 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
 	// Auto-derive slug from title unless user has manually edited it (derived state, no effect needed)
 	const effectiveSlug = slugEdited ? slug : slugify(title);
 
-	const finalPath = effectiveSlug ? `${parentDir ? parentDir + '/' : ''}${effectiveSlug}.md` : '';
+	const finalPath = effectiveSlug ? `${parentDir ? `${parentDir}/` : ''}${effectiveSlug}.md` : '';
 
 	const handleCreate = useCallback(async () => {
 		const resolvedSlug = slugEdited ? slug : slugify(title);
-		if (!title.trim() || !resolvedSlug) return;
+		if (!title.trim() || !resolvedSlug) { return; }
 		setCreating(true);
 
 		const slidesHeader = pageType === 'slide' ? '---\nslides: true\n---\n\n' : '';
@@ -67,8 +67,8 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
 			toast.success('Page created');
 			onCreated?.();
 			onClose();
-			navigate(`/p/${finalPath}`)?.catch((err: unknown) => {
-				console.error('Navigation failed:', err);
+			navigate(`/p/${finalPath}`)?.catch((error: unknown) => {
+				console.error('Navigation failed:', error);
 			});
 		} else if (res.status === 409) {
 			toast.error('A page at that path already exists.');
@@ -79,8 +79,8 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' && !creating && title.trim() && effectiveSlug) {
-			handleCreate().catch((err: unknown) => {
-				console.error('Failed to create page:', err);
+			handleCreate().catch((error: unknown) => {
+				console.error('Failed to create page:', error);
 			});
 		}
 	};
@@ -184,8 +184,8 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
 					</Button>
 					<Button
 						onClick={() => {
-							handleCreate().catch((err: unknown) => {
-								console.error('Failed to create page:', err);
+							handleCreate().catch((error: unknown) => {
+								console.error('Failed to create page:', error);
 							});
 						}}
 						disabled={creating || !title.trim() || !effectiveSlug}

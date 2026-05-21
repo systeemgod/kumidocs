@@ -5,10 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { MarkdownViewer } from './MarkdownViewer';
 import { SlideViewer } from './SlideViewer';
-import { parseFrontmatter, buildFrontmatter } from '@/lib/frontmatter';
-import type { PageMeta } from '@/lib/frontmatter';
-import { BUILTIN_SLIDE_THEMES } from '@/lib/slide';
-import type { SlideThemeMap } from '@/lib/slide';
+import { parseFrontmatter, buildFrontmatter, type PageMeta } from '@/lib/frontmatter';
+import { BUILTIN_SLIDE_THEMES, type SlideThemeMap } from '@/lib/slide';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import {
@@ -64,17 +62,16 @@ function insertWrap(ta: HTMLTextAreaElement, before: string, after: string) {
 	}
 
 	// Toggle case 3: no selection, cursor sits between empty markers → remove them.
-	if (start === end && start >= before.length && start + after.length <= ta.value.length) {
-		if (
-			ta.value.slice(start - before.length, start) === before &&
-			ta.value.slice(start, start + after.length) === after
-		) {
-			const removeStart = start - before.length;
-			ta.setRangeText('', removeStart, start + after.length, 'preserve');
-			ta.setSelectionRange(removeStart, removeStart);
-			ta.focus();
-			return;
-		}
+	if (
+		start === end && start >= before.length && start + after.length <= ta.value.length &&
+		ta.value.slice(start - before.length, start) === before &&
+		ta.value.slice(start, start + after.length) === after
+	) {
+		const removeStart = start - before.length;
+		ta.setRangeText('', removeStart, start + after.length, 'preserve');
+		ta.setSelectionRange(removeStart, removeStart);
+		ta.focus();
+		return;
 	}
 
 	// Default: wrap.
@@ -99,7 +96,7 @@ function setLinePrefix(ta: HTMLTextAreaElement, prefix: string, forcedStart?: nu
 	const lineEnd = lineEndRaw === -1 ? ta.value.length : lineEndRaw;
 	const line = ta.value.slice(lineStart, lineEnd);
 	// Strip any existing heading/blockquote prefix.
-	const stripped = line.replace(/^(#{1,6} |> )/, '');
+	const stripped = line.replace(/^(#{1,6} |> )/u, '');
 	const newLine = prefix ? `${prefix}${stripped}` : stripped;
 	ta.setRangeText(newLine, lineStart, lineEnd, 'preserve');
 	ta.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
@@ -114,7 +111,7 @@ function toggleListPrefix(ta: HTMLTextAreaElement, prefix: string) {
 	const lineEndRaw = ta.value.indexOf('\n', start);
 	const lineEnd = lineEndRaw === -1 ? ta.value.length : lineEndRaw;
 	const line = ta.value.slice(lineStart, lineEnd);
-	const stripped = line.replace(/^(#{1,6} |> |- \[ \] |- |[0-9]+\. )/, '');
+	const stripped = line.replace(/^(#{1,6} |> |- \[ \] |- |[0-9]+\. )/u, '');
 	const newLine = line.startsWith(prefix) ? stripped : `${prefix}${stripped}`;
 	ta.setRangeText(newLine, lineStart, lineEnd, 'preserve');
 	ta.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
@@ -152,10 +149,10 @@ async function uploadImageFile(file: File): Promise<string | null> {
 	try {
 		const res = await fetch('/api/upload/image', { method: 'POST', body: form });
 		if (!res.ok) {
-			const err = (await res.json().catch(() => ({ error: 'Upload failed' }))) as {
+			const error = (await res.json().catch(() => ({ error: 'Upload failed' }))) as {
 				error: string;
 			};
-			toast.error(err.error);
+			toast.error(error.error);
 			return null;
 		}
 		const data = (await res.json()) as { url: string };
@@ -254,12 +251,12 @@ export function MarkdownEditor({
 
 	// Dispatch a synthetic change so React picks up imperative textarea edits.
 	const syncChange = useCallback(() => {
-		if (taRef.current) onChange(taRef.current.value);
+		if (taRef.current) { onChange(taRef.current.value); }
 	}, [onChange]);
 
 	const handlePropsOpen = useCallback(
 		(open: boolean) => {
-			if (open) setDlgMeta(parseFrontmatter(value).data);
+			if (open) { setDlgMeta(parseFrontmatter(value).data); }
 			setPropsOpen(open);
 		},
 		[value],
@@ -280,7 +277,7 @@ export function MarkdownEditor({
 		(val: string) => {
 			setHeadingValue(val);
 			const opt = HEADING_OPTIONS.find((o) => o.value === val);
-			if (!opt || !taRef.current) return;
+			if (!opt || !taRef.current) { return; }
 			const ta = taRef.current;
 			// Restore the saved selection: the dropdown stole focus and may have
 			// caused the browser or React to reset the textarea cursor position.
@@ -293,63 +290,63 @@ export function MarkdownEditor({
 	);
 
 	const handleBold = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		insertWrap(taRef.current, '**', '**');
 		syncChange();
 	}, [syncChange]);
 
 	const handleItalic = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		insertWrap(taRef.current, '*', '*');
 		syncChange();
 	}, [syncChange]);
 
 	const handleStrikethrough = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		insertWrap(taRef.current, '~~', '~~');
 		syncChange();
 	}, [syncChange]);
 
 	const handleCode = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		insertWrap(taRef.current, '`', '`');
 		syncChange();
 	}, [syncChange]);
 
 	const handleLink = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		insertLink(taRef.current);
 		syncChange();
 	}, [syncChange]);
 
 	const handleQuote = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		setLinePrefix(taRef.current, '> ');
 		syncChange();
 	}, [syncChange]);
 
 	const handleUnordered = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		toggleListPrefix(taRef.current, '- ');
 		syncChange();
 	}, [syncChange]);
 
 	const handleNumbered = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		toggleListPrefix(taRef.current, '1. ');
 		syncChange();
 	}, [syncChange]);
 
 	const handleTask = useCallback(() => {
-		if (!taRef.current) return;
+		if (!taRef.current) { return; }
 		toggleListPrefix(taRef.current, '- [ ] ');
 		syncChange();
 	}, [syncChange]);
 
 	const handleImageFiles = useCallback(
 		(files: FileList | File[]) => {
-			const images = Array.from(files).filter((f) => f.type.startsWith('image/'));
-			if (images.length === 0) return;
+			const images = [...files].filter((f) => f.type.startsWith('image/'));
+			if (images.length === 0) { return; }
 			const ta = taRef.current;
 			for (const file of images) {
 				const toastId = toast.loading(`Uploading ${file.name}…`);
@@ -368,7 +365,7 @@ export function MarkdownEditor({
 
 	const handleDragOver = useCallback((e: React.DragEvent) => {
 		if (
-			Array.from(e.dataTransfer.items).some(
+			[...e.dataTransfer.items].some(
 				(i) => i.kind === 'file' && i.type.startsWith('image/'),
 			)
 		) {
@@ -380,9 +377,9 @@ export function MarkdownEditor({
 	const handleDrop = useCallback(
 		(e: React.DragEvent) => {
 			const files = e.dataTransfer.files;
-			if (files.length === 0) return;
-			const hasImage = Array.from(files).some((f) => f.type.startsWith('image/'));
-			if (!hasImage) return;
+			if (files.length === 0) { return; }
+			const hasImage = [...files].some((f) => f.type.startsWith('image/'));
+			if (!hasImage) { return; }
 			e.preventDefault();
 			handleImageFiles(files);
 		},
@@ -408,9 +405,9 @@ export function MarkdownEditor({
 	const handleEditorScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
 		const ta = e.currentTarget;
 		const preview = previewRef.current;
-		if (!preview) return;
+		if (!preview) { return; }
 		const scrollable = ta.scrollHeight - ta.clientHeight;
-		if (scrollable <= 0) return;
+		if (scrollable <= 0) { return; }
 		preview.scrollTop =
 			(ta.scrollTop / scrollable) * (preview.scrollHeight - preview.clientHeight);
 	}, []);

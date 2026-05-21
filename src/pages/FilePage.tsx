@@ -23,11 +23,10 @@ import { CodeEditor } from '../components/editor/CodeEditor';
 import { PageInfoPanel } from '../components/layout/PageInfoPanel';
 import { wsClient, useWsListener } from '../store/ws';
 import { useUser } from '../store/user';
-import type { PresenceUser } from '../lib/types';
+import { type PresenceUser } from '../lib/types';
 import { NotFound } from './NotFound';
 import { extensionToType, pathExtension } from '@/lib/filetypes';
-import type { PageMeta as DocMeta } from '@/lib/frontmatter';
-import { parseFrontmatter, buildFrontmatter, extractHeadingTitle } from '@/lib/frontmatter';
+import { type PageMeta as DocMeta, parseFrontmatter, buildFrontmatter, extractHeadingTitle } from '@/lib/frontmatter';
 
 interface OutletCtx {
 	reloadTree: () => void;
@@ -38,12 +37,12 @@ type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
 // Derive a nice title from the file path
 function pathToTitle(path: string): string {
 	return (path.split('/').pop() ?? path)
-		.replace(/\.md$/, '')
-		.replace(/[-_]/g, ' ')
-		.replace(/\b\w/g, (c) => c.toUpperCase());
+		.replace(/\.md$/u, '')
+		.replaceAll(/[-_]/gu, ' ')
+		.replaceAll(/\b\w/gu, (c) => c.toUpperCase());
 }
 
-export default function FilePage() {
+export function FilePage() {
 	const { '*': rawPath = '' } = useParams();
 	const filePath = !rawPath.includes('.') ? `${rawPath}.md` : rawPath; // default to .md if no extension
 
@@ -82,8 +81,8 @@ export default function FilePage() {
 			if (detail === filePath) {
 				setInfoOpen((v) => {
 					const next = !v;
-					if (next) localStorage.setItem('kumidocs:info-open', 'true');
-					else localStorage.removeItem('kumidocs:info-open');
+					if (next) { localStorage.setItem('kumidocs:info-open', 'true'); }
+					else { localStorage.removeItem('kumidocs:info-open'); }
 					return next;
 				});
 			}
@@ -96,10 +95,8 @@ export default function FilePage() {
 
 	const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	// Clear the auto-save timer on unmount to prevent a save firing on a dead component.
-	useMountEffect(() => {
-		return () => {
-			if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-		};
+	useMountEffect(() => () => {
+		if (autoSaveTimer.current) { clearTimeout(autoSaveTimer.current); }
 	});
 	// Mutex: chain saves so they never run concurrently (prevents double-commit 409)
 	const savePromiseRef = useRef<Promise<void>>(Promise.resolve());
@@ -148,8 +145,8 @@ export default function FilePage() {
 	}, []);
 
 	useMountEffect(() => {
-		loadDoc(filePath).catch((err: unknown) => {
-			console.error('Failed to load document:', err);
+		loadDoc(filePath).catch((error: unknown) => {
+			console.error('Failed to load document:', error);
 		});
 	});
 
@@ -160,9 +157,9 @@ export default function FilePage() {
 
 	// Tell server which page we're on; clean up presence when navigating away or unmounting.
 	useMountEffect(() => {
-		if (user) wsClient.joinPage(filePath);
+		if (user) { wsClient.joinPage(filePath); }
 		return () => {
-			if (editModeRef.current) wsClient.stopEditing(filePath);
+			if (editModeRef.current) { wsClient.stopEditing(filePath); }
 			wsClient.leavePage();
 		};
 	});
@@ -176,10 +173,10 @@ export default function FilePage() {
 		if (msg.type === 'page_changed' && msg.pageId === filePath) {
 			// Ignore echoes of our own saves — the server broadcasts to all
 			// clients including the sender, but we've already applied the change.
-			if (msg.changedBy === user?.id) return;
+			if (msg.changedBy === user?.id) { return; }
 			if (!isDirtyRef.current) {
-				loadDoc(filePath).catch((err: unknown) => {
-					console.error('Failed to reload document after remote change:', err);
+				loadDoc(filePath).catch((error: unknown) => {
+					console.error('Failed to reload document after remote change:', error);
 				});
 				toast.info(`Page updated by ${msg.changedByName}`);
 			} else {
@@ -188,14 +185,14 @@ export default function FilePage() {
 		}
 		if (msg.type === 'page_deleted' && msg.pageId === filePath) {
 			toast.warning('This page was deleted');
-			navigate('/p/README.md')?.catch((err: unknown) => {
-				console.error('Navigation failed:', err);
+			navigate('/p/README.md')?.catch((error: unknown) => {
+				console.error('Navigation failed:', error);
 			});
 		}
 		if (msg.type === 'save_conflict_lost' && msg.pageId === filePath) {
 			toast.error('Your changes were lost due to a remote conflict.');
-			loadDoc(filePath).catch((err: unknown) => {
-				console.error('Failed to reload document after conflict:', err);
+			loadDoc(filePath).catch((error: unknown) => {
+				console.error('Failed to reload document after conflict:', error);
 			});
 		}
 	});
@@ -270,10 +267,10 @@ export default function FilePage() {
 			rawContentRef.current = val;
 			setSaveStatus('unsaved');
 			isDirtyRef.current = true; // mark dirty immediately
-			if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+			if (autoSaveTimer.current) { clearTimeout(autoSaveTimer.current); }
 			autoSaveTimer.current = setTimeout(() => {
-				doSave(val, true).catch((err: unknown) => {
-					console.error('Auto-save failed:', err);
+				doSave(val, true).catch((error: unknown) => {
+					console.error('Auto-save failed:', error);
 				});
 			}, autoSaveDelay);
 		},
@@ -282,8 +279,8 @@ export default function FilePage() {
 
 	// Ctrl+S
 	const handleSave = useCallback(() => {
-		doSave(rawContentRef.current, true).catch((err: unknown) => {
-			console.error('Manual save failed:', err);
+		doSave(rawContentRef.current, true).catch((error: unknown) => {
+			console.error('Manual save failed:', error);
 		});
 	}, [doSave]);
 
@@ -300,13 +297,13 @@ export default function FilePage() {
 				const newRaw = buildFrontmatter(newMeta) + parsed.content;
 				setRawContent(newRaw);
 				rawContentRef.current = newRaw;
-				doSave(newRaw, true).catch((err: unknown) => {
-					console.error('Emoji save failed:', err);
+				doSave(newRaw, true).catch((error: unknown) => {
+					console.error('Emoji save failed:', error);
 				});
 			} else {
 				// Persist the emoji change immediately (chains behind any in-flight save).
-				doSave(contentRef.current).catch((err: unknown) => {
-					console.error('Emoji save failed:', err);
+				doSave(contentRef.current).catch((error: unknown) => {
+					console.error('Emoji save failed:', error);
 				});
 			}
 		},
@@ -315,7 +312,7 @@ export default function FilePage() {
 
 	// Edit mode toggle
 	const enterEdit = useCallback(() => {
-		if (!user?.canEdit) return;
+		if (!user?.canEdit) { return; }
 		if (editLocked && editLocked.id !== user.id) {
 			toast.warning(`${editLocked.name} is currently editing this page.`);
 			return;
@@ -338,7 +335,7 @@ export default function FilePage() {
 
 	const rawExt = pathExtension(filePath);
 	let fileType = extensionToType(rawExt);
-	if (fileType === 'doc' && meta.slides) fileType = 'slide';
+	if (fileType === 'doc' && meta.slides) { fileType = 'slide'; }
 	const title =
 		fileType === 'doc' || fileType === 'slide'
 			? (extractHeadingTitle(content) ?? pathToTitle(filePath))
@@ -352,7 +349,7 @@ export default function FilePage() {
 				return;
 			}
 			const data = (await res.json()) as { content: string };
-			const newPath = `${filePath.replace(/\.md$/i, '')}-copy.md`;
+			const newPath = `${filePath.replace(/\.md$/iu, '')}-copy.md`;
 			const saveRes = await fetch('/api/file', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -361,8 +358,8 @@ export default function FilePage() {
 			if (saveRes.ok) {
 				reloadTree();
 				toast.success('Page duplicated');
-				navigate(`/p/${newPath}`)?.catch((err: unknown) => {
-					console.error('Navigation failed:', err);
+				navigate(`/p/${newPath}`)?.catch((error: unknown) => {
+					console.error('Navigation failed:', error);
 				});
 			} else if (saveRes.status === 409) {
 				toast.error('A copy already exists at that path');
@@ -375,11 +372,11 @@ export default function FilePage() {
 	}, [filePath, navigate, reloadTree]);
 
 	const exportPagePdf = useCallback(async () => {
-		if (isPdfExporting) return;
+		if (isPdfExporting) { return; }
 		setIsPdfExporting(true);
 		try {
 			const el = pdfContentRef.current;
-			if (!el) return;
+			if (!el) { return; }
 			const { default: html2canvas } = await import('html2canvas-pro');
 			const { jsPDF } = await import('jspdf');
 			const RENDER_W = 800;
@@ -406,8 +403,8 @@ export default function FilePage() {
 				sliceCanvas.width = canvas.width;
 				sliceCanvas.height = Math.ceil(sliceH);
 				const ctx = sliceCanvas.getContext('2d');
-				if (ctx) ctx.drawImage(canvas, 0, -yOffset);
-				if (yOffset > 0) pdf.addPage();
+				if (ctx) { ctx.drawImage(canvas, 0, -yOffset); }
+				if (yOffset > 0) { pdf.addPage(); }
 				pdf.addImage(
 					sliceCanvas.toDataURL('image/png'),
 					'PNG',
@@ -422,8 +419,8 @@ export default function FilePage() {
 			// ── Invisible text overlay (per-page) ─────────────────────────────
 			const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
 			for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-				const text = (node.textContent ?? '').replace(/\s+/g, ' ').trim();
-				if (!text || !(node as Text).parentElement) continue;
+				const text = (node.textContent ?? '').replaceAll(/\s+/gu, ' ').trim();
+				if (!text || !(node as Text).parentElement) { continue; }
 				let ancestor: Element | null = (node as Text).parentElement;
 				let inSvg = false;
 				while (ancestor) {
@@ -433,19 +430,19 @@ export default function FilePage() {
 					}
 					ancestor = ancestor.parentElement;
 				}
-				if (inSvg) continue;
+				if (inSvg) { continue; }
 				const range = document.createRange();
 				range.selectNode(node);
 				const br = range.getBoundingClientRect();
-				if (br.width <= 0 || br.height <= 0) continue;
+				if (br.width <= 0 || br.height <= 0) { continue; }
 				const yLocal = br.top - rootRect.top;
 				const pageIdx = Math.floor(yLocal / PAGE_H_PX);
 				const yOnPage = yLocal - pageIdx * PAGE_H_PX;
-				const fsPx = parseFloat(
+				const fsPx = Number.parseFloat(
 					window.getComputedStyle((node as Text).parentElement ?? document.body).fontSize,
 				);
 				pdf.setPage(pageIdx + 1);
-				pdf.setFontSize(isNaN(fsPx) ? 12 : fsPx);
+				pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
 				// Stretch/compress char spacing so the invisible text spans the same
 				// pixel width as the actual DOM render, compensating for font differences.
 				const pdfWidth = pdf.getTextWidth(text);
@@ -459,14 +456,14 @@ export default function FilePage() {
 			}
 
 			// ── Link hotspots (per-page) ──────────────────────────────────────
-			for (const a of Array.from(el.querySelectorAll<HTMLAnchorElement>('a[href]'))) {
+			for (const a of el.querySelectorAll<HTMLAnchorElement>('a[href]')) {
 				const rect = a.getBoundingClientRect();
-				if (rect.width <= 0 || rect.height <= 0) continue;
+				if (rect.width <= 0 || rect.height <= 0) { continue; }
 				const x = rect.left - rootRect.left;
 				const yLocal = rect.top - rootRect.top;
 				const pageIdx = Math.floor(yLocal / PAGE_H_PX);
 				const yOnPage = yLocal - pageIdx * PAGE_H_PX;
-				if (x < 0 || yOnPage < 0) continue;
+				if (x < 0 || yOnPage < 0) { continue; }
 				pdf.setPage(pageIdx + 1);
 				pdf.link(x, yOnPage, rect.width, rect.height, { url: a.href });
 			}
@@ -478,7 +475,7 @@ export default function FilePage() {
 	}, [isPdfExporting, title]);
 
 	// Breadcrumb
-	const breadcrumb = filePath.replace(/\.md$/, '').split('/').slice(0, -1);
+	const breadcrumb = filePath.replace(/\.md$/u, '').split('/').slice(0, -1);
 
 	if (loading) {
 		return (
@@ -503,8 +500,8 @@ export default function FilePage() {
 						variant="outline"
 						className="h-6 text-xs"
 						onClick={() => {
-							loadDoc(filePath).catch((err: unknown) => {
-								console.error('Failed to reload document:', err);
+							loadDoc(filePath).catch((error: unknown) => {
+								console.error('Failed to reload document:', error);
 							});
 							setRemoteBanner(null);
 						}}
@@ -551,10 +548,11 @@ export default function FilePage() {
 						<button
 							className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${!editMode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
 							onClick={() => {
-								if (editMode)
-									exitEdit().catch((err: unknown) => {
-										console.error('Failed to exit edit mode:', err);
-									});
+							if (editMode) {
+								exitEdit().catch((error: unknown) => {
+									console.error('Failed to exit edit mode:', error);
+								});
+							}
 							}}
 						>
 							Read
@@ -563,7 +561,7 @@ export default function FilePage() {
 							className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editMode ? 'bg-background text-foreground shadow-sm' : editLocked && editLocked.id !== user.id ? 'text-muted-foreground opacity-40 cursor-not-allowed' : 'text-muted-foreground hover:text-foreground'}`}
 							onClick={() => {
 								if (!editMode && !(editLocked && editLocked.id !== user.id))
-									enterEdit();
+									{ enterEdit(); }
 							}}
 							disabled={editMode || !!(editLocked && editLocked.id !== user.id)}
 						>
@@ -621,8 +619,8 @@ export default function FilePage() {
 							onClick={() => {
 								setInfoOpen((v) => {
 									const next = !v;
-									if (next) localStorage.setItem('kumidocs:info-open', 'true');
-									else localStorage.removeItem('kumidocs:info-open');
+									if (next) { localStorage.setItem('kumidocs:info-open', 'true'); }
+									else { localStorage.removeItem('kumidocs:info-open'); }
 									return next;
 								});
 							}}
@@ -657,8 +655,8 @@ export default function FilePage() {
 											: undefined
 									}
 									onMove={(p) => {
-										openMove(p).catch((err: unknown) => {
-											console.error('Failed to open move dialog:', err);
+										openMove(p).catch((error: unknown) => {
+											console.error('Failed to open move dialog:', error);
 										});
 									}}
 									onDelete={openDelete}

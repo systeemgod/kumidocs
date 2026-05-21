@@ -32,8 +32,8 @@ interface FetchMeResult {
 	needs401: boolean;
 }
 
-const handleFetchError = (err: unknown): FetchMeResult => {
-	const needs401 = (err as { status?: number }).status === HTTP_UNAUTHORIZED;
+const handleFetchError = (error: unknown): FetchMeResult => {
+	const needs401 = (error as { status?: number }).status === HTTP_UNAUTHORIZED;
 	return { slideThemes: {}, needs401 };
 };
 

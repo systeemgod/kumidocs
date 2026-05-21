@@ -12,12 +12,12 @@
  *
  * The block is removed from the rendered output after parsing.
  */
-import type { Root, Element, ElementContent } from 'hast';
+import { type Root, type Element, type ElementContent } from 'hast';
 
 // Matches a {key=value …} block — no nested braces.
-const ATTRS_RE = /^\{([^}]+)\}/;
+const ATTRS_RE = /^\{([^}]+)\}/u;
 // Matches individual key=value pairs. Values: alphanumeric chars plus - . % (no spaces).
-const PAIR_RE = /([a-zA-Z-]+)=([\w.%]+)/g;
+const PAIR_RE = /([a-zA-Z-]+)=([\w.%]+)/gu;
 
 // CSS properties we allow to be set via this syntax.
 const ALLOWED: ReadonlySet<string> = new Set([
@@ -52,9 +52,9 @@ function styleFingerprint(attrs: Record<string, string>): number {
 		.join(';');
 	let h = 5381;
 	for (let i = 0; i < s.length; i++) {
-		h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+		h = Math.trunc((h << 5) - h + (s.codePointAt(i) ?? 0));
 	}
-	return ((h >>> 0) % 1_000_000) + 1;
+	return (Math.abs(h) % 1_000_000) + 1;
 }
 
 // Apply a stylehash-N class to an element so Streamdown's memo comparators
@@ -66,7 +66,7 @@ function applyHashToNode(el: Element, hash: string): void {
 		filtered.push(hash);
 		el.properties.className = filtered;
 	} else {
-		const base = typeof cls === 'string' ? cls.replace(/\bstylehash-\S+/g, '').trim() : '';
+		const base = typeof cls === 'string' ? cls.replaceAll(/\bstylehash-\S+/gu, '').trim() : '';
 		el.properties.className = base ? `${base} ${hash}` : hash;
 	}
 }
@@ -132,9 +132,8 @@ function walk(node: Root | Element): void {
 	}
 }
 
-export function rehypeImageAttrsPlugin(): (tree: Root) => undefined {
+export function rehypeImageAttrsPlugin(): (tree: Root) => void {
 	return (tree: Root) => {
 		walk(tree);
-		return undefined;
 	};
 }
