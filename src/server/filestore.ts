@@ -69,7 +69,7 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
         // Only read text files; for others store empty string as marker
         if (ext === ".md" || CODE_TYPES.has(ext) || ext === "") {
           try {
-            const content = await readFile(fullPath, "utf-8");
+            const content = await readFile(fullPath, "utf8");
             fileCache.set(relPath, content);
           } catch {
             fileCache.set(relPath, "");
@@ -101,7 +101,7 @@ export async function writeFileToRepo(
   await mkdir(dirname(fullPath), { recursive: true });
   const isBinary = IMAGE_TYPES.has(extname(path).toLowerCase());
   const normalised = isBinary || content.endsWith("\n") ? content : `${content}\n`;
-  await writeFile(fullPath, normalised, "utf-8");
+  await writeFile(fullPath, normalised, "utf8");
   fileCache.set(path, normalised);
   invalidateTree();
 }
@@ -116,7 +116,7 @@ export async function deleteFileFromRepo(path: string, config: Config): Promise<
 export async function reloadFile(path: string, config: Config): Promise<void> {
   const fullPath = join(config.repoPath, path);
   try {
-    const content = await readFile(fullPath, "utf-8");
+    const content = await readFile(fullPath, "utf8");
     fileCache.set(path, content);
   } catch {
     fileCache.delete(path);

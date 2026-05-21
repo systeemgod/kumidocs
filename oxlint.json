@@ -60,7 +60,7 @@
 		"eslint/no-use-before-define": "off",
 		"eslint/prefer-destructuring": "off",
 		"eslint/require-await": "off",
-		"unicorn/text-encoding-identifier-case": "off",
+	
 		"eslint/no-implicit-coercion": "off",
 		"eslint/max-params": "off",
 		"eslint/complexity": "off",

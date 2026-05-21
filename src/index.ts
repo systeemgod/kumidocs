@@ -72,7 +72,7 @@ if (!existsSync(join(config.repoPath, ".git"))) {
 async function loadPermissions() {
   const configPath = join(config.repoPath, ".kumidocs.json");
   try {
-    const raw = await readFile(configPath, "utf-8");
+    const raw = await readFile(configPath, "utf8");
     setPermissions(JSON.parse(raw) as KumiDocsPermissions);
   } catch (error: unknown) {
     // If file doesn't exist, create it with default config
