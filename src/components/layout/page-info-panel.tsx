@@ -59,7 +59,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps):
     return [...groups.entries()];
   }, [commits]);
 
-  const toggleGroup = (key: string) => {
+  const toggleGroup = (key: string): void => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(key)) {
@@ -72,7 +72,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps):
   };
 
   useMountEffect(() => {
-    void (async () => {
+    void (async (): Promise<void> => {
       try {
         const res = await fetch(`/api/file/history?path=${encodeURIComponent(filePath)}`);
         const data = await (res.json() as Promise<CommitEntry[]>);
@@ -85,7 +85,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps):
     })();
   });
 
-  const openDiff = async (sha: string) => {
+  const openDiff = async (sha: string): Promise<void> => {
     setDiffLoading(true);
     setDiffOpen(true);
     setDiffData(undefined);

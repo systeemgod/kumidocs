@@ -32,6 +32,7 @@ import { join, sep } from "node:path";
 import { parseUser, setPermissions } from "./server/auth";
 import { readFile, writeFile } from "node:fs/promises";
 import type { KumiDocsPermissions } from "./server/auth";
+import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 // In dev (bun --hot), Bun bundles the frontend on-the-fly with HMR.
 // In production (dist/index.js), __BUNDLED__ is injected by scripts/build.ts and
@@ -69,7 +70,7 @@ if (!existsSync(join(config.repoPath, ".git"))) {
 }
 
 // Load .kumidocs.json permissions
-async function loadPermissions() {
+async function loadPermissions(): Promise<void> {
   const configPath = join(config.repoPath, ".kumidocs.json");
   try {
     const raw = await readFile(configPath, "utf8");
@@ -147,13 +148,13 @@ await loadFilestore(config);
 initSearch();
 
 // Auth helper used in route handlers
-function requireUser(req: Request) {
+function requireUser(req: Request): User | undefined {
   return parseUser(req.headers, config.authHeader);
 }
 
 // Background tasks
 setInterval(() => {
-  void (async () => {
+  void (async (): Promise<void> => {
     const result = await gitFetchAndRebase(config);
     if (result.advanced) {
       // Re-read changed files and update the search index incrementally.

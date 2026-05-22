@@ -11,7 +11,7 @@ import { useMountEffect } from "../../hooks/use-mount-effect";
 import { useUser } from "../../store/user";
 
 // Connects the WS client once on mount (rendered only when user is available)
-function WsConnector({ userId }: { userId: string }) {
+function WsConnector({ userId }: { userId: string }): JSX.Element {
   useMountEffect(() => {
     wsClient.connect(userId);
   });
@@ -60,7 +60,7 @@ export function AppShell(): JSX.Element {
 
   // Load user/instance info
   useMountEffect(() => {
-    void (async () => {
+    void (async (): Promise<void> => {
       try {
         const res = await fetch("/api/me");
         const data = await (res.json() as Promise<{
@@ -112,14 +112,14 @@ export function AppShell(): JSX.Element {
 
   // Ctrl+K shortcut
   useMountEffect(() => {
-    const handler = (ev: KeyboardEvent) => {
+    const handler = (ev: KeyboardEvent): void => {
       if ((ev.ctrlKey || ev.metaKey) && ev.key === "k") {
         ev.preventDefault();
         setSearchOpen(true);
       }
     };
     window.addEventListener("keydown", handler);
-    return () => {
+    return (): void => {
       window.removeEventListener("keydown", handler);
     };
   });
@@ -132,7 +132,7 @@ export function AppShell(): JSX.Element {
       document.body.style.cursor = "col-resize";
       document.body.style.userSelect = "none";
 
-      const onMouseMove = (mouseEv: MouseEvent) => {
+      const onMouseMove = (mouseEv: MouseEvent): void => {
         if (!dragStartRef.current) {
           return;
         }
@@ -144,7 +144,7 @@ export function AppShell(): JSX.Element {
         setSidebarWidth(next);
       };
 
-      const onMouseUp = (mouseEv: MouseEvent) => {
+      const onMouseUp = (mouseEv: MouseEvent): void => {
         if (dragStartRef.current) {
           const delta = mouseEv.clientX - dragStartRef.current.startX;
           const next = Math.max(

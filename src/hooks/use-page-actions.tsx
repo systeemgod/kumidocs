@@ -80,7 +80,7 @@ export function usePageActions(reloadTree: () => void): UsePageActionsResult {
 
   // Close the parent combobox dropdown when clicking outside
   const openParentDropdown = useCallback(() => {
-    const handler = (ev: MouseEvent) => {
+    const handler = (ev: MouseEvent): void => {
       if (comboboxRef.current && !comboboxRef.current.contains(ev.target as Node)) {
         closeParentDropdown();
       }

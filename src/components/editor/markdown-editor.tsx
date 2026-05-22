@@ -32,7 +32,7 @@ import { toast } from "sonner";
 
 /** Wrap the current selection (or insert at cursor) with `before` and `after`.
  * Clicking the same action again toggles it off. */
-function insertWrap(ta: HTMLTextAreaElement, before: string, after: string) {
+function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): void {
   const start = ta.selectionStart;
   const end = ta.selectionEnd;
   const selected = ta.value.slice(start, end);
@@ -91,7 +91,7 @@ function insertWrap(ta: HTMLTextAreaElement, before: string, after: string) {
 /** Set (or clear) a line prefix like `> ` or `## ` on the line at cursor.
  * Accepts an explicit `forcedStart` so callers can pass a saved cursor position
  * (needed when the textarea may have lost focus before this runs). */
-function setLinePrefix(ta: HTMLTextAreaElement, prefix: string, forcedStart?: number) {
+function setLinePrefix(ta: HTMLTextAreaElement, prefix: string, forcedStart?: number): void {
   const start = forcedStart ?? ta.selectionStart;
   // Guard: lastIndexOf('\n', -1) is treated as lastIndexOf('\n', 0) in browsers,
   // which can return 0 when the text starts with '\n', making lineStart > lineEnd.
@@ -109,7 +109,7 @@ function setLinePrefix(ta: HTMLTextAreaElement, prefix: string, forcedStart?: nu
 
 /** Toggle a list-style line prefix (- , 1. , - [ ] ) at the cursor line.
  * Unlike setLinePrefix, list prefixes are toggled off if already present. */
-function toggleListPrefix(ta: HTMLTextAreaElement, prefix: string) {
+function toggleListPrefix(ta: HTMLTextAreaElement, prefix: string): void {
   const start = ta.selectionStart;
   const lineStart = start > 0 ? ta.value.lastIndexOf("\n", start - 1) + 1 : 0;
   const lineEndRaw = ta.value.indexOf("\n", start);
@@ -124,7 +124,7 @@ function toggleListPrefix(ta: HTMLTextAreaElement, prefix: string) {
 
 /** Insert a markdown link. Wraps selected text as link text; positions cursor
  * over the "url" placeholder so the user can type the URL immediately. */
-function insertLink(ta: HTMLTextAreaElement) {
+function insertLink(ta: HTMLTextAreaElement): void {
   const start = ta.selectionStart;
   const end = ta.selectionEnd;
   const selected = ta.value.slice(start, end);
@@ -137,7 +137,7 @@ function insertLink(ta: HTMLTextAreaElement) {
 }
 
 /** Insert an image markdown snippet. Uses selected text as alt text if any. */
-function insertImage(ta: HTMLTextAreaElement, url: string) {
+function insertImage(ta: HTMLTextAreaElement, url: string): void {
   const start = ta.selectionStart;
   const end = ta.selectionEnd;
   const alt = ta.value.slice(start, end) || "image";
@@ -380,7 +380,7 @@ export function MarkdownEditor({
       const ta = taRef.current;
       for (const file of images) {
         const toastId = toast.loading(`Uploading ${file.name}…`);
-        void (async () => {
+        void (async (): Promise<void> => {
           const url = await uploadImageFile(file);
           toast.dismiss(toastId);
           if (url && ta) {

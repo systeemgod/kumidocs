@@ -74,7 +74,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
 
   useMountEffect(() => {
-    void (async () => {
+    void (async (): Promise<void> => {
       try {
         const { user: fetchedUser, slideThemes: fetchedThemes, needs401 } = await fetchMe();
         setUser(fetchedUser);

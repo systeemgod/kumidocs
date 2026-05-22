@@ -49,7 +49,6 @@
     "promise/always-return": "off",
     "promise/catch-or-return": "off",
     "promise/prefer-await-to-callbacks": "off",
-    "typescript/explicit-function-return-type": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/prefer-global-this": "off"
   },

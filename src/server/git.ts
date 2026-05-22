@@ -11,7 +11,7 @@ async function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult
   const prev = gitTail;
   let fnResult!: Promise<TResult>;
   // Advance the tail synchronously so concurrent callers queue up behind this op.
-  const mySlot = (async () => {
+  const mySlot = (async (): Promise<void> => {
     // Swallow errors from previous op so one failure doesn't stall the queue.
     try {
       await prev;

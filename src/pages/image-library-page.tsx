@@ -36,7 +36,7 @@ function formatBytes(bytes: number): string {
 
 // ── Image Detail Panel ────────────────────────────────────────────────────────
 
-function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: () => void }) {
+function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: () => void }): JSX.Element {
   const navigate = useNavigate();
   const { user } = useUser();
   const [confirmOpen, setConfirmOpen] = useState(false);

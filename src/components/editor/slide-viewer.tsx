@@ -277,7 +277,7 @@ function SlideControlsBar({
   toggleFullscreen,
   enterSpotlight,
   exportPdf,
-}: SlideControlsBarProps) {
+}: SlideControlsBarProps): JSX.Element {
   return (
     <>
       {/* ── Progress bar (paginate mode only) ── */}
@@ -476,7 +476,7 @@ function SlideViewer({
   nextRef.current = next;
 
   useMountEffect(() => {
-    const handler = (ev: KeyboardEvent) => {
+    const handler = (ev: KeyboardEvent): void => {
       const tag = (ev.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") {
         return;
@@ -490,7 +490,7 @@ function SlideViewer({
       }
     };
     window.addEventListener("keydown", handler);
-    return () => {
+    return (): void => {
       window.removeEventListener("keydown", handler);
     };
   });
@@ -510,14 +510,14 @@ function SlideViewer({
       setScale(Math.max(0.1, newScale));
     });
     obs.observe(el);
-    return () => {
+    return (): void => {
       obs.disconnect();
     };
   });
 
   // ── Fullscreen ───────────────────────────────────────────────────────────
   useMountEffect(() => {
-    const handler = () => {
+    const handler = (): void => {
       const active = Boolean(document.fullscreenElement);
       setIsFullscreen(active);
       if (!active) {
@@ -525,7 +525,7 @@ function SlideViewer({
       }
     };
     document.addEventListener("fullscreenchange", handler);
-    return () => {
+    return (): void => {
       document.removeEventListener("fullscreenchange", handler);
     };
   });
@@ -562,7 +562,7 @@ function SlideViewer({
     });
     obs.observe(el);
     // cleanup stored on ref so we can call it when the component unmounts
-    spotlightCleanupRef.current = () => {
+    spotlightCleanupRef.current = (): void => {
       obs.disconnect();
     };
   }, []);

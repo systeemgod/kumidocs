@@ -88,7 +88,7 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
       return;
     }
     const timer = setTimeout(() => {
-      void (async () => {
+      void (async (): Promise<void> => {
         setLoading(true);
         try {
           const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);

@@ -286,7 +286,7 @@ function FilePageHeader({
   exportPagePdf,
   openMove,
   openDelete,
-}: FilePageHeaderProps) {
+}: FilePageHeaderProps): JSX.Element {
   const editButtonClass = getEditButtonClass(editMode, editLocked, user);
   const saveBadgeClass = getSaveBadgeClass(saveStatus);
   return (
@@ -457,7 +457,7 @@ export function FilePage(): JSX.Element {
 
   // Toggle info panel from sidebar context menu (same-tab custom event)
   useMountEffect(() => {
-    const handler = (ev: Event) => {
+    const handler = (ev: Event): void => {
       const detail = (ev as CustomEvent<string>).detail;
       if (detail === filePath) {
         setInfoOpen((prev) => {
@@ -472,14 +472,14 @@ export function FilePage(): JSX.Element {
       }
     };
     window.addEventListener("kumidocs:open-info", handler);
-    return () => {
+    return (): void => {
       window.removeEventListener("kumidocs:open-info", handler);
     };
   });
 
   const autoSaveTimer = useRef(undefined as ReturnType<typeof setTimeout> | undefined);
   // Clear the auto-save timer on unmount to prevent a save firing on a dead component.
-  useMountEffect(() => () => {
+  useMountEffect(() => (): void => {
     if (autoSaveTimer.current) {
       clearTimeout(autoSaveTimer.current);
     }
@@ -531,7 +531,7 @@ export function FilePage(): JSX.Element {
   }, []);
 
   useMountEffect(() => {
-    void (async () => {
+    void (async (): Promise<void> => {
       try {
         await loadDoc(filePath);
       } catch (error: unknown) {
@@ -550,7 +550,7 @@ export function FilePage(): JSX.Element {
     if (user) {
       wsClient.joinPage(filePath);
     }
-    return () => {
+    return (): void => {
       if (editModeRef.current) {
         wsClient.stopEditing(filePath);
       }
@@ -571,7 +571,7 @@ export function FilePage(): JSX.Element {
         return;
       }
       if (!isDirtyRef.current) {
-        void (async () => {
+        void (async (): Promise<void> => {
           try {
             await loadDoc(filePath);
           } catch (error: unknown) {
@@ -589,7 +589,7 @@ export function FilePage(): JSX.Element {
     }
     if (msg.type === "save_conflict_lost" && msg.pageId === filePath) {
       toast.error("Your changes were lost due to a remote conflict.");
-      void (async () => {
+      void (async (): Promise<void> => {
         try {
           await loadDoc(filePath);
         } catch (error: unknown) {
@@ -710,7 +710,7 @@ export function FilePage(): JSX.Element {
         const newRaw = buildFrontmatter(newMeta) + parsed.content;
         setRawContent(newRaw);
         rawContentRef.current = newRaw;
-        void (async () => {
+        void (async (): Promise<void> => {
           try {
             await doSave(newRaw, true);
           } catch (error: unknown) {
@@ -719,7 +719,7 @@ export function FilePage(): JSX.Element {
         })();
       } else {
         // Persist the emoji change immediately (chains behind any in-flight save).
-        void (async () => {
+        void (async (): Promise<void> => {
           try {
             await doSave(contentRef.current);
           } catch (error: unknown) {

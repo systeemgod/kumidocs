@@ -137,7 +137,7 @@ function PageNodeRow({
   onNewSubPage: (parentDir: string) => void;
   onMove: (path: string) => void;
   onDelete: (path: string, title: string) => void;
-}) {
+}): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const hasChildren = node.children.length > 0;
@@ -158,7 +158,7 @@ function PageNodeRow({
   const indent = 8 + depth * 14;
   const parentDir = node.path.includes("/") ? node.path.slice(0, node.path.lastIndexOf("/")) : "";
 
-  const handleDuplicate = async () => {
+  const handleDuplicate = async (): Promise<void> => {
     try {
       const res = await fetch(`/api/file?path=${encodeURIComponent(node.path)}`);
       if (!res.ok) {
@@ -359,7 +359,7 @@ export function Sidebar({
   const navigate = useNavigate();
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
 
-  const handleOpenMove = async (path: string) => {
+  const handleOpenMove = async (path: string): Promise<void> => {
     try {
       await openMove(path);
     } catch (error: unknown) {

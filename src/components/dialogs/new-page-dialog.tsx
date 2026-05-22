@@ -33,7 +33,12 @@ function slugify(title: string): string {
     .replaceAll(/^-+|-+$/gu, "");
 }
 
-export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDialogProps): JSX.Element {
+export function NewPageDialog({
+  open,
+  onClose,
+  parentDir,
+  onCreated,
+}: NewPageDialogProps): JSX.Element {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
@@ -77,7 +82,7 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
     }
   }, [title, slug, slugEdited, pageType, finalPath, navigate, onCreated, onClose]);
 
-  const handleKeyDown = async (ev: React.KeyboardEvent) => {
+  const handleKeyDown = async (ev: React.KeyboardEvent): Promise<void> => {
     if (ev.key === "Enter" && !creating && title.trim() && effectiveSlug) {
       try {
         await handleCreate();
