@@ -65,8 +65,7 @@ const config = loadConfig();
 
 // Validate repo
 if (!existsSync(join(config.repoPath, ".git"))) {
-  console.error(`Fatal: ${config.repoPath} is not a git repository.`);
-  process.exit(1);
+  throw new Error(`Fatal: ${config.repoPath} is not a git repository.`);
 }
 
 // Load .kumidocs.json permissions
