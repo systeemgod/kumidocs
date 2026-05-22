@@ -28,6 +28,17 @@ interface PageOption {
   title: string;
 }
 
+interface RawNode {
+  path: string;
+  type: string;
+  fileEntry?: { title?: string };
+  children?: RawNode[];
+}
+
+function flattenTree(nodes: RawNode[]): RawNode[] {
+  return nodes.flatMap((node) => (node.type === "dir" ? flattenTree(node.children ?? []) : [node]));
+}
+
 // Sentinel for "place at repo root (no parent folder)"
 const ROOT = "__root__";
 
@@ -82,17 +93,9 @@ export function usePageActions(reloadTree: () => void) {
     setParentSearch("");
     try {
       const res = await fetch("/api/tree");
-      interface RawNode {
-        path: string;
-        type: string;
-        fileEntry?: { title?: string };
-        children?: RawNode[];
-      }
       const tree = (await res.json()) as RawNode[];
       // Flatten the nested tree into a flat list of file nodes
-      const flatten = (nodes: RawNode[]): RawNode[] =>
-        nodes.flatMap((node) => (node.type === "dir" ? flatten(node.children ?? []) : [node]));
-      const pages: PageOption[] = flatten(tree)
+      const pages: PageOption[] = flattenTree(tree)
         .filter(({ path: pagePath }) => pagePath.endsWith(".md") && pagePath !== filePath)
         .map(({ path: pagePath, fileEntry }) => ({
           path: pagePath,
