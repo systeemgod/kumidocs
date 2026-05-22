@@ -188,7 +188,7 @@ function ScaledSlide({
   rounded?: boolean;
   /** Position absolute top-0 left-0 — used inside the scroll-mode tile wrapper */
   absolute?: boolean;
-}) {
+}): JSX.Element {
   const { directives } = slide;
   const { theme: siteTheme } = useTheme();
 
@@ -424,7 +424,7 @@ function SlideViewer({
   paginate = false,
   slideThemes,
   themeVars,
-}: SlideViewerProps) {
+}: SlideViewerProps): JSX.Element {
   // Parse slides once per value change
   const parsedSlides = useMemo<ParsedSlide[]>(
     () => splitSlides(value).map((slide) => parseSlideDirectives(slide)),

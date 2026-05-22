@@ -5,7 +5,7 @@ import { Root as LabelRoot } from "@radix-ui/react-label";
 
 import { cn } from "@/lib/utils";
 
-function Label({ className, ...props }: ComponentProps<typeof LabelRoot>) {
+function Label({ className, ...props }: ComponentProps<typeof LabelRoot>): JSX.Element {
   return (
     <LabelRoot
       data-slot="label"

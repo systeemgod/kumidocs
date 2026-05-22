@@ -33,7 +33,7 @@ function slugify(title: string): string {
     .replaceAll(/^-+|-+$/gu, "");
 }
 
-export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDialogProps) {
+export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDialogProps): JSX.Element {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");

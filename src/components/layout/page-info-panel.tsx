@@ -30,7 +30,7 @@ interface PageInfoPanelProps {
   onClose?: () => void;
 }
 
-export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) {
+export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps): JSX.Element {
   const [commits, setCommits] = useState<CommitEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());

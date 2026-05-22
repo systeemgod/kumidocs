@@ -174,7 +174,7 @@ function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: 
 
 // ── Image Library Page ────────────────────────────────────────────────────────
 
-export function ImageLibraryPage() {
+export function ImageLibraryPage(): JSX.Element {
   const { filename } = useParams<{ filename?: string }>();
   const navigate = useNavigate();
   const [images, setImages] = useState<ImageEntry[]>([]);

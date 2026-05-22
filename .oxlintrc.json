@@ -50,8 +50,6 @@
     "promise/catch-or-return": "off",
     "promise/prefer-await-to-callbacks": "off",
     "typescript/explicit-function-return-type": "off",
-    "typescript/explicit-module-boundary-types": "off",
-    "typescript/no-import-type-side-effects": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/prefer-global-this": "off"
   },

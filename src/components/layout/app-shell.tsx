@@ -23,7 +23,7 @@ const SIDEBAR_DEFAULT = 288;
 const SIDEBAR_MIN = 160;
 const SIDEBAR_MAX = 480;
 
-export function AppShell() {
+export function AppShell(): JSX.Element {
   const { user } = useUser();
   const [searchOpen, setSearchOpen] = useState(false);
   const [tree, setTree] = useState<TreeNode[]>([]);

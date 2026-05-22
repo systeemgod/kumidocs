@@ -42,6 +42,12 @@ function flattenTree(nodes: RawNode[]): RawNode[] {
 // Sentinel for "place at repo root (no parent folder)"
 const ROOT = "__root__";
 
+interface UsePageActionsResult {
+  openMove: (filePath: string) => Promise<void>;
+  openDelete: (filePath: string, title?: string) => void;
+  dialogs: JSX.Element;
+}
+
 /**
  * Shared hook for Move + Delete page actions.
  * Manages all dialog state internally; returns open-functions and dialog JSX.
@@ -50,7 +56,7 @@ const ROOT = "__root__";
  *   const { openMove, openDelete, dialogs } = usePageActions(reloadTree);
  *   // ... render {dialogs} somewhere in the component tree
  */
-export function usePageActions(reloadTree: () => void) {
+export function usePageActions(reloadTree: () => void): UsePageActionsResult {
   const navigate = useNavigate();
 
   // ── Move dialog ──────────────────────────────────────────────────────────

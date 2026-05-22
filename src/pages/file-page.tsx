@@ -423,7 +423,7 @@ function FilePageHeader({
   );
 }
 
-export function FilePage() {
+export function FilePage(): JSX.Element {
   const { "*": rawPath = "" } = useParams();
   const filePath = !rawPath.includes(".") ? `${rawPath}.md` : rawPath; // default to .md if no extension
 

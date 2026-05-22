@@ -222,7 +222,7 @@ export function MarkdownEditor({
   slideThemes,
   slideThemeVars,
   onMetaChange,
-}: MarkdownEditorProps) {
+}: MarkdownEditorProps): JSX.Element {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

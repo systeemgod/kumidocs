@@ -157,7 +157,7 @@ interface SlideOverlayProps {
   themeVars?: Record<string, string>;
 }
 
-export function SlideOverlay({ elements, slideNum, total, title, themeVars }: SlideOverlayProps) {
+export function SlideOverlay({ elements, slideNum, total, title, themeVars }: SlideOverlayProps): JSX.Element {
   return (
     <>
       {elements.map((el, idx) => {

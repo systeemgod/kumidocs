@@ -42,7 +42,7 @@ function isSafePath(repoPath: string, userPath: string): boolean {
 }
 
 // GET /api/me
-function apiMe(user: User, config: Config) {
+function apiMe(user: User, config: Config): Response {
   return Response.json({
     ...user,
     instanceName: config.instanceName,
@@ -52,12 +52,12 @@ function apiMe(user: User, config: Config) {
 }
 
 // GET /api/tree
-function apiTree() {
+function apiTree(): Response {
   return Response.json(buildFileTree());
 }
 
 // GET /api/file?path=<path>
-async function apiFileGet(url: URL, config: Config) {
+async function apiFileGet(url: URL, config: Config): Promise<Response> {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
   if (!path) {
     return Response.json({ error: "path required" }, { status: 400 });
@@ -76,7 +76,7 @@ async function apiFileGet(url: URL, config: Config) {
 }
 
 // PUT /api/file?path=<path>   body: { content: string }
-async function apiFilePut(url: URL, req: Request, user: User, config: Config) {
+async function apiFilePut(url: URL, req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -133,7 +133,7 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config) {
 }
 
 // POST /api/file   body: { path: string, content: string }
-async function apiFileCreate(req: Request, user: User, config: Config) {
+async function apiFileCreate(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -177,7 +177,7 @@ async function apiFileCreate(req: Request, user: User, config: Config) {
 }
 
 // DELETE /api/file?path=<path>
-async function apiFileDelete(url: URL, user: User, config: Config) {
+async function apiFileDelete(url: URL, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -210,7 +210,7 @@ async function apiFileDelete(url: URL, user: User, config: Config) {
 }
 
 // POST /api/file/rename   body: { from: string, to: string }
-async function apiFileRename(req: Request, user: User, config: Config) {
+async function apiFileRename(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -316,7 +316,7 @@ async function apiFileRename(req: Request, user: User, config: Config) {
 }
 
 // GET /api/search?q=<query>
-function apiSearch(url: URL) {
+function apiSearch(url: URL): Response {
   const query = url.searchParams.get("q") ?? "";
   return Response.json(searchDocs(query));
 }
@@ -341,7 +341,7 @@ async function apiAvatarProxy(hash: string): Promise<Response> {
 }
 
 // GET /api/sidebar
-function apiSidebar() {
+function apiSidebar(): Response {
   const content = getFile("_sidebar.md") ?? "";
   return Response.json({ content });
 }
@@ -474,7 +474,7 @@ async function apiImageDelete(filename: string, user: User, config: Config): Pro
 }
 
 // GET /api/file/history?path=<path>
-async function apiFileHistory(url: URL, config: Config) {
+async function apiFileHistory(url: URL, config: Config): Promise<Response> {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
   if (!path) {
     return Response.json({ error: "path required" }, { status: 400 });
@@ -516,7 +516,7 @@ async function apiFileHistory(url: URL, config: Config) {
 }
 
 // GET /api/file/diff?path=<path>&sha=<sha>
-async function apiFileDiff(url: URL, config: Config) {
+async function apiFileDiff(url: URL, config: Config): Promise<Response> {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
   const shortSha = url.searchParams.get("sha") ?? "";
   if (!path || !shortSha) {

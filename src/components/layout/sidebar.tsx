@@ -353,7 +353,7 @@ export function Sidebar({
   onNewSubPage,
   presenceByPage,
   reloadTree,
-}: SidebarProps) {
+}: SidebarProps): JSX.Element {
   const pages = buildPageTree(tree);
   const { user: currentUser } = useUser();
   const navigate = useNavigate();

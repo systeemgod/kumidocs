@@ -47,7 +47,7 @@ interface EmojiIconProps {
   className?: string;
 }
 
-function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconProps) {
+function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconProps): JSX.Element {
   const wrapStyle: CSSProperties = {
     display: "inline-flex",
     alignItems: "center",
@@ -113,6 +113,8 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
       </span>
     );
   }
+
+  return <span style={wrapStyle} className={className} />;
 }
 
 // Same emoji regex as rehypeEmojiPlugin — kept here to avoid ui → editor imports.
@@ -123,7 +125,7 @@ const TITLE_EMOJI_RE =
  * Renders a plain string with any embedded emoji swapped for <EmojiIcon>.
  * Sizing is relative ("1em") so it matches the surrounding text naturally.
  */
-function TitleWithEmoji({ title }: { title: string }) {
+function TitleWithEmoji({ title }: { title: string }): JSX.Element {
   const re = new RegExp(TITLE_EMOJI_RE.source, TITLE_EMOJI_RE.flags);
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
