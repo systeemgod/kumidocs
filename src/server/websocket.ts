@@ -6,7 +6,7 @@ import {
 } from "../lib/types";
 import { type ServerWebSocket } from "bun";
 
-export interface WsData {
+interface WsData {
   user: User;
   pageId: string | null;
   sessionId: string;
@@ -92,14 +92,14 @@ function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
   ws.data.pageId = null;
 }
 
-export function wsOpen(ws: ServerWebSocket<WsData>): void {
+function wsOpen(ws: ServerWebSocket<WsData>): void {
   ws.data.sessionId = String(++sessionCounter);
   ws.data.pageId = null;
   ws.data.lastHeartbeat = Date.now();
   sessions.set(ws.data.sessionId, ws);
 }
 
-export function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
+function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
   ws.data.lastHeartbeat = Date.now();
   let msg: WsClientMessage;
   try {
@@ -171,14 +171,14 @@ export function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): vo
   }
 }
 
-export function wsClose(ws: ServerWebSocket<WsData>): void {
+function wsClose(ws: ServerWebSocket<WsData>): void {
   const sid = ws.data.sessionId;
   leaveCurrentPage(ws);
   sessions.delete(sid);
 }
 
 // Called from the background pull loop after repo advances
-export function broadcastPageChanged(
+function broadcastPageChanged(
   pageId: string,
   commitSha: string,
   changedBy: string,
@@ -198,21 +198,21 @@ export function broadcastPageChanged(
   }
 }
 
-export function broadcastPageDeleted(pageId: string): void {
+function broadcastPageDeleted(pageId: string): void {
   const msg: WsServerMessage = { type: "page_deleted", pageId };
   for (const ws of sessions.values()) {
     send(ws, msg);
   }
 }
 
-export function broadcastPageCreated(pageId: string, path: string): void {
+function broadcastPageCreated(pageId: string, path: string): void {
   const msg: WsServerMessage = { type: "page_created", pageId, path };
   for (const ws of sessions.values()) {
     send(ws, msg);
   }
 }
 
-export function sendSaveConflict(userId: string, pageId: string): void {
+function sendSaveConflict(userId: string, pageId: string): void {
   for (const ws of sessions.values()) {
     if (ws.data.user.id === userId) {
       send(ws, {
@@ -225,7 +225,7 @@ export function sendSaveConflict(userId: string, pageId: string): void {
   }
 }
 
-export function getEditorForPage(pageId: string): User | null {
+function getEditorForPage(pageId: string): User | null {
   const sid = pageEditors.get(pageId);
   if (!sid) {
     return null;
@@ -237,7 +237,7 @@ export function getEditorForPage(pageId: string): User | null {
 // Prune sessions that haven't sent a heartbeat in 90 seconds.
 // ws.close() triggers the wsClose handler which calls leaveCurrentPage, so
 // presence and edit-lock cleanup happens automatically.
-export function pruneDeadSessions(): void {
+function pruneDeadSessions(): void {
   const cutoff = Date.now() - 90_000;
   for (const ws of sessions.values()) {
     if (ws.data.lastHeartbeat < cutoff) {
@@ -245,3 +245,16 @@ export function pruneDeadSessions(): void {
     }
   }
 }
+
+export {
+  type WsData,
+  wsOpen,
+  wsMessage,
+  wsClose,
+  broadcastPageChanged,
+  broadcastPageDeleted,
+  broadcastPageCreated,
+  sendSaveConflict,
+  getEditorForPage,
+  pruneDeadSessions,
+};

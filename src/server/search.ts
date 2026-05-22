@@ -15,7 +15,7 @@ interface DocEntry {
 
 let index: MiniSearch<DocEntry> | undefined;
 
-export function initSearch(): void {
+function initSearch(): void {
   index = new MiniSearch<DocEntry>({
     fields: ["title", "content", "path", "description"],
     storeFields: ["title", "path", "emoji", "description", "type"],
@@ -28,7 +28,7 @@ export function initSearch(): void {
   rebuildIndex();
 }
 
-export function rebuildIndex(): void {
+function rebuildIndex(): void {
   if (!index) {
     return;
   }
@@ -71,7 +71,7 @@ function buildDocs(paths: string[]): DocEntry[] {
     });
 }
 
-export function updateInIndex(path: string): void {
+function updateInIndex(path: string): void {
   if (!index || !path.endsWith(".md")) {
     return;
   }
@@ -91,7 +91,7 @@ export function updateInIndex(path: string): void {
   }
 }
 
-export function removeFromIndex(path: string): void {
+function removeFromIndex(path: string): void {
   if (!index) {
     return;
   }
@@ -102,7 +102,7 @@ export function removeFromIndex(path: string): void {
   }
 }
 
-export function searchDocs(query: string, limit = 20): SearchResult[] {
+function searchDocs(query: string, limit = 20): SearchResult[] {
   if (!index || !query.trim()) {
     return [];
   }
@@ -136,3 +136,5 @@ function buildSnippet(path: string, query: string): string {
     (end < body.length ? "…" : "")
   );
 }
+
+export { initSearch, rebuildIndex, updateInIndex, removeFromIndex, searchDocs };

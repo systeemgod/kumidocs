@@ -31,7 +31,7 @@ async function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult
   return fnResult;
 }
 
-export function gitPull(config: Config): Promise<void> {
+function gitPull(config: Config): Promise<void> {
   return withGitLock(() => _gitPull(config));
 }
 
@@ -51,7 +51,7 @@ async function _gitPull(config: Config): Promise<void> {
   }
 }
 
-export function gitStageAndCommit(
+function gitStageAndCommit(
   config: Config,
   filePaths: string[],
   message: string,
@@ -139,7 +139,7 @@ async function pushWithRetry(
   return { sha: commitSha.slice(0, 7) };
 }
 
-export function gitRemoveAndCommit(
+function gitRemoveAndCommit(
   config: Config,
   filePath: string,
   message: string,
@@ -152,7 +152,7 @@ export function gitRemoveAndCommit(
   });
 }
 
-export function gitMoveAndCommit(
+function gitMoveAndCommit(
   config: Config,
   from: string,
   to: string,
@@ -173,7 +173,7 @@ export function gitMoveAndCommit(
   });
 }
 
-export function gitFetchAndRebase(
+function gitFetchAndRebase(
   config: Config,
 ): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
   return withGitLock(() => _fetchAndRebase(config));
@@ -227,7 +227,7 @@ async function _fetchAndRebase(
   return { changed, sha, advanced };
 }
 
-export async function getHeadSha(config: Config): Promise<string> {
+async function getHeadSha(config: Config): Promise<string> {
   try {
     const sha = await git.resolveRef({
       fs,
@@ -240,7 +240,7 @@ export async function getHeadSha(config: Config): Promise<string> {
   }
 }
 
-export interface CommitEntry {
+interface CommitEntry {
   sha: string; // short (7-char)
   fullSha: string;
   message: string;
@@ -249,11 +249,7 @@ export interface CommitEntry {
 }
 
 /** Return commits that touched `filepath`, most recent first. */
-export async function gitFileLog(
-  config: Config,
-  filepath: string,
-  limit = 50,
-): Promise<CommitEntry[]> {
+async function gitFileLog(config: Config, filepath: string, limit = 50): Promise<CommitEntry[]> {
   const commits = await git.log({ fs, dir: config.repoPath, filepath, depth: limit });
   return commits.map((commit) => ({
     sha: commit.oid.slice(0, 7),
@@ -265,11 +261,7 @@ export async function gitFileLog(
 }
 
 /** Read the content of `filepath` at a specific full commit SHA. Returns empty string if not found. */
-export async function gitBlobAt(
-  config: Config,
-  commitSha: string,
-  filepath: string,
-): Promise<string> {
+async function gitBlobAt(config: Config, commitSha: string, filepath: string): Promise<string> {
   try {
     const { blob } = await git.readBlob({
       fs,
@@ -282,3 +274,15 @@ export async function gitBlobAt(
     return "";
   }
 }
+
+export {
+  gitPull,
+  gitStageAndCommit,
+  gitRemoveAndCommit,
+  gitMoveAndCommit,
+  gitFetchAndRebase,
+  getHeadSha,
+  type CommitEntry,
+  gitFileLog,
+  gitBlobAt,
+};

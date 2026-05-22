@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import { type FileType, type PresenceUser, type User } from "../lib/types";
 import { InfoRegular, MoreHorizontalRegular, SaveRegular } from "@fluentui/react-icons";
 import { type ReactNode, useCallback, useRef, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
@@ -19,13 +20,14 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { CodeEditor } from "../components/editor/CodeEditor";
 import { EmojiPickerPopover } from "../components/ui/EmojiPickerPopover";
+import { type jsPDF as JsPDF } from "jspdf";
 import { MarkdownEditor } from "../components/editor/MarkdownEditor";
 import { MarkdownViewer } from "../components/editor/MarkdownViewer";
 import { NotFound } from "./NotFound";
 import { PageInfoPanel } from "../components/layout/PageInfoPanel";
 import { PageMenuItems } from "../components/ui/PageMenuItems";
-import { type PresenceUser } from "../lib/types";
 import { ScrollArea } from "../components/ui/scroll-area";
+import { type SlideThemeMap } from "@/lib/slide";
 import { SlideViewer } from "../components/editor/SlideViewer";
 import { UserAvatar } from "../components/ui/avatar";
 import { toast } from "sonner";
@@ -45,6 +47,383 @@ function pathToTitle(path: string): string {
     .replace(/\.md$/u, "")
     .replaceAll(/[-_]/gu, " ")
     .replaceAll(/\b\w/gu, (char) => char.toUpperCase());
+}
+
+// ── PDF overlay helpers (extracted to keep exportPagePdf complexity in check) ──
+
+function addTextOverlayToPage(
+  pdf: JsPDF,
+  el: HTMLElement,
+  rootRect: DOMRect,
+  pageHPx: number,
+): void {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
+    if (!text || !(node as Text).parentElement) {
+      continue;
+    }
+    let ancestor: Element | null = (node as Text).parentElement;
+    let inSvg = false;
+    while (ancestor) {
+      if (ancestor.tagName.toLowerCase() === "svg") {
+        inSvg = true;
+        break;
+      }
+      ancestor = ancestor.parentElement;
+    }
+    if (inSvg) {
+      continue;
+    }
+    const range = document.createRange();
+    range.selectNode(node);
+    const br = range.getBoundingClientRect();
+    if (br.width <= 0 || br.height <= 0) {
+      continue;
+    }
+    const yLocal = br.top - rootRect.top;
+    const pageIdx = Math.floor(yLocal / pageHPx);
+    const yOnPage = yLocal - pageIdx * pageHPx;
+    const fsPx = Number.parseFloat(
+      window.getComputedStyle((node as Text).parentElement ?? document.body).fontSize,
+    );
+    pdf.setPage(pageIdx + 1);
+    pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
+    const pdfWidth = pdf.getTextWidth(text);
+    const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
+    pdf.setCharSpace(charSpace);
+    pdf.text(text, br.left - rootRect.left, yOnPage, {
+      renderingMode: "invisible",
+      baseline: "top",
+    });
+    pdf.setCharSpace(0);
+  }
+}
+
+function addLinkOverlayToPage(
+  pdf: JsPDF,
+  el: HTMLElement,
+  rootRect: DOMRect,
+  pageHPx: number,
+): void {
+  for (const anchor of el.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const rect = anchor.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      continue;
+    }
+    const xPos = rect.left - rootRect.left;
+    const yLocal = rect.top - rootRect.top;
+    const pageIdx = Math.floor(yLocal / pageHPx);
+    const yOnPage = yLocal - pageIdx * pageHPx;
+    if (xPos < 0 || yOnPage < 0) {
+      continue;
+    }
+    pdf.setPage(pageIdx + 1);
+    pdf.link(xPos, yOnPage, rect.width, rect.height, { url: anchor.href });
+  }
+}
+
+// ── Derived-value helpers ─────────────────────────────────────────────────────
+
+function resolveFileType(rawExt: string, slides: boolean | undefined): FileType {
+  const base = extensionToType(rawExt);
+  return base === "doc" && slides ? "slide" : base;
+}
+
+function computeTitle(fileType: FileType, content: string, filePath: string): string {
+  if (fileType === "doc" || fileType === "slide") {
+    return extractHeadingTitle(content) ?? pathToTitle(filePath);
+  }
+  return filePath.split("/").pop() ?? filePath;
+}
+
+function getEditButtonClass(
+  editMode: boolean,
+  editLocked: PresenceUser | null,
+  user: User | undefined,
+): string {
+  if (editMode) {
+    return "bg-background text-foreground shadow-sm";
+  }
+  if (editLocked && user && editLocked.id !== user.id) {
+    return "text-muted-foreground opacity-40 cursor-not-allowed";
+  }
+  return "text-muted-foreground hover:text-foreground";
+}
+
+function getSaveBadgeClass(saveStatus: SaveStatus): string {
+  if (saveStatus === "saved") {
+    return " border-green-600 text-green-600 dark:border-green-500 dark:text-green-500";
+  }
+  if (saveStatus === "error") {
+    return " border-destructive text-destructive";
+  }
+  return "";
+}
+
+const SAVE_BADGE_TEXT: Record<SaveStatus, string> = {
+  saved: "Saved",
+  saving: "Saving…",
+  unsaved: "Unsaved",
+  error: "Error",
+};
+
+interface EditorContentProps {
+  fileType: FileType;
+  editMode: boolean;
+  content: string;
+  rawContent: string;
+  rawExt: string;
+  handleChange: (val: string) => void;
+  handleSave: () => Promise<void>;
+  meta: DocMeta;
+  slideThemes: SlideThemeMap;
+  setMeta: React.Dispatch<React.SetStateAction<DocMeta>>;
+  metaRef: React.MutableRefObject<DocMeta>;
+  title: string;
+}
+
+function buildEditorContent({
+  fileType,
+  editMode,
+  content,
+  rawContent,
+  rawExt,
+  handleChange,
+  handleSave,
+  meta,
+  slideThemes,
+  setMeta,
+  metaRef,
+  title,
+}: EditorContentProps): ReactNode {
+  if (fileType === "code") {
+    return (
+      <CodeEditor
+        value={content}
+        language={rawExt}
+        readOnly={!editMode}
+        onChange={editMode ? handleChange : undefined}
+        onSave={editMode ? handleSave : undefined}
+      />
+    );
+  }
+  if (editMode) {
+    return (
+      <MarkdownEditor
+        value={rawContent}
+        onChange={handleChange}
+        onSave={handleSave}
+        fileType={fileType}
+        slideTheme={meta.theme}
+        slidePaginate={meta.paginate}
+        slideThemes={slideThemes}
+        slideThemeVars={meta.themeVars}
+        onMetaChange={(updatedMeta) => {
+          metaRef.current = updatedMeta;
+          setMeta(updatedMeta);
+        }}
+      />
+    );
+  }
+  if (fileType === "slide") {
+    return (
+      <SlideViewer
+        value={content}
+        filename={title}
+        theme={meta.theme}
+        paginate={meta.paginate}
+        slideThemes={slideThemes}
+        themeVars={meta.themeVars}
+      />
+    );
+  }
+  return (
+    <ScrollArea className="h-full">
+      <MarkdownViewer value={content} />
+    </ScrollArea>
+  );
+}
+
+// ── Page header sub-component ─────────────────────────────────────────────────
+
+interface FilePageHeaderProps {
+  meta: DocMeta;
+  fileType: FileType;
+  title: string;
+  user: User | undefined;
+  editMode: boolean;
+  editLocked: PresenceUser | null;
+  viewers: PresenceUser[];
+  saveStatus: SaveStatus;
+  infoOpen: boolean;
+  rawPath: string;
+  filePath: string;
+  handleEmojiChange: (emoji: string) => void;
+  exitEdit: () => Promise<void>;
+  enterEdit: () => void;
+  setInfoOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  handlePageDuplicate: () => void;
+  exportPagePdf: () => void;
+  openMove: (path: string) => Promise<void>;
+  openDelete: () => void;
+}
+
+function FilePageHeader({
+  meta,
+  fileType,
+  title,
+  user,
+  editMode,
+  editLocked,
+  viewers,
+  saveStatus,
+  infoOpen,
+  rawPath,
+  filePath,
+  handleEmojiChange,
+  exitEdit,
+  enterEdit,
+  setInfoOpen,
+  handlePageDuplicate,
+  exportPagePdf,
+  openMove,
+  openDelete,
+}: FilePageHeaderProps) {
+  const editButtonClass = getEditButtonClass(editMode, editLocked, user);
+  const saveBadgeClass = getSaveBadgeClass(saveStatus);
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
+      {/* Left: icon + title */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <EmojiPickerPopover
+          emoji={meta.emoji}
+          fileType={fileType}
+          size={24}
+          editable={editMode}
+          onSelect={handleEmojiChange}
+        />
+        <h1 className="font-semibold text-base truncate">{title}</h1>
+      </div>
+
+      {/* Center: Read/Edit segmented switch */}
+      {user?.canEdit && (
+        <div
+          className="flex items-center rounded-md border border-border bg-muted h-7 p-0.5 gap-0.5 shrink-0"
+          title={
+            editLocked && editLocked.id !== user.id ? `${editLocked.name} is editing` : undefined
+          }
+        >
+          <button
+            className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${!editMode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={async () => {
+              if (editMode) {
+                try {
+                  await exitEdit();
+                } catch (error: unknown) {
+                  console.error("Failed to exit edit mode:", error);
+                }
+              }
+            }}
+          >
+            Read
+          </button>
+          <button
+            className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editButtonClass}`}
+            onClick={() => {
+              if (!editMode && !(editLocked && editLocked.id !== user.id)) {
+                enterEdit();
+              }
+            }}
+            disabled={editMode || Boolean(editLocked && editLocked.id !== user.id)}
+          >
+            Edit
+          </button>
+        </div>
+      )}
+
+      {/* Save status – inline next to Edit button */}
+      {editMode && (
+        <Badge variant="outline" className={`text-xs h-5 shrink-0${saveBadgeClass}`}>
+          {SAVE_BADGE_TEXT[saveStatus]}
+        </Badge>
+      )}
+
+      {/* Right: viewers + info + dropdown */}
+      <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+        {/* Viewers — deduplicated by id (same user may have multiple tabs open) */}
+        <div className="flex -space-x-1">
+          {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()]
+            .slice(0, 5)
+            .map((viewer) => (
+              <Tooltip key={viewer.id}>
+                <TooltipTrigger asChild>
+                  <UserAvatar
+                    name={viewer.name}
+                    email={viewer.email}
+                    size="sm"
+                    className="border border-background ring-1 ring-border"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>{viewer.name}</TooltipContent>
+              </Tooltip>
+            ))}
+        </div>
+
+        {/* Dedicated info button */}
+        {!editMode && (
+          <Button
+            size="sm"
+            variant={infoOpen ? "secondary" : "ghost"}
+            className="h-7 gap-1 text-xs px-2"
+            onClick={() => {
+              setInfoOpen((prev) => {
+                const next = !prev;
+                if (next) {
+                  localStorage.setItem("kumidocs:info-open", "true");
+                } else {
+                  localStorage.removeItem("kumidocs:info-open");
+                }
+                return next;
+              });
+            }}
+          >
+            <InfoRegular className="w-4 h-4" />
+            Info
+          </Button>
+        )}
+
+        {/* Advanced / dangerous actions only */}
+        {user?.canEdit && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-7 w-7">
+                <MoreHorizontalRegular className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <PageMenuItems
+                variant="dropdown"
+                href={`/p/${rawPath}`}
+                path={filePath}
+                displayTitle={title}
+                onDuplicate={handlePageDuplicate}
+                onExportPdf={fileType === "doc" && !editMode ? exportPagePdf : undefined}
+                onMove={async (movePath) => {
+                  try {
+                    await openMove(movePath);
+                  } catch (error: unknown) {
+                    console.error("Failed to open move dialog:", error);
+                  }
+                }}
+                onDelete={openDelete}
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function FilePage() {
@@ -381,14 +760,8 @@ export function FilePage() {
   }, [doSave, filePath]);
 
   const rawExt = pathExtension(filePath);
-  let fileType = extensionToType(rawExt);
-  if (fileType === "doc" && meta.slides) {
-    fileType = "slide";
-  }
-  const title =
-    fileType === "doc" || fileType === "slide"
-      ? (extractHeadingTitle(content) ?? pathToTitle(filePath))
-      : (filePath.split("/").pop() ?? filePath);
+  const fileType = resolveFileType(rawExt, meta.slides);
+  const title = computeTitle(fileType, content, filePath);
 
   const handlePageDuplicate = useCallback(async () => {
     try {
@@ -464,67 +837,8 @@ export function FilePage() {
         yOffset += scaledPageH;
       }
 
-      // ── Invisible text overlay (per-page) ─────────────────────────────
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-        const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
-        if (!text || !(node as Text).parentElement) {
-          continue;
-        }
-        let ancestor: Element | null = (node as Text).parentElement;
-        let inSvg = false;
-        while (ancestor) {
-          if (ancestor.tagName.toLowerCase() === "svg") {
-            inSvg = true;
-            break;
-          }
-          ancestor = ancestor.parentElement;
-        }
-        if (inSvg) {
-          continue;
-        }
-        const range = document.createRange();
-        range.selectNode(node);
-        const br = range.getBoundingClientRect();
-        if (br.width <= 0 || br.height <= 0) {
-          continue;
-        }
-        const yLocal = br.top - rootRect.top;
-        const pageIdx = Math.floor(yLocal / PAGE_H_PX);
-        const yOnPage = yLocal - pageIdx * PAGE_H_PX;
-        const fsPx = Number.parseFloat(
-          window.getComputedStyle((node as Text).parentElement ?? document.body).fontSize,
-        );
-        pdf.setPage(pageIdx + 1);
-        pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
-        // Stretch/compress char spacing so the invisible text spans the same
-        // pixel width as the actual DOM render, compensating for font differences.
-        const pdfWidth = pdf.getTextWidth(text);
-        const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
-        pdf.setCharSpace(charSpace);
-        pdf.text(text, br.left - rootRect.left, yOnPage, {
-          renderingMode: "invisible",
-          baseline: "top",
-        });
-        pdf.setCharSpace(0);
-      }
-
-      // ── Link hotspots (per-page) ──────────────────────────────────────
-      for (const anchor of el.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-        const rect = anchor.getBoundingClientRect();
-        if (rect.width <= 0 || rect.height <= 0) {
-          continue;
-        }
-        const xPos = rect.left - rootRect.left;
-        const yLocal = rect.top - rootRect.top;
-        const pageIdx = Math.floor(yLocal / PAGE_H_PX);
-        const yOnPage = yLocal - pageIdx * PAGE_H_PX;
-        if (xPos < 0 || yOnPage < 0) {
-          continue;
-        }
-        pdf.setPage(pageIdx + 1);
-        pdf.link(xPos, yOnPage, rect.width, rect.height, { url: anchor.href });
-      }
+      addTextOverlayToPage(pdf, el, rootRect, PAGE_H_PX);
+      addLinkOverlayToPage(pdf, el, rootRect, PAGE_H_PX);
 
       pdf.save(`${title}.pdf`);
     } finally {
@@ -547,70 +861,20 @@ export function FilePage() {
     return <NotFound />;
   }
 
-  let editButtonClass: string;
-  if (editMode) {
-    editButtonClass = "bg-background text-foreground shadow-sm";
-  } else if (editLocked && user && editLocked.id !== user.id) {
-    editButtonClass = "text-muted-foreground opacity-40 cursor-not-allowed";
-  } else {
-    editButtonClass = "text-muted-foreground hover:text-foreground";
-  }
-
-  let saveBadgeClass: string;
-  if (saveStatus === "saved") {
-    saveBadgeClass = " border-green-600 text-green-600 dark:border-green-500 dark:text-green-500";
-  } else if (saveStatus === "error") {
-    saveBadgeClass = " border-destructive text-destructive";
-  } else {
-    saveBadgeClass = "";
-  }
-
-  let editorContent: ReactNode;
-  if (fileType === "code") {
-    editorContent = (
-      <CodeEditor
-        value={content}
-        language={rawExt}
-        readOnly={!editMode}
-        onChange={editMode ? handleChange : undefined}
-        onSave={editMode ? handleSave : undefined}
-      />
-    );
-  } else if (editMode) {
-    editorContent = (
-      <MarkdownEditor
-        value={rawContent}
-        onChange={handleChange}
-        onSave={handleSave}
-        fileType={fileType}
-        slideTheme={meta.theme}
-        slidePaginate={meta.paginate}
-        slideThemes={slideThemes}
-        slideThemeVars={meta.themeVars}
-        onMetaChange={(updatedMeta) => {
-          metaRef.current = updatedMeta;
-          setMeta(updatedMeta);
-        }}
-      />
-    );
-  } else if (fileType === "slide") {
-    editorContent = (
-      <SlideViewer
-        value={content}
-        filename={title}
-        theme={meta.theme}
-        paginate={meta.paginate}
-        slideThemes={slideThemes}
-        themeVars={meta.themeVars}
-      />
-    );
-  } else {
-    editorContent = (
-      <ScrollArea className="h-full">
-        <MarkdownViewer value={content} />
-      </ScrollArea>
-    );
-  }
+  const editorContent = buildEditorContent({
+    fileType,
+    editMode,
+    content,
+    rawContent,
+    rawExt,
+    handleChange,
+    handleSave,
+    meta,
+    slideThemes,
+    setMeta,
+    metaRef,
+    title,
+  });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -647,147 +911,31 @@ export function FilePage() {
       )}
 
       {/* Page header */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
-        {/* Left: icon + title */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <EmojiPickerPopover
-            emoji={meta.emoji}
-            fileType={fileType}
-            size={24}
-            editable={editMode}
-            onSelect={handleEmojiChange}
-          />
-          <h1 className="font-semibold text-base truncate">{title}</h1>
-        </div>
-
-        {/* Center: Read/Edit segmented switch */}
-        {user?.canEdit && (
-          <div
-            className="flex items-center rounded-md border border-border bg-muted h-7 p-0.5 gap-0.5 shrink-0"
-            title={
-              editLocked && editLocked.id !== user.id ? `${editLocked.name} is editing` : undefined
-            }
-          >
-            <button
-              className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${!editMode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={async () => {
-                if (editMode) {
-                  try {
-                    await exitEdit();
-                  } catch (error: unknown) {
-                    console.error("Failed to exit edit mode:", error);
-                  }
-                }
-              }}
-            >
-              Read
-            </button>
-            <button
-              className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editButtonClass}`}
-              onClick={() => {
-                if (!editMode && !(editLocked && editLocked.id !== user.id)) {
-                  enterEdit();
-                }
-              }}
-              disabled={editMode || Boolean(editLocked && editLocked.id !== user.id)}
-            >
-              Edit
-            </button>
-          </div>
-        )}
-
-        {/* Save status – inline next to Edit button */}
-        {editMode && (
-          <Badge variant="outline" className={`text-xs h-5 shrink-0${saveBadgeClass}`}>
-            {saveStatus === "saved" && "Saved"}
-            {saveStatus === "saving" && "Saving…"}
-            {saveStatus === "unsaved" && "Unsaved"}
-            {saveStatus === "error" && "Error"}
-          </Badge>
-        )}
-
-        {/* Right: viewers + info + dropdown */}
-        <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-          {/* Viewers — deduplicated by id (same user may have multiple tabs open) */}
-          <div className="flex -space-x-1">
-            {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()]
-              .slice(0, 5)
-              .map((viewer) => (
-                <Tooltip key={viewer.id}>
-                  <TooltipTrigger asChild>
-                    <UserAvatar
-                      name={viewer.name}
-                      email={viewer.email}
-                      size="sm"
-                      className="border border-background ring-1 ring-border"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>{viewer.name}</TooltipContent>
-                </Tooltip>
-              ))}
-          </div>
-
-          {/* Dedicated info button */}
-          {!editMode && (
-            <Button
-              size="sm"
-              variant={infoOpen ? "secondary" : "ghost"}
-              className="h-7 gap-1 text-xs px-2"
-              onClick={() => {
-                setInfoOpen((prev) => {
-                  const next = !prev;
-                  if (next) {
-                    localStorage.setItem("kumidocs:info-open", "true");
-                  } else {
-                    localStorage.removeItem("kumidocs:info-open");
-                  }
-                  return next;
-                });
-              }}
-            >
-              <InfoRegular className="w-4 h-4" />
-              Info
-            </Button>
-          )}
-
-          {/* Advanced / dangerous actions only */}
-          {user?.canEdit && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-7 w-7">
-                  <MoreHorizontalRegular className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <PageMenuItems
-                  variant="dropdown"
-                  href={`/p/${rawPath}`}
-                  path={filePath}
-                  displayTitle={title}
-                  onDuplicate={() => {
-                    void handlePageDuplicate();
-                  }}
-                  onExportPdf={
-                    fileType === "doc" && !editMode
-                      ? () => {
-                          void exportPagePdf();
-                        }
-                      : undefined
-                  }
-                  onMove={async (movePath) => {
-                    try {
-                      await openMove(movePath);
-                    } catch (error: unknown) {
-                      console.error("Failed to open move dialog:", error);
-                    }
-                  }}
-                  onDelete={openDelete}
-                />
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
+      <FilePageHeader
+        meta={meta}
+        fileType={fileType}
+        title={title}
+        user={user}
+        editMode={editMode}
+        editLocked={editLocked}
+        viewers={viewers}
+        saveStatus={saveStatus}
+        infoOpen={infoOpen}
+        rawPath={rawPath}
+        filePath={filePath}
+        handleEmojiChange={handleEmojiChange}
+        exitEdit={exitEdit}
+        enterEdit={enterEdit}
+        setInfoOpen={setInfoOpen}
+        handlePageDuplicate={() => {
+          void handlePageDuplicate();
+        }}
+        exportPagePdf={() => {
+          void exportPagePdf();
+        }}
+        openMove={openMove}
+        openDelete={() => { openDelete(filePath); }}
+      />
 
       {/* Breadcrumb */}
       {breadcrumb.length > 0 && (

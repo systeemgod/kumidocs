@@ -42,7 +42,7 @@ function isSafePath(repoPath: string, userPath: string): boolean {
 }
 
 // GET /api/me
-export function apiMe(user: User, config: Config) {
+function apiMe(user: User, config: Config) {
   return Response.json({
     ...user,
     instanceName: config.instanceName,
@@ -52,12 +52,12 @@ export function apiMe(user: User, config: Config) {
 }
 
 // GET /api/tree
-export function apiTree() {
+function apiTree() {
   return Response.json(buildFileTree());
 }
 
 // GET /api/file?path=<path>
-export async function apiFileGet(url: URL, config: Config) {
+async function apiFileGet(url: URL, config: Config) {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
   if (!path) {
     return Response.json({ error: "path required" }, { status: 400 });
@@ -76,7 +76,7 @@ export async function apiFileGet(url: URL, config: Config) {
 }
 
 // PUT /api/file?path=<path>   body: { content: string }
-export async function apiFilePut(url: URL, req: Request, user: User, config: Config) {
+async function apiFilePut(url: URL, req: Request, user: User, config: Config) {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -133,7 +133,7 @@ export async function apiFilePut(url: URL, req: Request, user: User, config: Con
 }
 
 // POST /api/file   body: { path: string, content: string }
-export async function apiFileCreate(req: Request, user: User, config: Config) {
+async function apiFileCreate(req: Request, user: User, config: Config) {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -177,7 +177,7 @@ export async function apiFileCreate(req: Request, user: User, config: Config) {
 }
 
 // DELETE /api/file?path=<path>
-export async function apiFileDelete(url: URL, user: User, config: Config) {
+async function apiFileDelete(url: URL, user: User, config: Config) {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -210,7 +210,7 @@ export async function apiFileDelete(url: URL, user: User, config: Config) {
 }
 
 // POST /api/file/rename   body: { from: string, to: string }
-export async function apiFileRename(req: Request, user: User, config: Config) {
+async function apiFileRename(req: Request, user: User, config: Config) {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -303,14 +303,14 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
 }
 
 // GET /api/search?q=<query>
-export function apiSearch(url: URL) {
+function apiSearch(url: URL) {
   const query = url.searchParams.get("q") ?? "";
   return Response.json(searchDocs(query));
 }
 
 // GET /api/avatar/:hash — proxies Gravatar so the client never contacts Gravatar directly.
 // The hash must be a 64-char lowercase hex string (SHA-256).
-export async function apiAvatarProxy(hash: string): Promise<Response> {
+async function apiAvatarProxy(hash: string): Promise<Response> {
   if (!/^[0-9a-f]{64}$/u.test(hash)) {
     return new Response("Invalid hash", { status: 400 });
   }
@@ -328,13 +328,13 @@ export async function apiAvatarProxy(hash: string): Promise<Response> {
 }
 
 // GET /api/sidebar
-export function apiSidebar() {
+function apiSidebar() {
   const content = getFile("_sidebar.md") ?? "";
   return Response.json({ content });
 }
 
 // POST /api/upload/image
-export async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
+async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -384,7 +384,7 @@ export async function apiUploadImage(req: Request, user: User, config: Config): 
 }
 
 // GET /api/images
-export async function apiImagesList(config: Config): Promise<Response> {
+async function apiImagesList(config: Config): Promise<Response> {
   const all = getAllPaths();
   const imagePaths = all.filter((filePath) => filePath.startsWith("images/"));
   const mdPaths = all.filter((filePath) => filePath.endsWith(".md"));
@@ -417,11 +417,7 @@ export async function apiImagesList(config: Config): Promise<Response> {
 }
 
 // DELETE /api/images/:filename
-export async function apiImageDelete(
-  filename: string,
-  user: User,
-  config: Config,
-): Promise<Response> {
+async function apiImageDelete(filename: string, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -465,7 +461,7 @@ export async function apiImageDelete(
 }
 
 // GET /api/file/history?path=<path>
-export async function apiFileHistory(url: URL, config: Config) {
+async function apiFileHistory(url: URL, config: Config) {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
   if (!path) {
     return Response.json({ error: "path required" }, { status: 400 });
@@ -507,7 +503,7 @@ export async function apiFileHistory(url: URL, config: Config) {
 }
 
 // GET /api/file/diff?path=<path>&sha=<sha>
-export async function apiFileDiff(url: URL, config: Config) {
+async function apiFileDiff(url: URL, config: Config) {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
   const shortSha = url.searchParams.get("sha") ?? "";
   if (!path || !shortSha) {
@@ -556,7 +552,7 @@ export async function apiFileDiff(url: URL, config: Config) {
 }
 
 // GET /images/:filename
-export async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
+async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
   if (!isSafePath(config.repoPath, assetPath)) {
     return new Response("Forbidden", { status: 403 });
   }
@@ -586,3 +582,22 @@ export async function serveRepoAsset(assetPath: string, config: Config): Promise
     return new Response("Not found", { status: 404 });
   }
 }
+
+export {
+  apiMe,
+  apiTree,
+  apiFileGet,
+  apiFilePut,
+  apiFileCreate,
+  apiFileDelete,
+  apiFileRename,
+  apiSearch,
+  apiAvatarProxy,
+  apiSidebar,
+  apiUploadImage,
+  apiImagesList,
+  apiImageDelete,
+  apiFileHistory,
+  apiFileDiff,
+  serveRepoAsset,
+};

@@ -11,10 +11,10 @@ let treeCache: TreeNode[] | null = null; // invalidated on every write/delete/mo
 
 // Paths written by this server process — watcher should not re-broadcast these.
 const recentlyWritten = new Set<string>();
-export function markWritten(relPath: string): void {
+function markWritten(relPath: string): void {
   recentlyWritten.add(relPath);
 }
-export function consumeWritten(relPath: string): boolean {
+function consumeWritten(relPath: string): boolean {
   if (!recentlyWritten.has(relPath)) {
     return false;
   }
@@ -37,7 +37,7 @@ const IGNORED_NAMES = new Set([
 
 const IGNORED_EXT = new Set([".lock", ".log", ".map"]);
 
-export async function loadFilestore(config: Config): Promise<void> {
+async function loadFilestore(config: Config): Promise<void> {
   fileCache.clear();
   await scanDir(config.repoPath, config.repoPath);
   console.log(`Filestore: loaded ${String(fileCache.size)} files`);
@@ -83,19 +83,15 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
   );
 }
 
-export function getFile(path: string): string | undefined {
+function getFile(path: string): string | undefined {
   return fileCache.get(path);
 }
 
-export function getAllPaths(): string[] {
+function getAllPaths(): string[] {
   return [...fileCache.keys()].toSorted();
 }
 
-export async function writeFileToRepo(
-  path: string,
-  content: string,
-  config: Config,
-): Promise<void> {
+async function writeFileToRepo(path: string, content: string, config: Config): Promise<void> {
   markWritten(path); // suppress watcher broadcast for this server-initiated write
   const fullPath = join(config.repoPath, path);
   await mkdir(dirname(fullPath), { recursive: true });
@@ -106,14 +102,14 @@ export async function writeFileToRepo(
   invalidateTree();
 }
 
-export async function deleteFileFromRepo(path: string, config: Config): Promise<void> {
+async function deleteFileFromRepo(path: string, config: Config): Promise<void> {
   const fullPath = join(config.repoPath, path);
   await unlink(fullPath);
   fileCache.delete(path);
   invalidateTree();
 }
 
-export async function reloadFile(path: string, config: Config): Promise<void> {
+async function reloadFile(path: string, config: Config): Promise<void> {
   const fullPath = join(config.repoPath, path);
   try {
     const content = await readFile(fullPath, "utf8");
@@ -124,17 +120,17 @@ export async function reloadFile(path: string, config: Config): Promise<void> {
   invalidateTree();
 }
 
-export function addToCache(path: string, content: string): void {
+function addToCache(path: string, content: string): void {
   fileCache.set(path, content);
   invalidateTree();
 }
 
-export function removeFromCache(path: string): void {
+function removeFromCache(path: string): void {
   fileCache.delete(path);
   invalidateTree();
 }
 
-export function moveInCache(from: string, to: string): void {
+function moveInCache(from: string, to: string): void {
   const content = fileCache.get(from) ?? "";
   fileCache.set(to, content);
   fileCache.delete(from);
@@ -142,7 +138,7 @@ export function moveInCache(from: string, to: string): void {
 }
 
 // Build file tree for /api/tree
-export function buildFileTree(): TreeNode[] {
+function buildFileTree(): TreeNode[] {
   if (treeCache) {
     return treeCache;
   }
@@ -199,9 +195,7 @@ export function buildFileTree(): TreeNode[] {
 /** Return the text of the first `# Heading` line in a markdown body, or null.
  * Imported from @/lib/frontmatter — re-exported here for convenience.
  */
-export { extractHeadingTitle };
-
-export function parseFileEntry(path: string): FileEntry {
+function parseFileEntry(path: string): FileEntry {
   const ext = pathExtension(path);
   const fileName = path.split("/").pop() ?? path;
   const baseName = fileName.replace(/\.md$/u, "");
@@ -237,3 +231,20 @@ export function parseFileEntry(path: string): FileEntry {
 
   return { path, type, title, emoji, description };
 }
+
+export {
+  markWritten,
+  consumeWritten,
+  loadFilestore,
+  getFile,
+  getAllPaths,
+  writeFileToRepo,
+  deleteFileFromRepo,
+  reloadFile,
+  addToCache,
+  removeFromCache,
+  moveInCache,
+  buildFileTree,
+  extractHeadingTitle,
+  parseFileEntry,
+};
