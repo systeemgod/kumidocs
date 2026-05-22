@@ -29,7 +29,7 @@ const ALLOWED: ReadonlySet<string> = new Set([
   "min-height",
 ]);
 
-function parseBlock(raw: string): Record<string, string> | null {
+function parseBlock(raw: string): Record<string, string> | undefined {
   const attrs: Record<string, string> = {};
   let matched = false;
   let match: RegExpExecArray | null;
@@ -42,7 +42,7 @@ function parseBlock(raw: string): Record<string, string> | null {
       matched = true;
     }
   }
-  return matched ? attrs : null;
+  return matched ? attrs : undefined;
 }
 
 // Djb2-inspired hash to fingerprint the applied style.
@@ -101,11 +101,12 @@ function walk(node: Root | Element): void {
 
     // child is an <img> — look for an immediately following attribute block
     const sibling = children[idx + 1];
-    const match = sibling?.type === "text" ? ATTRS_RE.exec(sibling.value) : null;
+    const match =
+      sibling?.type === "text" ? (ATTRS_RE.exec(sibling.value) ?? undefined) : undefined;
     const rawAttrs = match?.[1];
-    const attrs = rawAttrs !== undefined ? parseBlock(rawAttrs) : null;
+    const attrs = rawAttrs !== undefined ? parseBlock(rawAttrs) : undefined;
 
-    if (match === null || attrs === null) {
+    if (match === undefined || attrs === undefined) {
       idx++;
       continue;
     }

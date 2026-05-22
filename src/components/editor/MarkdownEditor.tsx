@@ -146,8 +146,8 @@ function insertImage(ta: HTMLTextAreaElement, url: string) {
   ta.focus();
 }
 
-/** Upload an image File to /api/upload/image and return the URL, or null on failure. */
-async function uploadImageFile(file: File): Promise<string | null> {
+/** Upload an image File to /api/upload/image and return the URL, or undefined on failure. */
+async function uploadImageFile(file: File): Promise<string | undefined> {
   const form = new FormData();
   form.append("file", file);
   try {
@@ -157,13 +157,13 @@ async function uploadImageFile(file: File): Promise<string | null> {
         error: string;
       };
       toast.error(error.error);
-      return null;
+      return undefined;
     }
     const data = (await res.json()) as { url: string };
     return data.url;
   } catch {
     toast.error("Upload failed");
-    return null;
+    return undefined;
   }
 }
 

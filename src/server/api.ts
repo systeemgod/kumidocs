@@ -230,7 +230,7 @@ async function apiFileRename(req: Request, user: User, config: Config) {
     return new Response("Forbidden", { status: 403 });
   }
   if (from === to) {
-    return Response.json({ sha: null, from, to });
+    return Response.json({ sha: undefined, from, to });
   }
 
   // Collect all files that must move: the page itself plus any sub-pages living
@@ -312,7 +312,7 @@ async function apiFileRename(req: Request, user: User, config: Config) {
   for (const newPath of newPaths) {
     broadcastPageCreated(newPath, newPath);
   }
-  return Response.json({ sha: null, from, to });
+  return Response.json({ sha: undefined, from, to });
 }
 
 // GET /api/search?q=<query>
@@ -329,7 +329,7 @@ async function apiAvatarProxy(hash: string): Promise<Response> {
   }
   const upstream = await fetch(`https://gravatar.com/avatar/${hash}?s=80&d=404`);
   if (!upstream.ok) {
-    return new Response(null, { status: 404 });
+    return new Response(undefined, { status: 404 });
   }
   const body = await upstream.arrayBuffer();
   return new Response(body, {

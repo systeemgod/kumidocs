@@ -7,7 +7,7 @@ import { extractHeadingTitle } from "@/lib/frontmatter";
 import matter from "gray-matter";
 
 const fileCache = new Map<string, string>(); // relPath -> content
-let treeCache: TreeNode[] | null = null; // invalidated on every write/delete/move
+let treeCache: TreeNode[] | undefined; // invalidated on every write/delete/move
 
 // Paths written by this server process — watcher should not re-broadcast these.
 const recentlyWritten = new Set<string>();
@@ -23,7 +23,7 @@ function consumeWritten(relPath: string): boolean {
 }
 
 function invalidateTree(): void {
-  treeCache = null;
+  treeCache = undefined;
 }
 
 const IGNORED_NAMES = new Set([

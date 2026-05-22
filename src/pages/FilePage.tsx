@@ -136,7 +136,7 @@ function computeTitle(fileType: FileType, content: string, filePath: string): st
 
 function getEditButtonClass(
   editMode: boolean,
-  editLocked: PresenceUser | null,
+  editLocked: PresenceUser | undefined,
   user: User | undefined,
 ): string {
   if (editMode) {
@@ -250,7 +250,7 @@ interface FilePageHeaderProps {
   title: string;
   user: User | undefined;
   editMode: boolean;
-  editLocked: PresenceUser | null;
+  editLocked: PresenceUser | undefined;
   viewers: PresenceUser[];
   saveStatus: SaveStatus;
   infoOpen: boolean;
@@ -437,10 +437,10 @@ export function FilePage() {
 
   const [meta, setMeta] = useState<DocMeta>({});
   const [editMode, setEditMode] = useState(false);
-  const [editLocked, setEditLocked] = useState<PresenceUser | null>(null);
+  const [editLocked, setEditLocked] = useState<PresenceUser | undefined>();
   const [viewers, setViewers] = useState<PresenceUser[]>([]);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
-  const [lastSha, setLastSha] = useState<string | null>(null);
+  const [lastSha, setLastSha] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -451,7 +451,7 @@ export function FilePage() {
   const [infoOpen, setInfoOpen] = useState(
     () => localStorage.getItem("kumidocs:info-open") === "true",
   );
-  const [remoteBanner, setRemoteBanner] = useState<string | null>(null);
+  const [remoteBanner, setRemoteBanner] = useState<string | undefined>();
   const [isPdfExporting, setIsPdfExporting] = useState(false);
   const pdfContentRef = useRef<HTMLDivElement>(null);
 
@@ -477,7 +477,7 @@ export function FilePage() {
     };
   });
 
-  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveTimer = useRef(undefined as ReturnType<typeof setTimeout> | undefined);
   // Clear the auto-save timer on unmount to prevent a save firing on a dead component.
   useMountEffect(() => () => {
     if (autoSaveTimer.current) {
@@ -606,7 +606,7 @@ export function FilePage() {
     (currentContent: string, isRaw = false): Promise<void> => {
       if (autoSaveTimer.current) {
         clearTimeout(autoSaveTimer.current);
-        autoSaveTimer.current = null;
+        autoSaveTimer.current = undefined;
       }
       // Chain behind any in-flight save
       const prev = savePromiseRef.current;
@@ -889,7 +889,7 @@ export function FilePage() {
               } catch (error: unknown) {
                 console.error("Failed to reload document:", error);
               }
-              setRemoteBanner(null);
+              setRemoteBanner(undefined);
             }}
           >
             Reload
@@ -899,7 +899,7 @@ export function FilePage() {
             variant="ghost"
             className="h-6 text-xs"
             onClick={() => {
-              setRemoteBanner(null);
+              setRemoteBanner(undefined);
             }}
           >
             Dismiss

@@ -93,10 +93,10 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
 function splitSlides(content: string): string[] {
   const slides: string[] = [];
   let current: string[] = [];
-  let fence: string | null = null;
+  let fence: string | undefined;
   for (const line of content.split("\n")) {
     const trimmed = line.trimStart();
-    if (fence === null) {
+    if (fence === undefined) {
       const match = /^(`{3,}|~{3,})/u.exec(trimmed);
       if (match) {
         // Opening a fenced code block — capture the fence character string
@@ -114,7 +114,7 @@ function splitSlides(content: string): string[] {
       // Inside a fence — check if this line closes it
       const closeRe = new RegExp(`^${fence[0] ?? "`"}{${String(fence.length)},}\\s*$`, "u");
       if (closeRe.test(trimmed)) {
-        fence = null;
+        fence = undefined;
       }
     }
     current.push(line);
@@ -446,7 +446,7 @@ function SlideViewer({
   const [scrollMode, setScrollMode] = useState(!standalone);
   const [pointerVisible, setPointerVisible] = useState(false);
   const [pointerPos, setPointerPos] = useState({ xPos: 0, yPos: 0 });
-  const [spotlightMenu, setSpotlightMenu] = useState<{ xPos: number; yPos: number } | null>(null);
+  const [spotlightMenu, setSpotlightMenu] = useState<{ xPos: number; yPos: number } | undefined>();
 
   const stageRef = useRef<HTMLDivElement>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
@@ -543,7 +543,7 @@ function SlideViewer({
   // ── Spotlight (bare fullscreen, slide only) ───────────────────────────────
   // Rendered only when isSpotlight=true, so useMountEffect runs requestFullscreen
   // and a ResizeObserver immediately on mount of the spotlight overlay div.
-  const spotlightCleanupRef = useRef<(() => void) | null>(null);
+  const spotlightCleanupRef = useRef(undefined as (() => void) | undefined);
   const spotlightSetScale = useCallback(async (el: HTMLDivElement | null) => {
     if (!el) {
       return;
@@ -572,7 +572,7 @@ function SlideViewer({
         spotlightSetScale(el);
       } else {
         spotlightCleanupRef.current?.();
-        spotlightCleanupRef.current = null;
+        spotlightCleanupRef.current = undefined;
       }
     },
     [spotlightSetScale],
@@ -688,7 +688,7 @@ function SlideViewer({
             )}
             onClick={() => {
               if (spotlightMenu) {
-                setSpotlightMenu(null);
+                setSpotlightMenu(undefined);
                 return;
               }
               next();
@@ -754,7 +754,7 @@ function SlideViewer({
                     } catch {
                       // ignore
                     }
-                    setSpotlightMenu(null);
+                    setSpotlightMenu(undefined);
                   }}
                 >
                   <Minimize size={14} />
@@ -776,7 +776,7 @@ function SlideViewer({
                   className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
                   onClick={() => {
                     prev();
-                    setSpotlightMenu(null);
+                    setSpotlightMenu(undefined);
                   }}
                 >
                   <ArrowLeft size={14} />
@@ -787,7 +787,7 @@ function SlideViewer({
                   className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
                   onClick={() => {
                     setIndex(0);
-                    setSpotlightMenu(null);
+                    setSpotlightMenu(undefined);
                   }}
                 >
                   <Square size={14} className="invisible" />
@@ -799,7 +799,7 @@ function SlideViewer({
                   className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
                   onClick={() => {
                     setPointerVisible((isVisible) => !isVisible);
-                    setSpotlightMenu(null);
+                    setSpotlightMenu(undefined);
                   }}
                 >
                   <Mouse size={14} />

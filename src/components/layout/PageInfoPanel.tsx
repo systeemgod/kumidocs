@@ -35,7 +35,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
   const [loading, setLoading] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [diffOpen, setDiffOpen] = useState(false);
-  const [diffData, setDiffData] = useState<DiffData | null>(null);
+  const [diffData, setDiffData] = useState<DiffData | undefined>();
   const [diffLoading, setDiffLoading] = useState(false);
 
   // Group commits by calendar date with human-readable labels
@@ -88,13 +88,13 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
   const openDiff = async (sha: string) => {
     setDiffLoading(true);
     setDiffOpen(true);
-    setDiffData(null);
+    setDiffData(undefined);
     try {
       const res = await fetch(`/api/file/diff?path=${encodeURIComponent(filePath)}&sha=${sha}`);
       const data = await (res.json() as Promise<DiffData>);
       setDiffData(data);
     } catch {
-      setDiffData(null);
+      setDiffData(undefined);
     } finally {
       setDiffLoading(false);
     }

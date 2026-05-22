@@ -82,7 +82,7 @@ async function loadPermissions() {
         instanceName: config.instanceName,
         editors: [],
       };
-      await writeFile(configPath, JSON.stringify(defaultConfig, null, 2));
+      await writeFile(configPath, JSON.stringify(defaultConfig, undefined, 2));
       setPermissions(defaultConfig);
       console.log("Created .kumidocs.json with default configuration");
 
@@ -363,7 +363,7 @@ const server = serve<WsData>({
       const upgraded = srv.upgrade(req, {
         data: {
           user,
-          pageId: null,
+          pageId: undefined,
           sessionId: "",
           lastHeartbeat: Date.now(),
         },

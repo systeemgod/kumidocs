@@ -51,12 +51,12 @@ export function usePageActions(reloadTree: () => void) {
   const [parentOpen, setParentOpen] = useState(false);
   const [parentSearch, setParentSearch] = useState("");
   const comboboxRef = useRef<HTMLDivElement>(null);
-  const outsideHandlerRef = useRef<((ev: MouseEvent) => void) | null>(null);
+  const outsideHandlerRef = useRef(undefined as ((ev: MouseEvent) => void) | undefined);
 
   const closeParentDropdown = useCallback(() => {
     if (outsideHandlerRef.current) {
       document.removeEventListener("mousedown", outsideHandlerRef.current);
-      outsideHandlerRef.current = null;
+      outsideHandlerRef.current = undefined;
     }
     setParentOpen(false);
   }, []);

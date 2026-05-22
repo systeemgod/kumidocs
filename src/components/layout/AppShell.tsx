@@ -15,7 +15,7 @@ function WsConnector({ userId }: { userId: string }) {
   useMountEffect(() => {
     wsClient.connect(userId);
   });
-  return null;
+  return <></>;
 }
 
 const SIDEBAR_WIDTH_KEY = "kumidocs:sidebar-width";
@@ -44,7 +44,7 @@ export function AppShell() {
   });
   const [isDragging, setIsDragging] = useState(false);
   // Keep a ref so the stable mousemove closure always reads the live drag-start values
-  const dragStartRef = useRef<{ startX: number; width: number } | null>(null);
+  const dragStartRef = useRef(undefined as { startX: number; width: number } | undefined);
 
   // Reload full file tree for sidebar.
   // Returns void so it's safe to pass as event handler or onCreated callback.
@@ -153,7 +153,7 @@ export function AppShell() {
           );
           localStorage.setItem(SIDEBAR_WIDTH_KEY, String(next));
         }
-        dragStartRef.current = null;
+        dragStartRef.current = undefined;
         setIsDragging(false);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";

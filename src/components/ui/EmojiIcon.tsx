@@ -113,8 +113,6 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
       </span>
     );
   }
-
-  return null;
 }
 
 // Same emoji regex as rehypeEmojiPlugin — kept here to avoid ui → editor imports.

@@ -54,7 +54,7 @@ type WsServerMessage =
       type: "presence_update";
       pageId: string;
       viewers: PresenceUser[];
-      editor: PresenceUser | null;
+      editor: PresenceUser | undefined;
     }
   | {
       type: "page_changed";

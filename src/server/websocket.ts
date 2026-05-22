@@ -3,7 +3,7 @@ import type { ServerWebSocket } from "bun";
 
 interface WsData {
   user: User;
-  pageId: string | null;
+  pageId: string | undefined;
   sessionId: string;
   lastHeartbeat: number;
 }
@@ -49,7 +49,7 @@ function presenceUpdate(pageId: string): WsServerMessage {
   const editorSid = pageEditors.get(pageId);
 
   const viewers: PresenceUser[] = [];
-  let editor: PresenceUser | null = null;
+  let editor: PresenceUser | undefined;
 
   for (const sid of sids) {
     const ws = sessions.get(sid);
@@ -84,12 +84,12 @@ function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
   // Broadcast to ALL sessions so every client's sidebar updates immediately,
   // not just viewers of this page (who may not include the user who navigated away).
   broadcastToAll(presenceUpdate(pageId));
-  ws.data.pageId = null;
+  ws.data.pageId = undefined;
 }
 
 function wsOpen(ws: ServerWebSocket<WsData>): void {
   ws.data.sessionId = String(++sessionCounter);
-  ws.data.pageId = null;
+  ws.data.pageId = undefined;
   ws.data.lastHeartbeat = Date.now();
   sessions.set(ws.data.sessionId, ws);
 }
@@ -220,13 +220,13 @@ function sendSaveConflict(userId: string, pageId: string): void {
   }
 }
 
-function getEditorForPage(pageId: string): User | null {
+function getEditorForPage(pageId: string): User | undefined {
   const sid = pageEditors.get(pageId);
   if (!sid) {
-    return null;
+    return undefined;
   }
   const ws = sessions.get(sid);
-  return ws?.data.user ?? null;
+  return ws?.data.user;
 }
 
 // Prune sessions that haven't sent a heartbeat in 90 seconds.
