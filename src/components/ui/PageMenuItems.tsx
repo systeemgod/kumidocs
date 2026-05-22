@@ -176,11 +176,13 @@ const PageMenuItems = (allProps: PageMenuItemsProps): JSX.Element => {
         Open in new tab
       </Item>
       <Item
-        onClick={() => {
-          navigator.clipboard
-            .writeText(globalThis.location.origin + href)
-            .then(() => toast.success("Link copied"))
-            .catch(() => toast.error("Failed to copy link"));
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(globalThis.location.origin + href);
+            toast.success("Link copied");
+          } catch {
+            toast.error("Failed to copy link");
+          }
         }}
       >
         <LinkRegular className="mr-2 w-4 h-4" />

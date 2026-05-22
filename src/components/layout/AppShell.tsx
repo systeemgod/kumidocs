@@ -48,32 +48,35 @@ export function AppShell() {
 
   // Reload full file tree for sidebar.
   // Returns void so it's safe to pass as event handler or onCreated callback.
-  const loadTree = useCallback((): void => {
-    fetch("/api/tree")
-      .then((res) => res.json() as Promise<TreeNode[]>)
-      .then((data) => {
-        setTree(data);
-      })
-      .catch((error: unknown) => {
-        console.error("Failed to load file tree:", error);
-      });
+  const loadTree = useCallback(async (): Promise<void> => {
+    try {
+      const res = await fetch("/api/tree");
+      const data = await (res.json() as Promise<TreeNode[]>);
+      setTree(data);
+    } catch (error: unknown) {
+      console.error("Failed to load file tree:", error);
+    }
   }, []);
 
   // Load user/instance info
   useMountEffect(() => {
-    fetch("/api/me")
-      .then((res) => res.json() as Promise<{ instanceName?: string; autoSaveDelay?: number }>)
-      .then((data) => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/me");
+        const data = await (res.json() as Promise<{
+          instanceName?: string;
+          autoSaveDelay?: number;
+        }>);
         if (data.instanceName) {
           setInstanceName(data.instanceName);
         }
         if (data.autoSaveDelay) {
           setAutoSaveDelay(data.autoSaveDelay);
         }
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         console.error("Failed to load instance info:", error);
-      });
+      }
+    })();
     loadTree();
   });
 

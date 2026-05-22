@@ -179,17 +179,16 @@ export function ImageLibraryPage() {
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchImages = useCallback(() => {
-    fetch("/api/images")
-      .then((res) => res.json() as Promise<ImageEntry[]>)
-      .then((data) => {
-        setImages(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        toast.error("Failed to load images");
-        setLoading(false);
-      });
+  const fetchImages = useCallback(async () => {
+    try {
+      const res = await fetch("/api/images");
+      const data = await (res.json() as Promise<ImageEntry[]>);
+      setImages(data);
+      setLoading(false);
+    } catch {
+      toast.error("Failed to load images");
+      setLoading(false);
+    }
   }, []);
 
   useMountEffect(() => {

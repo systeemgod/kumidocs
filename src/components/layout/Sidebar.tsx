@@ -359,10 +359,12 @@ export function Sidebar({
   const navigate = useNavigate();
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
 
-  const handleOpenMove = (path: string) => {
-    openMove(path).catch((error: unknown) => {
+  const handleOpenMove = async (path: string) => {
+    try {
+      await openMove(path);
+    } catch (error: unknown) {
       console.error("Failed to open move dialog:", error);
-    });
+    }
   };
 
   return (

@@ -155,9 +155,13 @@ export function FilePage() {
   }, []);
 
   useMountEffect(() => {
-    loadDoc(filePath).catch((error: unknown) => {
-      console.error("Failed to load document:", error);
-    });
+    void (async () => {
+      try {
+        await loadDoc(filePath);
+      } catch (error: unknown) {
+        console.error("Failed to load document:", error);
+      }
+    })();
   });
 
   // Track editMode in a ref so the cleanup can read the latest value
@@ -191,9 +195,13 @@ export function FilePage() {
         return;
       }
       if (!isDirtyRef.current) {
-        loadDoc(filePath).catch((error: unknown) => {
-          console.error("Failed to reload document after remote change:", error);
-        });
+        void (async () => {
+          try {
+            await loadDoc(filePath);
+          } catch (error: unknown) {
+            console.error("Failed to reload document after remote change:", error);
+          }
+        })();
         toast.info(`Page updated by ${msg.changedByName}`);
       } else {
         setRemoteBanner(`${msg.changedByName} saved this page remotely`);
@@ -201,15 +209,17 @@ export function FilePage() {
     }
     if (msg.type === "page_deleted" && msg.pageId === filePath) {
       toast.warning("This page was deleted");
-      navigate("/p/README.md")?.catch((error: unknown) => {
-        console.error("Navigation failed:", error);
-      });
+      navigate("/p/README.md");
     }
     if (msg.type === "save_conflict_lost" && msg.pageId === filePath) {
       toast.error("Your changes were lost due to a remote conflict.");
-      loadDoc(filePath).catch((error: unknown) => {
-        console.error("Failed to reload document after conflict:", error);
-      });
+      void (async () => {
+        try {
+          await loadDoc(filePath);
+        } catch (error: unknown) {
+          console.error("Failed to reload document after conflict:", error);
+        }
+      })();
     }
   });
 
@@ -223,7 +233,14 @@ export function FilePage() {
         autoSaveTimer.current = null;
       }
       // Chain behind any in-flight save
-      const next = savePromiseRef.current.then(async () => {
+      const prev = savePromiseRef.current;
+      const next: Promise<void> = (async () => {
+        // Swallow errors from the previous save so one failure doesn't stall the queue.
+        try {
+          await prev;
+        } catch {
+          /* intentionally empty — previous save errors must not block the queue */
+        }
         setSaveStatus("saving");
 
         // In raw mode the content already contains the full frontmatter block.
@@ -267,7 +284,7 @@ export function FilePage() {
           setSaveStatus("error");
           toast.error("Save failed — network error.");
         }
-      });
+      })();
       savePromiseRef.current = next;
       return next;
     },
@@ -284,20 +301,24 @@ export function FilePage() {
       if (autoSaveTimer.current) {
         clearTimeout(autoSaveTimer.current);
       }
-      autoSaveTimer.current = setTimeout(() => {
-        doSave(val, true).catch((error: unknown) => {
+      autoSaveTimer.current = setTimeout(async () => {
+        try {
+          await doSave(val, true);
+        } catch (error: unknown) {
           console.error("Auto-save failed:", error);
-        });
+        }
       }, autoSaveDelay);
     },
     [doSave, autoSaveDelay],
   );
 
   // Ctrl+S
-  const handleSave = useCallback(() => {
-    doSave(rawContentRef.current, true).catch((error: unknown) => {
+  const handleSave = useCallback(async () => {
+    try {
+      await doSave(rawContentRef.current, true);
+    } catch (error: unknown) {
       console.error("Manual save failed:", error);
-    });
+    }
   }, [doSave]);
 
   // Emoji change (edit mode only) — update meta and persist immediately
@@ -313,14 +334,22 @@ export function FilePage() {
         const newRaw = buildFrontmatter(newMeta) + parsed.content;
         setRawContent(newRaw);
         rawContentRef.current = newRaw;
-        doSave(newRaw, true).catch((error: unknown) => {
-          console.error("Emoji save failed:", error);
-        });
+        void (async () => {
+          try {
+            await doSave(newRaw, true);
+          } catch (error: unknown) {
+            console.error("Emoji save failed:", error);
+          }
+        })();
       } else {
         // Persist the emoji change immediately (chains behind any in-flight save).
-        doSave(contentRef.current).catch((error: unknown) => {
-          console.error("Emoji save failed:", error);
-        });
+        void (async () => {
+          try {
+            await doSave(contentRef.current);
+          } catch (error: unknown) {
+            console.error("Emoji save failed:", error);
+          }
+        })();
       }
     },
     [doSave],
@@ -378,9 +407,7 @@ export function FilePage() {
       if (saveRes.ok) {
         reloadTree();
         toast.success("Page duplicated");
-        navigate(`/p/${newPath}`)?.catch((error: unknown) => {
-          console.error("Navigation failed:", error);
-        });
+        navigate(`/p/${newPath}`);
       } else if (saveRes.status === 409) {
         toast.error("A copy already exists at that path");
       } else {
@@ -595,10 +622,12 @@ export function FilePage() {
             size="sm"
             variant="outline"
             className="h-6 text-xs"
-            onClick={() => {
-              loadDoc(filePath).catch((error: unknown) => {
+            onClick={async () => {
+              try {
+                await loadDoc(filePath);
+              } catch (error: unknown) {
                 console.error("Failed to reload document:", error);
-              });
+              }
               setRemoteBanner(null);
             }}
           >
@@ -641,11 +670,13 @@ export function FilePage() {
           >
             <button
               className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${!editMode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => {
+              onClick={async () => {
                 if (editMode) {
-                  exitEdit().catch((error: unknown) => {
+                  try {
+                    await exitEdit();
+                  } catch (error: unknown) {
                     console.error("Failed to exit edit mode:", error);
-                  });
+                  }
                 }
               }}
             >
@@ -743,10 +774,12 @@ export function FilePage() {
                         }
                       : undefined
                   }
-                  onMove={(movePath) => {
-                    openMove(movePath).catch((error: unknown) => {
+                  onMove={async (movePath) => {
+                    try {
+                      await openMove(movePath);
+                    } catch (error: unknown) {
                       console.error("Failed to open move dialog:", error);
-                    });
+                    }
                   }}
                   onDelete={openDelete}
                 />

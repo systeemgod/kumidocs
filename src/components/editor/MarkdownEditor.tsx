@@ -378,14 +378,15 @@ export function MarkdownEditor({
       const ta = taRef.current;
       for (const file of images) {
         const toastId = toast.loading(`Uploading ${file.name}…`);
-        void uploadImageFile(file).then((url) => {
+        void (async () => {
+          const url = await uploadImageFile(file);
           toast.dismiss(toastId);
           if (url && ta) {
             insertImage(ta, url);
             syncChange();
             toast.success("Image uploaded");
           }
-        });
+        })();
       }
     },
     [syncChange],

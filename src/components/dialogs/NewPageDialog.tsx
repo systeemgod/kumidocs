@@ -69,9 +69,7 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
       toast.success("Page created");
       onCreated?.();
       onClose();
-      navigate(`/p/${finalPath}`)?.catch((error: unknown) => {
-        console.error("Navigation failed:", error);
-      });
+      navigate(`/p/${finalPath}`);
     } else if (res.status === 409) {
       toast.error("A page at that path already exists.");
     } else {
@@ -79,11 +77,13 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
     }
   }, [title, slug, slugEdited, pageType, finalPath, navigate, onCreated, onClose]);
 
-  const handleKeyDown = (ev: React.KeyboardEvent) => {
+  const handleKeyDown = async (ev: React.KeyboardEvent) => {
     if (ev.key === "Enter" && !creating && title.trim() && effectiveSlug) {
-      handleCreate().catch((error: unknown) => {
+      try {
+        await handleCreate();
+      } catch (error: unknown) {
         console.error("Failed to create page:", error);
-      });
+      }
     }
   };
 
@@ -185,10 +185,12 @@ export function NewPageDialog({ open, onClose, parentDir, onCreated }: NewPageDi
             Cancel
           </Button>
           <Button
-            onClick={() => {
-              handleCreate().catch((error: unknown) => {
+            onClick={async () => {
+              try {
+                await handleCreate();
+              } catch (error: unknown) {
                 console.error("Failed to create page:", error);
-              });
+              }
             }}
             disabled={creating || !title.trim() || !effectiveSlug}
           >

@@ -55,12 +55,15 @@ const handleHttpResponse = (response: Response): Response => {
   return response;
 };
 
-const fetchMe = (): Promise<FetchMeResult> =>
-  fetch("/api/me")
-    .then(handleHttpResponse)
-    .then((response) => response.json() as Promise<MeResponse>)
-    .then(parseData)
-    .catch(handleFetchError);
+const fetchMe = async (): Promise<FetchMeResult> => {
+  try {
+    const response = handleHttpResponse(await fetch("/api/me"));
+    const data = await (response.json() as Promise<MeResponse>);
+    return parseData(data);
+  } catch (error: unknown) {
+    return handleFetchError(error);
+  }
+};
 
 const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   const { children } = allProps;
@@ -70,26 +73,31 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
 
   useMountEffect(() => {
-    fetchMe()
-      .then(({ user: fetchedUser, slideThemes: fetchedThemes, needs401 }) => {
+    void (async () => {
+      try {
+        const { user: fetchedUser, slideThemes: fetchedThemes, needs401 } = await fetchMe();
         setUser(fetchedUser);
         setSlideThemes(fetchedThemes);
         setNeedsEmailSetup(needs401);
-        return setLoading(false);
-      })
-      .catch(() => setLoading(false));
+        setLoading(false);
+      } catch {
+        setLoading(false);
+      }
+    })();
   });
 
-  const setEmailAndRefetch = useCallback((email: string): void => {
-    globalThis.cookieStore
-      .set({
+  const setEmailAndRefetch = useCallback(async (email: string): Promise<void> => {
+    try {
+      await globalThis.cookieStore.set({
         name: "kumidocs_email",
         value: encodeURIComponent(email.trim().toLowerCase()),
         path: "/",
         sameSite: "lax",
-      })
-      .then(() => globalThis.location.reload())
-      .catch(() => globalThis.location.reload());
+      });
+    } catch {
+      // ignore — reload regardless
+    }
+    globalThis.location.reload();
   }, []);
 
   return (

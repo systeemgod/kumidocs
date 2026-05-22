@@ -87,26 +87,24 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
       setResults([]);
       return;
     }
-    const timer = setTimeout((): void => {
-      setLoading(true);
-      fetch(`/api/search?q=${encodeURIComponent(query)}`)
-        .then((res): SearchResult[] | Promise<SearchResult[]> => {
+    const timer = setTimeout(() => {
+      void (async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
           if (!res.ok) {
             process.stderr.write(`Search HTTP ${String(res.status)}\n`);
             setLoading(false);
-            return [];
+            return;
           }
-          return res.json() as Promise<SearchResult[]>;
-        })
-        .then((data): SearchResult[] => {
+          const data = await (res.json() as Promise<SearchResult[]>);
           setResults(data);
           setLoading(false);
-          return data;
-        })
-        .catch((error: unknown) => {
+        } catch (error: unknown) {
           console.error("Search failed:", error);
           setLoading(false);
-        });
+        }
+      })();
     }, SEARCH_DELAY_MS);
     return (): void => {
       clearTimeout(timer);

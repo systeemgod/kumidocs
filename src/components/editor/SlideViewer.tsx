@@ -377,11 +377,13 @@ export function SlideViewer({
     };
   });
 
-  const toggleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    } else {
-      fullscreenRef.current?.requestFullscreen().catch(() => {});
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      await (document.fullscreenElement
+        ? document.exitFullscreen()
+        : fullscreenRef.current?.requestFullscreen());
+    } catch {
+      // Fullscreen API may be restricted by the browser or page policy
     }
   }, []);
 
@@ -389,11 +391,15 @@ export function SlideViewer({
   // Rendered only when isSpotlight=true, so useMountEffect runs requestFullscreen
   // and a ResizeObserver immediately on mount of the spotlight overlay div.
   const spotlightCleanupRef = useRef<(() => void) | null>(null);
-  const spotlightSetScale = useCallback((el: HTMLDivElement | null) => {
+  const spotlightSetScale = useCallback(async (el: HTMLDivElement | null) => {
     if (!el) {
       return;
     }
-    el.requestFullscreen().catch(() => {});
+    try {
+      await el.requestFullscreen();
+    } catch {
+      // Fullscreen API may be restricted
+    }
     const obs = new ResizeObserver(([entry]) => {
       if (!entry) {
         return;
@@ -586,8 +592,12 @@ export function SlideViewer({
                 <button
                   type="button"
                   className="w-full text-left px-3 py-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center gap-2"
-                  onClick={() => {
-                    document.exitFullscreen().catch(() => {});
+                  onClick={async () => {
+                    try {
+                      await document.exitFullscreen();
+                    } catch {
+                      // ignore
+                    }
                     setSpotlightMenu(null);
                   }}
                 >

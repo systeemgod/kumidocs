@@ -71,34 +71,32 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
   };
 
   useMountEffect(() => {
-    fetch(`/api/file/history?path=${encodeURIComponent(filePath)}`)
-      .then((res) => res.json() as Promise<CommitEntry[]>)
-      .then((data) => {
+    void (async () => {
+      try {
+        const res = await fetch(`/api/file/history?path=${encodeURIComponent(filePath)}`);
+        const data = await (res.json() as Promise<CommitEntry[]>);
         setCommits(data);
-      })
-      .catch(() => {
+      } catch {
         setCommits([]);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   });
 
-  const openDiff = (sha: string) => {
+  const openDiff = async (sha: string) => {
     setDiffLoading(true);
     setDiffOpen(true);
     setDiffData(null);
-    fetch(`/api/file/diff?path=${encodeURIComponent(filePath)}&sha=${sha}`)
-      .then((res) => res.json() as Promise<DiffData>)
-      .then((data) => {
-        setDiffData(data);
-      })
-      .catch(() => {
-        setDiffData(null);
-      })
-      .finally(() => {
-        setDiffLoading(false);
-      });
+    try {
+      const res = await fetch(`/api/file/diff?path=${encodeURIComponent(filePath)}&sha=${sha}`);
+      const data = await (res.json() as Promise<DiffData>);
+      setDiffData(data);
+    } catch {
+      setDiffData(null);
+    } finally {
+      setDiffLoading(false);
+    }
   };
 
   let commitHistoryContent: ReactNode;

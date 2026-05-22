@@ -127,9 +127,7 @@ export function usePageActions(reloadTree: () => void) {
     if (res.ok) {
       toast.success("Page moved");
       reloadTree();
-      navigate(`/p/${toPath}`)?.catch((error: unknown) => {
-        console.error("Navigation failed after move:", error);
-      });
+      navigate(`/p/${toPath}`);
     } else {
       toast.error("Move failed");
     }
@@ -154,9 +152,7 @@ export function usePageActions(reloadTree: () => void) {
     if (res.ok) {
       toast.success("Page deleted");
       reloadTree();
-      navigate("/p/README.md")?.catch((error: unknown) => {
-        console.error("Navigation failed after delete:", error);
-      });
+      navigate("/p/README.md");
     } else {
       toast.error("Delete failed");
     }
@@ -266,11 +262,13 @@ export function usePageActions(reloadTree: () => void) {
                   setMoveSlug(ev.target.value);
                 }}
                 placeholder="page-name"
-                onKeyDown={(ev) => {
+                onKeyDown={async (ev) => {
                   if (ev.key === "Enter") {
-                    confirmMove().catch((error: unknown) => {
+                    try {
+                      await confirmMove();
+                    } catch (error: unknown) {
                       console.error("Move failed:", error);
-                    });
+                    }
                   }
                 }}
               />
@@ -287,10 +285,12 @@ export function usePageActions(reloadTree: () => void) {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                confirmMove().catch((error: unknown) => {
+              onClick={async () => {
+                try {
+                  await confirmMove();
+                } catch (error: unknown) {
                   console.error("Move failed:", error);
-                });
+                }
               }}
             >
               Move
@@ -320,10 +320,12 @@ export function usePageActions(reloadTree: () => void) {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                confirmDelete().catch((error: unknown) => {
+              onClick={async () => {
+                try {
+                  await confirmDelete();
+                } catch (error: unknown) {
                   console.error("Delete failed:", error);
-                });
+                }
               }}
             >
               Delete

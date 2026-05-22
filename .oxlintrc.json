@@ -22,7 +22,7 @@
     "typescript/no-import-type-side-effects": "off",
     "unicorn/prefer-module": "off",
     "unicorn/filename-case": "off",
-    "promise/prefer-await-to-then": "off",
+    "promise/prefer-await-to-then": "error",
     "promise/prefer-await-to-callbacks": "off",
     "eslint/no-undefined": "off",
     "eslint/no-void": "off",

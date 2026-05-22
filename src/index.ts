@@ -118,23 +118,21 @@ watch(config.repoPath, { recursive: true }, (_event, filename) => {
   }
   debounceMap.set(
     relPath,
-    setTimeout(() => {
+    setTimeout(async () => {
       debounceMap.delete(relPath);
       if (relPath === ".kumidocs.json") {
-        void loadPermissions().then(() => {
-          console.log("Reloaded .kumidocs.json");
-        });
+        await loadPermissions();
+        console.log("Reloaded .kumidocs.json");
         return;
       }
       const fullPath = join(config.repoPath, relPath);
       if (existsSync(fullPath)) {
-        void reloadFile(relPath, config).then(() => {
-          updateInIndex(relPath);
-          // Skip broadcast for writes originated by this server process
-          if (!consumeWritten(relPath)) {
-            broadcastPageChanged(relPath, "", "disk", "Local");
-          }
-        });
+        await reloadFile(relPath, config);
+        updateInIndex(relPath);
+        // Skip broadcast for writes originated by this server process
+        if (!consumeWritten(relPath)) {
+          broadcastPageChanged(relPath, "", "disk", "Local");
+        }
       } else {
         removeFromCache(relPath);
         removeFromIndex(relPath);

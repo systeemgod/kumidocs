@@ -6,15 +6,29 @@ import http from "isomorphic-git/http/node";
 // ── Serial queue ──────────────────────────────────────────────────────────────
 // All operations that touch the .git/index or working tree run through this
 // queue so concurrent HTTP saves and the background pull loop never race.
-let gitTail: Promise<unknown> = Promise.resolve();
-function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult> {
-  const result = gitTail.then(fn);
-  // Swallow errors on the tail so one failed op doesn't stall the queue.
-  gitTail = result.then(
-    () => {},
-    () => {},
-  );
-  return result;
+let gitTail: Promise<void> = Promise.resolve();
+async function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult> {
+  const prev = gitTail;
+  let fnResult!: Promise<TResult>;
+  // Advance the tail synchronously so concurrent callers queue up behind this op.
+  const mySlot = (async () => {
+    // Swallow errors from previous op so one failure doesn't stall the queue.
+    try {
+      await prev;
+    } catch {
+      /* intentionally empty — previous op errors must not block the queue */
+    }
+    fnResult = fn();
+    // Swallow fn's error on the tail so the queue keeps running after failures.
+    try {
+      await fnResult;
+    } catch {
+      /* intentionally empty — caller receives the error via fnResult */
+    }
+  })();
+  gitTail = mySlot;
+  await mySlot;
+  return fnResult;
 }
 
 export function gitPull(config: Config): Promise<void> {
