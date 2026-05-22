@@ -59,6 +59,7 @@ const AnchorComponent = (allProps: { href?: string; children?: ReactNode }): JSX
   );
 };
 
+// oxfmt-ignore
 const COMPONENTS = { "kumi-emoji": KumiEmojiComponent, "a": AnchorComponent };
 
 const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {

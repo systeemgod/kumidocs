@@ -11,11 +11,7 @@ import {
 } from "../components/ui/dropdown-menu";
 import { InfoRegular, MoreHorizontalRegular, SaveRegular } from "@fluentui/react-icons";
 import { type ReactNode, useCallback, useRef, useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "../components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
 import { extensionToType, pathExtension } from "@/lib/filetypes";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useWsListener, wsClient } from "../store/ws";

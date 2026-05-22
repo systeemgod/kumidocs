@@ -65,6 +65,7 @@ const SlideAnchorComponent = (allProps: SlideAnchorProps): JSX.Element => {
   );
 };
 
+// oxfmt-ignore
 const COMPONENTS = {
   "kumi-emoji": KumiEmojiComponent,
   "a": SlideAnchorComponent,

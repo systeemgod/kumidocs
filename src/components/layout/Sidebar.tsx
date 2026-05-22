@@ -7,8 +7,18 @@ import {
   MoreHorizontalFilled,
   MoreHorizontalRegular,
 } from "@fluentui/react-icons";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "../ui/context-menu";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "../ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { EmojiIcon, TitleWithEmoji } from "../ui/EmojiIcon";
 import { type FileEntry, type PresenceUser, type TreeNode, type User } from "../../lib/types";
 import { Link, useLocation, useNavigate } from "react-router-dom";
