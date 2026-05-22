@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import {
   type ParsedSlide,
+  type SlideDirectives,
+  type SlideThemeDef,
   type SlideThemeMap,
   isBgDark,
   parseSlideDirectives,
@@ -132,6 +134,35 @@ function splitSlides(content: string): string[] {
 export const SLIDE_W = 960;
 export const SLIDE_H = 540;
 
+// ── Canvas style builder ──────────────────────────────────────────────────────
+
+function buildCanvasStyle(
+  resolvedTheme: Omit<SlideThemeDef, "layouts"> | undefined,
+  directives: SlideDirectives,
+): React.CSSProperties {
+  const style: React.CSSProperties = {};
+  if (resolvedTheme?.bg) {
+    style.background = resolvedTheme.bg;
+    style.backgroundSize = "cover";
+    style.backgroundPosition = "center";
+    style.backgroundRepeat = "no-repeat";
+  }
+  if (resolvedTheme?.fg) {
+    (style as Record<string, unknown>)["--slide-fg"] = resolvedTheme.fg;
+  }
+  if (resolvedTheme?.fontFamily) {
+    style.fontFamily = resolvedTheme.fontFamily;
+  }
+  // Per-slide bg overrides custom theme bg
+  if (directives.bg) {
+    style.background = directives.bg;
+    style.backgroundSize = "cover";
+    style.backgroundPosition = "center";
+    style.backgroundRepeat = "no-repeat";
+  }
+  return style;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 /**
  * Renders a single 960×540 slide canvas, scaled to `scale` and optionally
@@ -184,26 +215,7 @@ export function ScaledSlide({
   }, [slide.content]);
 
   // Build canvas inline style: custom theme bg/fg first, then per-slide directive overrides
-  const canvasStyle: React.CSSProperties = {};
-  if (resolvedTheme?.bg) {
-    canvasStyle.background = resolvedTheme.bg;
-    canvasStyle.backgroundSize = "cover";
-    canvasStyle.backgroundPosition = "center";
-    canvasStyle.backgroundRepeat = "no-repeat";
-  }
-  if (resolvedTheme?.fg) {
-    (canvasStyle as Record<string, unknown>)["--slide-fg"] = resolvedTheme.fg;
-  }
-  if (resolvedTheme?.fontFamily) {
-    canvasStyle.fontFamily = resolvedTheme.fontFamily;
-  }
-  // Per-slide bg overrides custom theme bg
-  if (directives.bg) {
-    canvasStyle.background = directives.bg;
-    canvasStyle.backgroundSize = "cover";
-    canvasStyle.backgroundPosition = "center";
-    canvasStyle.backgroundRepeat = "no-repeat";
-  }
+  const canvasStyle = buildCanvasStyle(resolvedTheme, directives);
 
   return (
     <div

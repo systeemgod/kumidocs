@@ -7,92 +7,88 @@ const CANVAS_H = 540;
 
 // ── Position helper ───────────────────────────────────────────────────────────
 
-function computePositionStyle(el: SlideThemeElement): React.CSSProperties {
-  const styles: React.CSSProperties = { position: "absolute" };
+type RectElement = Extract<SlideThemeElement, { type: "rect" }>;
+type AlignableElement = Extract<SlideThemeElement, { type: "text" | "image" }>;
+type ImageElement = Extract<SlideThemeElement, { type: "image" }>;
 
-  if (el.type === "rect") {
+function applyRectStyle(el: RectElement, styles: React.CSSProperties): void {
+  if (el.left !== undefined) {
+    styles.left = el.left;
+  }
+  if (el.right !== undefined) {
+    styles.right = el.right;
+  }
+  if (el.top !== undefined) {
+    styles.top = el.top;
+  }
+  if (el.bottom !== undefined) {
+    styles.bottom = el.bottom;
+  }
+  if (el.width !== undefined) {
+    styles.width = el.width;
+  } else if (el.left !== undefined && el.right !== undefined) {
+    styles.width = CANVAS_W - el.left - el.right;
+  }
+  if (el.height !== undefined) {
+    styles.height = el.height;
+  } else if (el.top !== undefined && el.bottom !== undefined) {
+    styles.height = CANVAS_H - el.top - el.bottom;
+  }
+}
+
+function applyXPositioning(el: AlignableElement, styles: React.CSSProperties): void {
+  if (el.centerX) {
+    styles.left = "50%";
+    styles.transform = "translateX(-50%)";
+  } else {
     if (el.left !== undefined) {
       styles.left = el.left;
     }
     if (el.right !== undefined) {
       styles.right = el.right;
     }
+  }
+}
+
+function applyYPositioning(el: AlignableElement, styles: React.CSSProperties): void {
+  if (el.centerY) {
+    styles.top = "50%";
+    styles.transform = `${styles.transform ? `${styles.transform} ` : ""}translateY(-50%)`;
+  } else {
     if (el.top !== undefined) {
       styles.top = el.top;
     }
     if (el.bottom !== undefined) {
       styles.bottom = el.bottom;
     }
-    if (el.width !== undefined) {
-      styles.width = el.width;
-    } else if (el.left !== undefined && el.right !== undefined) {
-      styles.width = CANVAS_W - el.left - el.right;
-    }
-    if (el.height !== undefined) {
-      styles.height = el.height;
-    } else if (el.top !== undefined && el.bottom !== undefined) {
-      styles.height = CANVAS_H - el.top - el.bottom;
-    }
   }
+}
 
-  if (el.type === "text") {
-    if (el.centerX) {
-      styles.left = "50%";
-      styles.transform = "translateX(-50%)";
-    } else {
-      if (el.left !== undefined) {
-        styles.left = el.left;
-      }
-      if (el.right !== undefined) {
-        styles.right = el.right;
-      }
-    }
-    if (el.centerY) {
-      styles.top = "50%";
-      styles.transform = `${styles.transform ? `${styles.transform} ` : ""}translateY(-50%)`;
-    } else {
-      if (el.top !== undefined) {
-        styles.top = el.top;
-      }
-      if (el.bottom !== undefined) {
-        styles.bottom = el.bottom;
-      }
-    }
+function applyImageDimensions(el: ImageElement, styles: React.CSSProperties): void {
+  if (el.width !== undefined) {
+    styles.width = el.width;
+  } else if (!el.centerX && el.left !== undefined && el.right !== undefined) {
+    styles.width = CANVAS_W - el.left - el.right;
   }
+  if (el.height !== undefined) {
+    styles.height = el.height;
+  } else if (!el.centerY && el.top !== undefined && el.bottom !== undefined) {
+    styles.height = CANVAS_H - el.top - el.bottom;
+  }
+}
 
+function computePositionStyle(el: SlideThemeElement): React.CSSProperties {
+  const styles: React.CSSProperties = { position: "absolute" };
+
+  if (el.type === "rect") {
+    applyRectStyle(el, styles);
+  }
+  if (el.type === "text" || el.type === "image") {
+    applyXPositioning(el, styles);
+    applyYPositioning(el, styles);
+  }
   if (el.type === "image") {
-    if (el.centerX) {
-      styles.left = "50%";
-      styles.transform = "translateX(-50%)";
-    } else {
-      if (el.left !== undefined) {
-        styles.left = el.left;
-      }
-      if (el.right !== undefined) {
-        styles.right = el.right;
-      }
-    }
-    if (el.centerY) {
-      styles.top = "50%";
-      styles.transform = `${styles.transform ? `${styles.transform} ` : ""}translateY(-50%)`;
-    } else {
-      if (el.top !== undefined) {
-        styles.top = el.top;
-      }
-      if (el.bottom !== undefined) {
-        styles.bottom = el.bottom;
-      }
-    }
-    if (el.width !== undefined) {
-      styles.width = el.width;
-    } else if (!el.centerX && el.left !== undefined && el.right !== undefined) {
-      styles.width = CANVAS_W - el.left - el.right;
-    }
-    if (el.height !== undefined) {
-      styles.height = el.height;
-    } else if (!el.centerY && el.top !== undefined && el.bottom !== undefined) {
-      styles.height = CANVAS_H - el.top - el.bottom;
-    }
+    applyImageDimensions(el, styles);
   }
 
   return styles;
