@@ -16,7 +16,14 @@ import {
   apiUploadImage,
   serveRepoAsset,
 } from "./server/api";
-import { broadcastPageChanged, broadcastPageDeleted, pruneDeadSessions, wsClose, wsMessage, wsOpen } from "./server/websocket";
+import {
+  broadcastPageChanged,
+  broadcastPageDeleted,
+  pruneDeadSessions,
+  wsClose,
+  wsMessage,
+  wsOpen,
+} from "./server/websocket";
 import { consumeWritten, loadFilestore, reloadFile, removeFromCache } from "./server/filestore";
 import { existsSync, watch } from "node:fs";
 import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
@@ -154,21 +161,22 @@ setInterval(() => {
       // Use per-file updateInIndex/removeFromIndex (same as API write paths)
       // rather than a full rebuild to avoid redundant work.
       await loadPermissions();
-      for (const changedPath of result.changed) {
-        if (changedPath === ".kumidocs.json") {
-          continue;
-        }
-        const fullPath = join(config.repoPath, changedPath);
-        if (existsSync(fullPath)) {
-          await reloadFile(changedPath, config);
-          updateInIndex(changedPath);
-          broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
-        } else {
-          removeFromCache(changedPath);
-          removeFromIndex(changedPath);
-          broadcastPageDeleted(changedPath);
-        }
-      }
+      await Promise.all(
+        result.changed
+          .filter((changedPath) => changedPath !== ".kumidocs.json")
+          .map(async (changedPath) => {
+            const fullPath = join(config.repoPath, changedPath);
+            if (existsSync(fullPath)) {
+              await reloadFile(changedPath, config);
+              updateInIndex(changedPath);
+              broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
+            } else {
+              removeFromCache(changedPath);
+              removeFromIndex(changedPath);
+              broadcastPageDeleted(changedPath);
+            }
+          }),
+      );
     }
   })();
 }, config.pullInterval);

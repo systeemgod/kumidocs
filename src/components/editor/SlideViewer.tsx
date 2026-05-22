@@ -600,24 +600,27 @@ function SlideViewer({
         unit: "px",
         format: [SLIDE_W, SLIDE_H],
       });
-      const slideEls = [...container.children] as HTMLElement[];
-      for (let idx = 0; idx < slideEls.length; idx++) {
-        const el = slideEls[idx];
-        if (!el) {
-          continue;
-        }
-        const canvas = await html2canvas(el, {
-          width: SLIDE_W,
-          height: SLIDE_H,
-          scale: 2,
-          useCORS: true,
-          logging: false,
-        });
+      const slideEls = ([...container.children] as HTMLElement[]).filter(Boolean);
+      const canvases = await Promise.all(
+        slideEls.map((el) =>
+          html2canvas(el, {
+            width: SLIDE_W,
+            height: SLIDE_H,
+            scale: 2,
+            useCORS: true,
+            logging: false,
+          }),
+        ),
+      );
+      for (const [idx, canvas] of canvases.entries()) {
         if (idx > 0) {
           pdf.addPage();
         }
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, SLIDE_W, SLIDE_H);
-        overlaySelectableLayer(pdf, el);
+        const el = slideEls[idx];
+        if (el !== undefined) {
+          overlaySelectableLayer(pdf, el);
+        }
       }
       pdf.save(`${filename}.pdf`);
     } finally {

@@ -69,9 +69,7 @@ async function _stageAndCommit(
   authorEmail: string,
 ): Promise<{ sha: string; error?: string; committed?: boolean }> {
   try {
-    for (const fp of filePaths) {
-      await git.add({ fs, dir: config.repoPath, filepath: fp });
-    }
+    await Promise.all(filePaths.map((fp) => git.add({ fs, dir: config.repoPath, filepath: fp })));
 
     // Scope the status check to the paths we staged so we don't accidentally
     // commit unrelated workdir noise or pick up changes staged concurrently.
@@ -165,10 +163,12 @@ function gitMoveAndCommit(
     // isomorphic-git has no native move: add the new path, remove the old one.
     await git.add({ fs, dir: config.repoPath, filepath: to });
     await git.remove({ fs, dir: config.repoPath, filepath: from });
-    for (const extra of extraMoves ?? []) {
-      await git.add({ fs, dir: config.repoPath, filepath: extra.to });
-      await git.remove({ fs, dir: config.repoPath, filepath: extra.from });
-    }
+    await Promise.all(
+      (extraMoves ?? []).map(async (extra) => {
+        await git.add({ fs, dir: config.repoPath, filepath: extra.to });
+        await git.remove({ fs, dir: config.repoPath, filepath: extra.from });
+      }),
+    );
     return _stageAndCommit(config, [], message, authorName, authorEmail);
   });
 }

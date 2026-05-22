@@ -249,22 +249,35 @@ async function apiFileRename(req: Request, user: User, config: Config) {
     })),
   ];
 
-  // Perform all renames; roll back completed ones if any step fails.
-  const completed: { relFrom: string; relTo: string }[] = [];
-  try {
-    for (const op of renameOps) {
+  // Perform all renames; roll back any that succeeded if any step fails.
+  interface RenameOp {
+    relFrom: string;
+    relTo: string;
+  }
+  const renameResults = await Promise.allSettled(
+    renameOps.map(async (op) => {
       await mkdir(dirname(join(config.repoPath, op.relTo)), { recursive: true });
       await rename(join(config.repoPath, op.relFrom), join(config.repoPath, op.relTo));
-      completed.push(op);
-    }
-  } catch (error: unknown) {
-    // Roll back in reverse order
-    for (const op of completed.toReversed()) {
-      await rename(join(config.repoPath, op.relTo), join(config.repoPath, op.relFrom)).catch(
-        () => {},
-      );
-    }
-    console.error("apiFileRename: fs.rename failed, rolled back:", error);
+      return op;
+    }),
+  );
+  const firstFailure = renameResults.find((res) => res.status === "rejected") as
+    | PromiseRejectedResult
+    | undefined;
+  if (firstFailure !== undefined) {
+    const completed = renameResults
+      .filter((res): res is PromiseFulfilledResult<RenameOp> => res.status === "fulfilled")
+      .map((res) => res.value);
+    await Promise.all(
+      completed
+        .toReversed()
+        .map((op) =>
+          rename(join(config.repoPath, op.relTo), join(config.repoPath, op.relFrom)).catch(
+            () => {},
+          ),
+        ),
+    );
+    console.error("apiFileRename: fs.rename failed, rolled back:", firstFailure.reason);
     return Response.json({ error: "Failed to rename files" }, { status: 500 });
   }
 
