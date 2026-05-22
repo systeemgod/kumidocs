@@ -24,7 +24,7 @@
 		"prepublishOnly": "bun run build",
 		"dev": "bun --hot src/index.ts",
 		"start": "NODE_ENV=production bun src/index.ts",
-		"lint": "oxlint --config .oxlintrc.json src/",
+		"lint": "oxlint src/",
 		"format": "oxfmt src/",
 		"typecheck": "tsc --noEmit"
 	},
