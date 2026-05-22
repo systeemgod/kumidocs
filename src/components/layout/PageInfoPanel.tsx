@@ -1,19 +1,19 @@
-import { type ReactNode, useState, useMemo } from "react";
-import { useMountEffect } from "../../hooks/useMountEffect";
-import { parseDiff, Diff, Hunk } from "react-diff-view";
 import "react-diff-view/style/index.css";
-import { ScrollArea } from "../ui/scroll-area";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
   ChevronDownRegular,
   ChevronRightRegular,
   DismissRegular,
   DocumentRegular,
 } from "@fluentui/react-icons";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Diff, Hunk, parseDiff } from "react-diff-view";
+import { type ReactNode, useMemo, useState } from "react";
+import { Button } from "../ui/button";
 import { type CommitEntry } from "../../lib/types";
-import { emailToDisplayName } from "../../lib/avatar";
+import { ScrollArea } from "../ui/scroll-area";
 import { UserAvatar } from "../ui/avatar";
+import { emailToDisplayName } from "../../lib/avatar";
+import { useMountEffect } from "../../hooks/useMountEffect";
 
 interface DiffData {
   sha: string;
@@ -103,13 +103,9 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
 
   let commitHistoryContent: ReactNode;
   if (loading) {
-    commitHistoryContent = (
-      <p className="text-xs text-muted-foreground py-2">Loading…</p>
-    );
+    commitHistoryContent = <p className="text-xs text-muted-foreground py-2">Loading…</p>;
   } else if (commits.length === 0) {
-    commitHistoryContent = (
-      <p className="text-xs text-muted-foreground py-2">No commits yet.</p>
-    );
+    commitHistoryContent = <p className="text-xs text-muted-foreground py-2">No commits yet.</p>;
   } else {
     commitHistoryContent = (
       <div className="space-y-1">
@@ -150,9 +146,7 @@ export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps) 
                         className="shrink-0 mt-0.5"
                       />
                       <span className="flex-1 min-w-0">
-                        <span className="text-foreground line-clamp-2 block">
-                          {commit.message}
-                        </span>
+                        <span className="text-foreground line-clamp-2 block">{commit.message}</span>
                         {(commit.added !== undefined || commit.removed !== undefined) && (
                           <span className="flex gap-1 mt-0.5">
                             {(commit.added ?? 0) > 0 && (

@@ -1,37 +1,41 @@
-import { type ReactNode, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import { toast } from "sonner";
-import { MoreHorizontalRegular, SaveRegular, InfoRegular } from "@fluentui/react-icons";
-import { useMountEffect } from "../hooks/useMountEffect";
-import { EmojiPickerPopover } from "../components/ui/EmojiPickerPopover";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
+import {
+  type PageMeta as DocMeta,
+  buildFrontmatter,
+  extractHeadingTitle,
+  parseFrontmatter,
+} from "@/lib/frontmatter";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-import { PageMenuItems } from "../components/ui/PageMenuItems";
-import { usePageActions } from "../hooks/usePageActions";
-import { UserAvatar } from "../components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
-import { ScrollArea } from "../components/ui/scroll-area";
+import { InfoRegular, MoreHorizontalRegular, SaveRegular } from "@fluentui/react-icons";
+import { type ReactNode, useCallback, useRef, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
+import { extensionToType, pathExtension } from "@/lib/filetypes";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { useWsListener, wsClient } from "../store/ws";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { CodeEditor } from "../components/editor/CodeEditor";
+import { EmojiPickerPopover } from "../components/ui/EmojiPickerPopover";
 import { MarkdownEditor } from "../components/editor/MarkdownEditor";
 import { MarkdownViewer } from "../components/editor/MarkdownViewer";
-import { SlideViewer } from "../components/editor/SlideViewer";
-import { CodeEditor } from "../components/editor/CodeEditor";
-import { PageInfoPanel } from "../components/layout/PageInfoPanel";
-import { wsClient, useWsListener } from "../store/ws";
-import { useUser } from "../store/user";
-import { type PresenceUser } from "../lib/types";
 import { NotFound } from "./NotFound";
-import { extensionToType, pathExtension } from "@/lib/filetypes";
-import {
-  type PageMeta as DocMeta,
-  parseFrontmatter,
-  buildFrontmatter,
-  extractHeadingTitle,
-} from "@/lib/frontmatter";
+import { PageInfoPanel } from "../components/layout/PageInfoPanel";
+import { PageMenuItems } from "../components/ui/PageMenuItems";
+import { type PresenceUser } from "../lib/types";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { SlideViewer } from "../components/editor/SlideViewer";
+import { UserAvatar } from "../components/ui/avatar";
+import { toast } from "sonner";
+import { useMountEffect } from "../hooks/useMountEffect";
+import { usePageActions } from "../hooks/usePageActions";
+import { useUser } from "../store/user";
 
 interface OutletCtx {
   reloadTree: () => void;
@@ -667,10 +671,7 @@ export function FilePage() {
 
         {/* Save status – inline next to Edit button */}
         {editMode && (
-          <Badge
-            variant="outline"
-            className={`text-xs h-5 shrink-0${saveBadgeClass}`}
-          >
+          <Badge variant="outline" className={`text-xs h-5 shrink-0${saveBadgeClass}`}>
             {saveStatus === "saved" && "Saved"}
             {saveStatus === "saving" && "Saving…"}
             {saveStatus === "unsaved" && "Unsaved"}
@@ -682,19 +683,21 @@ export function FilePage() {
         <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
           {/* Viewers — deduplicated by id (same user may have multiple tabs open) */}
           <div className="flex -space-x-1">
-            {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()].slice(0, 5).map((viewer) => (
-              <Tooltip key={viewer.id}>
-                <TooltipTrigger asChild>
-                  <UserAvatar
-                    name={viewer.name}
-                    email={viewer.email}
-                    size="sm"
-                    className="border border-background ring-1 ring-border"
-                  />
-                </TooltipTrigger>
-                <TooltipContent>{viewer.name}</TooltipContent>
-              </Tooltip>
-            ))}
+            {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()]
+              .slice(0, 5)
+              .map((viewer) => (
+                <Tooltip key={viewer.id}>
+                  <TooltipTrigger asChild>
+                    <UserAvatar
+                      name={viewer.name}
+                      email={viewer.email}
+                      size="sm"
+                      className="border border-background ring-1 ring-border"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{viewer.name}</TooltipContent>
+                </Tooltip>
+              ))}
           </div>
 
           {/* Dedicated info button */}
@@ -766,9 +769,7 @@ export function FilePage() {
 
       {/* Content area */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {editorContent}
-        </div>
+        <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
         {infoOpen && !editMode && (
           <PageInfoPanel
             key={filePath}

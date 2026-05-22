@@ -1,10 +1,4 @@
-import { type ReactNode, useState, useCallback } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
 import { DeleteRegular, DismissRegular } from "@fluentui/react-icons";
-import { toast } from "sonner";
-import { useMountEffect } from "@/hooks/useMountEffect";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { type ReactNode, useCallback, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useMountEffect } from "@/hooks/useMountEffect";
 import { useUser } from "@/store/user";
 
 interface ImageEntry {
@@ -103,7 +103,10 @@ function ImageDetailPanel({ image, onDeleted }: { image: ImageEntry; onDeleted: 
             <ul className="space-y-1">
               {image.usedIn.map((pagePath) => (
                 <li key={pagePath}>
-                  <Link to={`/p/${pagePath}`} className="text-primary hover:underline text-xs break-all">
+                  <Link
+                    to={`/p/${pagePath}`}
+                    className="text-primary hover:underline text-xs break-all"
+                  >
                     {pagePath}
                   </Link>
                 </li>
@@ -264,9 +267,7 @@ export function ImageLibraryPage() {
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Grid */}
-        <div className="flex-1 min-w-0 overflow-y-auto p-6">
-          {imageGridContent}
-        </div>
+        <div className="flex-1 min-w-0 overflow-y-auto p-6">{imageGridContent}</div>
 
         {/* Detail panel */}
         <div className={`shrink-0 overflow-hidden ${selectedImage ? "w-72" : "hidden"}`}>

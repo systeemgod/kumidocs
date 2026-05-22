@@ -1,18 +1,4 @@
-import { useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
-import { Button } from "../components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
 import {
   Command,
   CommandEmpty,
@@ -21,6 +7,20 @@ import {
   CommandItem,
   CommandList,
 } from "../components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import { useCallback, useRef, useState } from "react";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface PageOption {
   path: string; // full path e.g. "docs/api.md"
@@ -99,7 +99,9 @@ export function usePageActions(reloadTree: () => void) {
           dir: pagePath.replace(/\.md$/iu, ""),
           title: fileEntry?.title ?? pagePath.replace(/\.md$/iu, ""),
         }))
-        .toSorted((pageA, pageB) => pageA.title.localeCompare(pageB.title, undefined, { sensitivity: "base" }));
+        .toSorted((pageA, pageB) =>
+          pageA.title.localeCompare(pageB.title, undefined, { sensitivity: "base" }),
+        );
       setMovePages(pages);
       const parentPageExists = pages.some((pg) => pg.dir === parent);
       setMoveParent(parent && parentPageExists ? parent : ROOT);

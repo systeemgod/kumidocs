@@ -1,4 +1,3 @@
-import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -12,20 +11,21 @@ import {
   Spotlight,
   Square,
 } from "lucide-react";
-import { Button } from "../ui/button";
-import { SlideMarkdownViewer } from "./SlideMarkdownViewer";
-import { SlideOverlay } from "./SlideOverlay";
 import {
-  parseSlideDirectives,
-  resolveTheme,
-  isBgDark,
   type ParsedSlide,
   type SlideThemeMap,
+  isBgDark,
+  parseSlideDirectives,
+  resolveTheme,
 } from "@/lib/slide";
-import { cn } from "@/lib/utils";
-import { useTheme } from "@/store/theme";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Button } from "../ui/button";
 import { type jsPDF as JsPDF } from "jspdf";
+import { SlideMarkdownViewer } from "./SlideMarkdownViewer";
+import { SlideOverlay } from "./SlideOverlay";
+import { cn } from "@/lib/utils";
+import { useMountEffect } from "@/hooks/useMountEffect";
+import { useTheme } from "@/store/theme";
 
 // ── PDF selectable layer ─────────────────────────────────────────────────────
 // Walks the DOM of a rendered slide and adds invisible text + link hotspots

@@ -15,15 +15,15 @@
  * The `size` prop controls pixel dimensions for both paths, working around
  * the issue where Fluent Color SVGs ignore Tailwind `w-N h-N` classes.
  */
-import { type FC, type CSSProperties, Fragment } from "react";
-import EMOJI_SVGS from "./emoji/emojis";
+import { type CSSProperties, type FC, Fragment } from "react";
 import {
-  TextBulletListSquare24Color,
-  SlideTextSparkle24Color,
-  Image24Color,
   Code24Color,
+  Image24Color,
   QuestionCircle24Color,
+  SlideTextSparkle24Color,
+  TextBulletListSquare24Color,
 } from "@fluentui/react-icons";
+import EMOJI_SVGS from "./emoji/emojis";
 import { type FileType } from "@/lib/types";
 
 // File type strings for EmojiIcon — well-known values listed for autocomplete, open to any string

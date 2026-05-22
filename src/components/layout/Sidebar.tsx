@@ -1,35 +1,25 @@
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   AddRegular,
-  ChevronRightRegular,
-  ChevronDownRegular,
-  ImageRegular,
   BookTemplateRegular,
-  MoreHorizontalRegular,
+  ChevronDownRegular,
+  ChevronRightRegular,
+  ImageRegular,
   MoreHorizontalFilled,
+  MoreHorizontalRegular,
 } from "@fluentui/react-icons";
-import { PageMenuItems } from "../ui/PageMenuItems";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "../ui/context-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { EmojiIcon, TitleWithEmoji } from "../ui/EmojiIcon";
-import { UserAvatar } from "../ui/avatar";
+import { type FileEntry, type PresenceUser, type TreeNode, type User } from "../../lib/types";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "../ui/context-menu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+import { PageMenuItems } from "../ui/PageMenuItems";
+import { UserAvatar } from "../ui/avatar";
 import { toast } from "sonner";
 import { usePageActions } from "../../hooks/usePageActions";
+import { useState } from "react";
 import { useUser } from "../../store/user";
-import { type TreeNode, type FileEntry, type PresenceUser, type User } from "../../lib/types";
 
 interface SidebarProps {
   tree: TreeNode[];
@@ -66,7 +56,8 @@ const HIDDEN_DIR_NAMES = new Set(["images"]);
  */
 function buildPageTree(nodes: TreeNode[]): PageNode[] {
   const filtered = nodes.filter(
-    (node) => !HIDDEN_NAMES.has(node.name) && !(node.type === "dir" && HIDDEN_DIR_NAMES.has(node.name)),
+    (node) =>
+      !HIDDEN_NAMES.has(node.name) && !(node.type === "dir" && HIDDEN_DIR_NAMES.has(node.name)),
   );
 
   const fileMap = new Map<string, TreeNode>(); // baseName → file node
@@ -249,7 +240,9 @@ function PageNodeRow({
                         className="ring-1 ring-sidebar cursor-default"
                       />
                     </TooltipTrigger>
-                    <TooltipContent>{user.id === currentUser?.id ? "You" : user.name}</TooltipContent>
+                    <TooltipContent>
+                      {user.id === currentUser?.id ? "You" : user.name}
+                    </TooltipContent>
                   </Tooltip>
                 ))}
                 {presenceUsers.length > 3 && (

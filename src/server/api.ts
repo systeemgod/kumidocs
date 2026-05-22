@@ -1,34 +1,34 @@
-import { join, extname, dirname, resolve } from "node:path";
-import { readFile, writeFile, mkdir, rename, stat } from "node:fs/promises";
-import { createHash } from "node:crypto";
-import { createTwoFilesPatch } from "diff";
-import { type Config } from "./config";
-import { type User } from "../lib/types";
 import {
-  getFile,
-  getAllPaths,
-  buildFileTree,
-  writeFileToRepo,
-  deleteFileFromRepo,
   addToCache,
+  buildFileTree,
+  deleteFileFromRepo,
+  getAllPaths,
+  getFile,
   moveInCache,
+  writeFileToRepo,
 } from "./filestore";
 import {
-  getHeadSha,
-  gitStageAndCommit,
-  gitRemoveAndCommit,
-  gitMoveAndCommit,
-  gitFileLog,
-  gitBlobAt,
-} from "./git";
-import { searchDocs, updateInIndex, removeFromIndex } from "./search";
-import {
   broadcastPageChanged,
-  broadcastPageDeleted,
   broadcastPageCreated,
+  broadcastPageDeleted,
   getEditorForPage,
 } from "./websocket";
+import { dirname, extname, join, resolve } from "node:path";
+import {
+  getHeadSha,
+  gitBlobAt,
+  gitFileLog,
+  gitMoveAndCommit,
+  gitRemoveAndCommit,
+  gitStageAndCommit,
+} from "./git";
+import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { removeFromIndex, searchDocs, updateInIndex } from "./search";
+import { type Config } from "./config";
 import { IMAGE_TYPES } from "@/lib/filetypes";
+import { type User } from "../lib/types";
+import { createHash } from "node:crypto";
+import { createTwoFilesPatch } from "diff";
 import { getPermissions } from "./auth";
 
 /**
@@ -243,7 +243,10 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
   // Build the full list of (abs-from, abs-to) pairs for all fs.rename calls.
   const renameOps = [
     { relFrom: from, relTo: to },
-    ...subFiles.map((subFile) => ({ relFrom: subFile, relTo: toDir + subFile.slice(fromDir.length) })),
+    ...subFiles.map((subFile) => ({
+      relFrom: subFile,
+      relTo: toDir + subFile.slice(fromDir.length),
+    })),
   ];
 
   // Perform all renames; roll back completed ones if any step fails.
@@ -276,7 +279,10 @@ export async function apiFileRename(req: Request, user: User, config: Config) {
   const newPaths = renameOps.map((op) => op.relTo);
 
   const msg = `docs: rename ${from} → ${to} by ${user.displayName}`;
-  const extraMoves = subFiles.map((subFile) => ({ from: subFile, to: toDir + subFile.slice(fromDir.length) }));
+  const extraMoves = subFiles.map((subFile) => ({
+    from: subFile,
+    to: toDir + subFile.slice(fromDir.length),
+  }));
   await gitMoveAndCommit(
     config,
     from,
@@ -512,7 +518,9 @@ export async function apiFileDiff(url: URL, config: Config) {
   }
 
   const commits = await gitFileLog(config, path, 500);
-  const idx = commits.findIndex((commit) => commit.fullSha.startsWith(shortSha) || commit.sha === shortSha);
+  const idx = commits.findIndex(
+    (commit) => commit.fullSha.startsWith(shortSha) || commit.sha === shortSha,
+  );
   if (idx === -1) {
     return Response.json({ error: "Commit not found in file history" }, { status: 404 });
   }

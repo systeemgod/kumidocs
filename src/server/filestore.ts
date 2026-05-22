@@ -1,10 +1,10 @@
-import { readdir, readFile, writeFile, unlink, mkdir } from "node:fs/promises";
-import { join, dirname, extname, relative } from "node:path";
-import matter from "gray-matter";
-import { type Config } from "./config";
-import { type FileEntry, type TreeNode } from "../lib/types";
 import { CODE_TYPES, IMAGE_TYPES, extensionToType, pathExtension } from "@/lib/filetypes";
+import { type FileEntry, type TreeNode } from "../lib/types";
+import { dirname, extname, join, relative } from "node:path";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
+import { type Config } from "./config";
 import { extractHeadingTitle } from "@/lib/frontmatter";
+import matter from "gray-matter";
 
 const fileCache = new Map<string, string>(); // relPath -> content
 let treeCache: TreeNode[] | null = null; // invalidated on every write/delete/move
@@ -151,7 +151,9 @@ export function buildFileTree(): TreeNode[] {
   // Filter out hidden / internal files and the images/ directory (shown via Image Library)
   const visible = allPaths.filter(
     (filePath) =>
-      !filePath.startsWith(".") && !IGNORED_NAMES.has(filePath.split("/")[0] ?? "") && !filePath.startsWith("images/"),
+      !filePath.startsWith(".") &&
+      !IGNORED_NAMES.has(filePath.split("/")[0] ?? "") &&
+      !filePath.startsWith("images/"),
   );
 
   const root: TreeNode[] = [];

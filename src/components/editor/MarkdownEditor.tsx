@@ -1,14 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { MarkdownViewer } from "./MarkdownViewer";
-import { SlideViewer } from "./SlideViewer";
-import { parseFrontmatter, buildFrontmatter, type PageMeta } from "@/lib/frontmatter";
 import { BUILTIN_SLIDE_THEMES, type SlideThemeMap } from "@/lib/slide";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
 import {
   Bold,
   Code,
@@ -25,6 +15,16 @@ import {
   Strikethrough,
   TextQuote,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { type PageMeta, buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import { MarkdownViewer } from "./MarkdownViewer";
+import { SlideViewer } from "./SlideViewer";
+import { toast } from "sonner";
 
 // ── Toolbar action helpers ────────────────────────────────────────────────────
 
@@ -234,7 +234,9 @@ export function MarkdownEditor({
   // Available theme names for the properties dialog.
   const themeOptions = useMemo(() => {
     const builtin = Object.keys(BUILTIN_SLIDE_THEMES);
-    const custom = slideThemes ? Object.keys(slideThemes).filter((key) => !builtin.includes(key)) : [];
+    const custom = slideThemes
+      ? Object.keys(slideThemes).filter((key) => !builtin.includes(key))
+      : [];
     return ["default", ...builtin, ...custom];
   }, [slideThemes]);
   // Track the last known cursor/selection so toolbar actions that steal focus
@@ -390,7 +392,11 @@ export function MarkdownEditor({
   );
 
   const handleDragOver = useCallback((ev: React.DragEvent) => {
-    if ([...ev.dataTransfer.items].some((item) => item.kind === "file" && item.type.startsWith("image/"))) {
+    if (
+      [...ev.dataTransfer.items].some(
+        (item) => item.kind === "file" && item.type.startsWith("image/"),
+      )
+    ) {
       ev.preventDefault();
       ev.dataTransfer.dropEffect = "copy";
     }

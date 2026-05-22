@@ -54,7 +54,6 @@
 		"eslint/init-declarations": "off",
 		"import/no-named-as-default-member": "off",
 		"unicorn/no-null": "off",
-		"eslint/sort-imports": "off",
 		"eslint/no-await-in-loop": "off",
 		"eslint/no-use-before-define": "off",
 		"eslint/prefer-destructuring": "off",

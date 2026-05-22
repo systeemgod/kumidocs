@@ -1,14 +1,14 @@
-import { useState, useCallback, useRef } from "react";
-import { Outlet } from "react-router-dom";
-import { TopBar } from "./TopBar";
-import { Sidebar } from "./Sidebar";
-import { SearchPalette } from "../search/SearchPalette";
+import { type PresenceUser, type TreeNode } from "../../lib/types";
+import { useCallback, useRef, useState } from "react";
+import { useWsListener, wsClient } from "../../store/ws";
 import { NewPageDialog } from "../dialogs/NewPageDialog";
+import { Outlet } from "react-router-dom";
+import { SearchPalette } from "../search/SearchPalette";
+import { Sidebar } from "./Sidebar";
 import { Toaster } from "../ui/sonner";
-import { useUser } from "../../store/user";
-import { wsClient, useWsListener } from "../../store/ws";
+import { TopBar } from "./TopBar";
 import { useMountEffect } from "../../hooks/useMountEffect";
-import { type TreeNode, type PresenceUser } from "../../lib/types";
+import { useUser } from "../../store/user";
 
 // Connects the WS client once on mount (rendered only when user is available)
 function WsConnector({ userId }: { userId: string }) {
@@ -38,7 +38,9 @@ export function AppShell() {
       return SIDEBAR_DEFAULT;
     }
     const num = Number(stored);
-    return Number.isFinite(num) ? Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, num)) : SIDEBAR_DEFAULT;
+    return Number.isFinite(num)
+      ? Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, num))
+      : SIDEBAR_DEFAULT;
   });
   const [isDragging, setIsDragging] = useState(false);
   // Keep a ref so the stable mousemove closure always reads the live drag-start values

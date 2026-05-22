@@ -12,7 +12,7 @@
  *
  * The block is removed from the rendered output after parsing.
  */
-import { type Root, type Element, type ElementContent } from "hast";
+import { type Element, type ElementContent, type Root } from "hast";
 
 // Matches a {key=value …} block — no nested braces.
 const ATTRS_RE = /^\{([^}]+)\}/u;
@@ -62,7 +62,9 @@ function styleFingerprint(attrs: Record<string, string>): number {
 function applyHashToNode(el: Element, hash: string): void {
   const cls = el.properties.className;
   if (Array.isArray(cls)) {
-    const filtered = cls.filter((item) => typeof item !== "string" || !item.startsWith("stylehash-"));
+    const filtered = cls.filter(
+      (item) => typeof item !== "string" || !item.startsWith("stylehash-"),
+    );
     filtered.push(hash);
     el.properties.className = filtered;
   } else {

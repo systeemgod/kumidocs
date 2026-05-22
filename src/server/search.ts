@@ -1,7 +1,7 @@
+import { type FileType, type SearchResult } from "../lib/types";
+import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import MiniSearch from "minisearch";
 import matter from "gray-matter";
-import { getAllPaths, getFile, parseFileEntry } from "./filestore";
-import { type FileType, type SearchResult } from "../lib/types";
 
 interface DocEntry {
   id: string;

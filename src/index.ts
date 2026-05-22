@@ -1,43 +1,43 @@
-import { serve } from "bun";
+import { type KumiDocsPermissions, parseUser, setPermissions } from "./server/auth";
+import {
+  type WsData,
+  broadcastPageChanged,
+  broadcastPageDeleted,
+  pruneDeadSessions,
+  wsClose,
+  wsMessage,
+  wsOpen,
+} from "./server/websocket";
+import {
+  apiAvatarProxy,
+  apiFileCreate,
+  apiFileDelete,
+  apiFileDiff,
+  apiFileGet,
+  apiFileHistory,
+  apiFilePut,
+  apiFileRename,
+  apiImageDelete,
+  apiImagesList,
+  apiMe,
+  apiSearch,
+  apiSidebar,
+  apiTree,
+  apiUploadImage,
+  serveRepoAsset,
+} from "./server/api";
+import { consumeWritten, loadFilestore, reloadFile, removeFromCache } from "./server/filestore";
 import { existsSync, watch } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
+import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
 import { join, sep } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
 // In dev (bun --hot), Bun bundles the frontend on-the-fly with HMR.
 // In production (dist/index.js), __BUNDLED__ is injected by scripts/build.ts and
 // serveSPA reads from the pre-built dist/public/ directory instead.
 import devIndex from "./index.html";
 import { loadConfig } from "./server/config";
-import { parseUser, setPermissions, type KumiDocsPermissions } from "./server/auth";
-import { loadFilestore, reloadFile, removeFromCache, consumeWritten } from "./server/filestore";
-import { initSearch, updateInIndex, removeFromIndex } from "./server/search";
-import { gitPull, gitFetchAndRebase, gitStageAndCommit } from "./server/git";
-import {
-  wsOpen,
-  wsMessage,
-  wsClose,
-  pruneDeadSessions,
-  broadcastPageChanged,
-  broadcastPageDeleted,
-  type WsData,
-} from "./server/websocket";
-import {
-  apiMe,
-  apiTree,
-  apiFileGet,
-  apiFilePut,
-  apiFileCreate,
-  apiFileDelete,
-  apiFileRename,
-  apiFileHistory,
-  apiFileDiff,
-  apiSearch,
-  apiSidebar,
-  apiUploadImage,
-  apiImagesList,
-  apiImageDelete,
-  apiAvatarProxy,
-  serveRepoAsset,
-} from "./server/api";
+import { serve } from "bun";
 
 declare const __BUNDLED__: boolean | undefined;
 const isBundled = __BUNDLED__ !== undefined;

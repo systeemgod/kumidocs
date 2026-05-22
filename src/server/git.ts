@@ -1,7 +1,7 @@
 import git, { TREE } from "isomorphic-git";
+import { type Config } from "./config";
 import { promises as fs } from "node:fs";
 import http from "isomorphic-git/http/node";
-import { type Config } from "./config";
 
 // ── Serial queue ──────────────────────────────────────────────────────────────
 // All operations that touch the .git/index or working tree run through this

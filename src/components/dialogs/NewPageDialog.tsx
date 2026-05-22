@@ -1,19 +1,19 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { useCallback, useState } from "react";
 import { Button } from "../ui/button";
 import { EmojiIcon } from "../ui/EmojiIcon";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import { type MarkdownType } from "@/lib/types";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface NewPageDialogProps {
   open: boolean;
