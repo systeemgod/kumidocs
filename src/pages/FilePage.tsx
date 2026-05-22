@@ -934,7 +934,9 @@ export function FilePage() {
           void exportPagePdf();
         }}
         openMove={openMove}
-        openDelete={() => { openDelete(filePath); }}
+        openDelete={() => {
+          openDelete(filePath);
+        }}
       />
 
       {/* Breadcrumb */}
