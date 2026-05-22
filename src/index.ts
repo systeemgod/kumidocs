@@ -191,7 +191,7 @@ const server = serve<WsData>({
     "/*": isBundled ? serveSPA : devIndex,
 
     "/api/avatar/:hash": {
-      async GET(req: Request) {
+      GET(req: Request) {
         const hash = new URL(req.url).pathname.slice("/api/avatar/".length);
         return apiAvatarProxy(hash);
       },
@@ -245,21 +245,21 @@ const server = serve<WsData>({
         }
         return apiFileGet(new URL(req.url), config);
       },
-      async PUT(req: Request) {
+      PUT(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         return apiFilePut(new URL(req.url), req, user, config);
       },
-      async POST(req: Request) {
+      POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         return apiFileCreate(req, user, config);
       },
-      async DELETE(req: Request) {
+      DELETE(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -269,7 +269,7 @@ const server = serve<WsData>({
     },
 
     "/api/file/rename": {
-      async POST(req: Request) {
+      POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -309,7 +309,7 @@ const server = serve<WsData>({
     },
 
     "/api/upload/image": {
-      async POST(req: Request) {
+      POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -319,7 +319,7 @@ const server = serve<WsData>({
     },
 
     "/api/images": {
-      async GET(req: Request) {
+      GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -329,7 +329,7 @@ const server = serve<WsData>({
     },
 
     "/api/images/:filename": {
-      async DELETE(req: Request) {
+      DELETE(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -340,7 +340,7 @@ const server = serve<WsData>({
     },
 
     "/images/:filename": {
-      async GET(req: Request) {
+      GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
