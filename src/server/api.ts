@@ -407,7 +407,7 @@ async function apiImagesList(config: Config): Promise<Response> {
       const filename = repoPath.slice("images/".length);
       // The sha256 portion is the part before the extension
       const dotIdx = filename.lastIndexOf(".");
-      const sha256 = dotIdx >= 0 ? filename.slice(0, dotIdx) : filename;
+      const sha256 = dotIdx !== -1 ? filename.slice(0, dotIdx) : filename;
 
       let size = 0;
       try {
@@ -442,7 +442,7 @@ async function apiImageDelete(filename: string, user: User, config: Config): Pro
 
   const repoPath = `images/${filename}`;
   const dotIdx = filename.lastIndexOf(".");
-  const sha256 = dotIdx >= 0 ? filename.slice(0, dotIdx) : filename;
+  const sha256 = dotIdx !== -1 ? filename.slice(0, dotIdx) : filename;
 
   const all = getAllPaths();
   if (!all.includes(repoPath)) {
@@ -551,7 +551,7 @@ async function apiFileDiff(url: URL, config: Config) {
   // parseDiff's path extractor. Re-assemble as a proper "diff --git" block instead.
   const hunkStart = rawPatch.indexOf("\n@@");
   const unifiedDiff =
-    hunkStart >= 0
+    hunkStart !== -1
       ? `diff --git a/${path} b/${path}\nindex 0000000..0000000 100644\n--- a/${path}\n+++ b/${path}\n${rawPatch.slice(hunkStart + 1)}`
       : "";
 

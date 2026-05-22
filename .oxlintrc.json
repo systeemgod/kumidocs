@@ -52,7 +52,6 @@
     "typescript/explicit-function-return-type": "off",
     "typescript/explicit-module-boundary-types": "off",
     "typescript/no-import-type-side-effects": "off",
-    "unicorn/consistent-existence-index-check": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/filename-case": "off",
     "unicorn/no-negated-condition": "off",
