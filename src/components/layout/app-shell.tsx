@@ -1,13 +1,13 @@
 import type { PresenceUser, TreeNode } from "../../lib/types";
 import { useCallback, useRef, useState } from "react";
 import { useWsListener, wsClient } from "../../store/ws";
-import { NewPageDialog } from "../dialogs/NewPageDialog";
+import { NewPageDialog } from "../dialogs/new-page-dialog";
 import { Outlet } from "react-router-dom";
-import { SearchPalette } from "../search/SearchPalette";
-import { Sidebar } from "./Sidebar";
+import { SearchPalette } from "../search/search-palette";
+import { Sidebar } from "./sidebar";
 import { Toaster } from "../ui/sonner";
-import { TopBar } from "./TopBar";
-import { useMountEffect } from "../../hooks/useMountEffect";
+import { TopBar } from "./top-bar";
+import { useMountEffect } from "../../hooks/use-mount-effect";
 import { useUser } from "../../store/user";
 
 // Connects the WS client once on mount (rendered only when user is available)

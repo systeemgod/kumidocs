@@ -22,10 +22,10 @@ import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
-import { MarkdownViewer } from "./MarkdownViewer";
+import { MarkdownViewer } from "./markdown-viewer";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
-import { SlideViewer } from "./SlideViewer";
+import { SlideViewer } from "./slide-viewer";
 import { toast } from "sonner";
 
 // ── Toolbar action helpers ────────────────────────────────────────────────────

@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { useUser } from "@/store/user";
 
 interface ImageEntry {

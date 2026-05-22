@@ -8,7 +8,7 @@ import {
 } from "../ui/dialog";
 import { useCallback, useState } from "react";
 import { Button } from "../ui/button";
-import { EmojiIcon } from "../ui/EmojiIcon";
+import { EmojiIcon } from "../ui/emoji-icon";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import type { MarkdownType } from "@/lib/types";

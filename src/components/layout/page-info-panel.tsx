@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { UserAvatar } from "../ui/avatar";
 import { emailToDisplayName } from "../../lib/avatar";
-import { useMountEffect } from "../../hooks/useMountEffect";
+import { useMountEffect } from "../../hooks/use-mount-effect";
 
 interface DiffData {
   sha: string;

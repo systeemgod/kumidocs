@@ -1,14 +1,14 @@
 import { Streamdown, defaultRehypePlugins } from "streamdown";
-import { EmojiIcon } from "@/components/ui/EmojiIcon";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
 import type { ReactNode } from "react";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
-import { rehypeEmojiPlugin } from "@/components/editor/rehypeEmojiPlugin";
-import { rehypeHeadingIdsPlugin } from "@/components/editor/rehypeHeadingIdsPlugin";
-import { rehypeImageAttrsPlugin } from "@/components/editor/rehypeImageAttrsPlugin";
+import { rehypeEmojiPlugin } from "@/components/editor/rehype-emoji-plugin";
+import { rehypeHeadingIdsPlugin } from "@/components/editor/rehype-heading-ids-plugin";
+import { rehypeImageAttrsPlugin } from "@/components/editor/rehype-image-attrs-plugin";
 
 const sanitizePlugin = defaultRehypePlugins.sanitize;
 if (!sanitizePlugin) {

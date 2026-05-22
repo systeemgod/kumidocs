@@ -1,7 +1,7 @@
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { EmojiIcon } from "@/components/ui/EmojiIcon";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { SearchRegular } from "@fluentui/react-icons";
 import { UserAvatar } from "@/components/ui/avatar";

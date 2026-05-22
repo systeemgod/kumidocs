@@ -7,7 +7,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useLayoutEffect, useState } from "react";
-import { EmojiIcon } from "@/components/ui/EmojiIcon";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { SearchResult } from "@/lib/types";
 import { useNavigate } from "react-router-dom";
 

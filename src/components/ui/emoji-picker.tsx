@@ -7,7 +7,7 @@
  */
 import { memo, useMemo, useState } from "react";
 import EMOJI_SVGS from "./emoji/emojis";
-import { EmojiIcon } from "./EmojiIcon";
+import { EmojiIcon } from "./emoji-icon";
 import { Input } from "./input";
 import { ScrollArea } from "./scroll-area";
 import { cn } from "@/lib/utils";

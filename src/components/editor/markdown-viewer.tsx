@@ -1,5 +1,5 @@
 import { Streamdown, defaultRehypePlugins } from "streamdown";
-import { EmojiIcon } from "@/components/ui/EmojiIcon";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
 import type { ReactNode } from "react";
 import { cjk } from "@streamdown/cjk";
@@ -7,9 +7,9 @@ import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
 import { memo } from "react";
-import { rehypeEmojiPlugin } from "./rehypeEmojiPlugin";
-import { rehypeHeadingIdsPlugin } from "./rehypeHeadingIdsPlugin";
-import { rehypeImageAttrsPlugin } from "./rehypeImageAttrsPlugin";
+import { rehypeEmojiPlugin } from "./rehype-emoji-plugin";
+import { rehypeHeadingIdsPlugin } from "./rehype-heading-ids-plugin";
+import { rehypeImageAttrsPlugin } from "./rehype-image-attrs-plugin";
 
 interface MarkdownViewerProps {
   value: string;

@@ -53,7 +53,6 @@
     "typescript/explicit-module-boundary-types": "off",
     "typescript/no-import-type-side-effects": "off",
     "unicorn/consistent-function-scoping": "off",
-    "unicorn/filename-case": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/prefer-global-this": "off"
   },

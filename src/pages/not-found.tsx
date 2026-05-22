@@ -1,6 +1,6 @@
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { Button } from "@/components/ui/button";
-import { EmojiIcon } from "@/components/ui/EmojiIcon";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { useNavigate } from "react-router-dom";
 
 const NotFound = (): JSX.Element => {

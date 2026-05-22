@@ -5,8 +5,8 @@
  * The picker renders all emojis via EmojiIcon (bundled Fluent Emoji SVGs).
  */
 import { useCallback, useState } from "react";
-import { EmojiIcon } from "./EmojiIcon";
-import { EmojiPicker } from "./EmojiPicker";
+import { EmojiIcon } from "./emoji-icon";
+import { EmojiPicker } from "./emoji-picker";
 import type { FileType } from "@/lib/types";
 import { Popover } from "radix-ui";
 import { cn } from "@/lib/utils";

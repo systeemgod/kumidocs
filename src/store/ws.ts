@@ -1,6 +1,6 @@
 import type { WsClientMessage, WsServerMessage } from "@/lib/types";
 import { useLayoutEffect, useRef } from "react";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 
 type WsListener = (msg: WsServerMessage) => void;
 

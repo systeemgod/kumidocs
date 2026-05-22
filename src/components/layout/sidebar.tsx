@@ -19,15 +19,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { EmojiIcon, TitleWithEmoji } from "../ui/EmojiIcon";
+import { EmojiIcon, TitleWithEmoji } from "../ui/emoji-icon";
 import type { FileEntry, PresenceUser, TreeNode, User } from "../../lib/types";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { PageMenuItems } from "../ui/PageMenuItems";
+import { PageMenuItems } from "../ui/page-menu-items";
 import { UserAvatar } from "../ui/avatar";
 import { toast } from "sonner";
-import { usePageActions } from "../../hooks/usePageActions";
+import { usePageActions } from "../../hooks/use-page-actions";
 import { useState } from "react";
 import { useUser } from "../../store/user";
 

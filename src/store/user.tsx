@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import type { SlideThemeMap } from "@/lib/slide";
 import type { User } from "@/lib/types";
-import { useMountEffect } from "@/hooks/useMountEffect";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 
 const HTTP_UNAUTHORIZED = 401;
 
