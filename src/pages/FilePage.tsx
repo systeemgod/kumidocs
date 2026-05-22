@@ -523,7 +523,7 @@ export function FilePage() {
   let editButtonClass: string;
   if (editMode) {
     editButtonClass = "bg-background text-foreground shadow-sm";
-  } else if (editLocked && editLocked.id !== user.id) {
+  } else if (editLocked && user && editLocked.id !== user.id) {
     editButtonClass = "text-muted-foreground opacity-40 cursor-not-allowed";
   } else {
     editButtonClass = "text-muted-foreground hover:text-foreground";
