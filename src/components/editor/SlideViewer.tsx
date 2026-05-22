@@ -365,7 +365,7 @@ export function SlideViewer({
   // ── Fullscreen ───────────────────────────────────────────────────────────
   useMountEffect(() => {
     const handler = () => {
-      const active = !!document.fullscreenElement;
+      const active = Boolean(document.fullscreenElement);
       setIsFullscreen(active);
       if (!active) {
         setIsSpotlight(false);

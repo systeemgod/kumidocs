@@ -58,7 +58,7 @@
 		"eslint/no-use-before-define": "off",
 		"eslint/prefer-destructuring": "off",
 		"eslint/require-await": "off",
-		"eslint/no-implicit-coercion": "off",
+		"eslint/no-implicit-coercion": "error",
 		"eslint/max-params": "off",
 		"eslint/complexity": "off",
 		"eslint/max-lines": "off",

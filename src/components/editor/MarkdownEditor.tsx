@@ -688,9 +688,9 @@ export function MarkdownEditor({
             <div className="flex items-center gap-2">
               <Checkbox
                 id="props-slides"
-                checked={!!dlgMeta.slides}
+                checked={Boolean(dlgMeta.slides)}
                 onCheckedChange={(checked) => {
-                  applyMeta({ ...dlgMeta, slides: !!checked });
+                  applyMeta({ ...dlgMeta, slides: Boolean(checked) });
                 }}
               />
               <Label htmlFor="props-slides">Presentation mode</Label>
@@ -726,9 +726,9 @@ export function MarkdownEditor({
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="props-paginate"
-                    checked={!!dlgMeta.paginate}
+                    checked={Boolean(dlgMeta.paginate)}
                     onCheckedChange={(checked) => {
-                      applyMeta({ ...dlgMeta, paginate: !!checked });
+                      applyMeta({ ...dlgMeta, paginate: Boolean(checked) });
                     }}
                   />
                   <Label htmlFor="props-paginate">Show page numbers</Label>

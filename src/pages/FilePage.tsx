@@ -658,7 +658,7 @@ export function FilePage() {
                   enterEdit();
                 }
               }}
-              disabled={editMode || !!(editLocked && editLocked.id !== user.id)}
+              disabled={editMode || Boolean(editLocked && editLocked.id !== user.id)}
             >
               Edit
             </button>
