@@ -8,19 +8,27 @@ function ContextMenu({ ...props }: ComponentProps<typeof ContextMenuPrimitive.Ro
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />;
 }
 
-function ContextMenuTrigger({ ...props }: ComponentProps<typeof ContextMenuPrimitive.Trigger>): JSX.Element {
+function ContextMenuTrigger({
+  ...props
+}: ComponentProps<typeof ContextMenuPrimitive.Trigger>): JSX.Element {
   return <ContextMenuPrimitive.Trigger data-slot="context-menu-trigger" {...props} />;
 }
 
-function ContextMenuGroup({ ...props }: ComponentProps<typeof ContextMenuPrimitive.Group>): JSX.Element {
+function ContextMenuGroup({
+  ...props
+}: ComponentProps<typeof ContextMenuPrimitive.Group>): JSX.Element {
   return <ContextMenuPrimitive.Group data-slot="context-menu-group" {...props} />;
 }
 
-function ContextMenuPortal({ ...props }: ComponentProps<typeof ContextMenuPrimitive.Portal>): JSX.Element {
+function ContextMenuPortal({
+  ...props
+}: ComponentProps<typeof ContextMenuPrimitive.Portal>): JSX.Element {
   return <ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />;
 }
 
-function ContextMenuSub({ ...props }: ComponentProps<typeof ContextMenuPrimitive.Sub>): JSX.Element {
+function ContextMenuSub({
+  ...props
+}: ComponentProps<typeof ContextMenuPrimitive.Sub>): JSX.Element {
   return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />;
 }
 

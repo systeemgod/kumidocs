@@ -4,15 +4,21 @@ import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
 
-function DropdownMenu({ ...props }: ComponentProps<typeof DropdownMenuPrimitive.Root>): JSX.Element {
+function DropdownMenu({
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.Root>): JSX.Element {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 
-function DropdownMenuPortal({ ...props }: ComponentProps<typeof DropdownMenuPrimitive.Portal>): JSX.Element {
+function DropdownMenuPortal({
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.Portal>): JSX.Element {
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
-function DropdownMenuTrigger({ ...props }: ComponentProps<typeof DropdownMenuPrimitive.Trigger>): JSX.Element {
+function DropdownMenuTrigger({
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.Trigger>): JSX.Element {
   return <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 }
 
@@ -36,7 +42,9 @@ function DropdownMenuContent({
   );
 }
 
-function DropdownMenuGroup({ ...props }: ComponentProps<typeof DropdownMenuPrimitive.Group>): JSX.Element {
+function DropdownMenuGroup({
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.Group>): JSX.Element {
   return <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />;
 }
 
@@ -159,7 +167,9 @@ function DropdownMenuShortcut({ className, ...props }: ComponentProps<"span">): 
   );
 }
 
-function DropdownMenuSub({ ...props }: ComponentProps<typeof DropdownMenuPrimitive.Sub>): JSX.Element {
+function DropdownMenuSub({
+  ...props
+}: ComponentProps<typeof DropdownMenuPrimitive.Sub>): JSX.Element {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />;
 }
 
