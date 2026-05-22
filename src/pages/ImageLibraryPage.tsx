@@ -8,9 +8,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { type ReactNode, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { useMountEffect } from "@/hooks/useMountEffect";
 import { useUser } from "@/store/user";

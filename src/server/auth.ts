@@ -1,5 +1,5 @@
-import { type SlideThemeMap } from "@/lib/slide";
-import { type User } from "@/lib/types";
+import type { SlideThemeMap } from "@/lib/slide";
+import type { User } from "@/lib/types";
 import { emailToDisplayName } from "@/lib/avatar";
 
 interface KumiDocsPermissions {

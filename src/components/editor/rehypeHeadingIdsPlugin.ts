@@ -1,4 +1,4 @@
-import { type Element, type ElementContent, type Root, type RootContent } from "hast";
+import type { Element, ElementContent, Root, RootContent } from "hast";
 
 const nodeText = (node: Element | ElementContent | RootContent): string => {
   if (node.type === "text") {

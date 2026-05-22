@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/command";
 import { useLayoutEffect, useState } from "react";
 import { EmojiIcon } from "@/components/ui/EmojiIcon";
-import { type SearchResult } from "@/lib/types";
+import type { SearchResult } from "@/lib/types";
 import { useNavigate } from "react-router-dom";
 
 const SEARCH_DELAY_MS = 150;

@@ -1,4 +1,4 @@
-import { type FileType, type SearchResult } from "../lib/types";
+import type { FileType, SearchResult } from "../lib/types";
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import MiniSearch from "minisearch";
 import matter from "gray-matter";

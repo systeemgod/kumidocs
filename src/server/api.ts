@@ -24,9 +24,9 @@ import {
 } from "./git";
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { removeFromIndex, searchDocs, updateInIndex } from "./search";
-import { type Config } from "./config";
+import type { Config } from "./config";
 import { IMAGE_TYPES } from "@/lib/filetypes";
-import { type User } from "../lib/types";
+import type { User } from "../lib/types";
 import { createHash } from "node:crypto";
 import { createTwoFilesPatch } from "diff";
 import { getPermissions } from "./auth";

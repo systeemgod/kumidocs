@@ -1,10 +1,5 @@
-import {
-  type PresenceUser,
-  type User,
-  type WsClientMessage,
-  type WsServerMessage,
-} from "../lib/types";
-import { type ServerWebSocket } from "bun";
+import type { PresenceUser, User, WsClientMessage, WsServerMessage } from "../lib/types";
+import type { ServerWebSocket } from "bun";
 
 interface WsData {
   user: User;

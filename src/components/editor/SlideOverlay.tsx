@@ -1,5 +1,5 @@
 import type React from "react";
-import { type SlideThemeElement } from "@/lib/slide";
+import type { SlideThemeElement } from "@/lib/slide";
 
 // ── Canvas dimensions must match SlideViewer ─────────────────────────────────
 const CANVAS_W = 960;

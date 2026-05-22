@@ -1,5 +1,5 @@
 import git, { TREE } from "isomorphic-git";
-import { type Config } from "./config";
+import type { Config } from "./config";
 import { promises as fs } from "node:fs";
 import http from "isomorphic-git/http/node";
 

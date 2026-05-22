@@ -1,13 +1,3 @@
-import { type KumiDocsPermissions, parseUser, setPermissions } from "./server/auth";
-import {
-  type WsData,
-  broadcastPageChanged,
-  broadcastPageDeleted,
-  pruneDeadSessions,
-  wsClose,
-  wsMessage,
-  wsOpen,
-} from "./server/websocket";
 import {
   apiAvatarProxy,
   apiFileCreate,
@@ -26,12 +16,16 @@ import {
   apiUploadImage,
   serveRepoAsset,
 } from "./server/api";
+import { broadcastPageChanged, broadcastPageDeleted, pruneDeadSessions, wsClose, wsMessage, wsOpen } from "./server/websocket";
 import { consumeWritten, loadFilestore, reloadFile, removeFromCache } from "./server/filestore";
 import { existsSync, watch } from "node:fs";
 import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
 import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
 import { join, sep } from "node:path";
+import { parseUser, setPermissions } from "./server/auth";
 import { readFile, writeFile } from "node:fs/promises";
+import type { KumiDocsPermissions } from "./server/auth";
+import type { WsData } from "./server/websocket";
 // In dev (bun --hot), Bun bundles the frontend on-the-fly with HMR.
 // In production (dist/index.js), __BUNDLED__ is injected by scripts/build.ts and
 // serveSPA reads from the pre-built dist/public/ directory instead.

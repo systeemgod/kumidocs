@@ -1,8 +1,9 @@
-import { type ComponentProps, useMemo } from "react";
 import { avatarColor, avatarInitials } from "@/lib/avatar";
 import { Avatar as AvatarPrimitive } from "radix-ui";
+import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { useMemo } from "react";
 
 type AvatarSize = "xs" | "sm" | "md" | "lg";
 

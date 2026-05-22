@@ -1,7 +1,7 @@
 import { Streamdown, defaultRehypePlugins } from "streamdown";
 import { EmojiIcon } from "@/components/ui/EmojiIcon";
-import { type PluggableList } from "unified";
-import { type ReactNode } from "react";
+import type { PluggableList } from "unified";
+import type { ReactNode } from "react";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";

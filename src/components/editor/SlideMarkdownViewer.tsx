@@ -1,7 +1,9 @@
-import { type CSSProperties, memo } from "react";
-import { type ParsedSlide, splitAtSecondH2 } from "@/lib/slide";
+import type { CSSProperties } from "react";
+import type { ParsedSlide } from "@/lib/slide";
 import { SlideStreamdown } from "@/components/editor/SlideStreamdown";
 import { cn } from "@/lib/utils";
+import { memo } from "react";
+import { splitAtSecondH2 } from "@/lib/slide";
 
 const PROSE_BASE =
   "prose prose-table:my-0 prose-img:my-0 prose-pre:my-0 prose-pre:bg-transparent max-w-none slide-prose";

@@ -7,9 +7,10 @@ import {
 } from "@fluentui/react-icons";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Diff, Hunk, parseDiff } from "react-diff-view";
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "../ui/button";
-import { type CommitEntry } from "../../lib/types";
+import type { CommitEntry } from "../../lib/types";
+import type { ReactNode } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { UserAvatar } from "../ui/avatar";
 import { emailToDisplayName } from "../../lib/avatar";

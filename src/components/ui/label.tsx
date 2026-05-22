@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { Root as LabelRoot } from "@radix-ui/react-label";
 
 import { cn } from "@/lib/utils";

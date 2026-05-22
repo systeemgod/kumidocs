@@ -1,4 +1,4 @@
-import { type FileType } from "./types";
+import type { FileType } from "./types";
 
 const IMAGE_TYPES = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"]);
 

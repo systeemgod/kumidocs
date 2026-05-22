@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";

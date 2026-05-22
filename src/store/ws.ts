@@ -1,4 +1,4 @@
-import { type WsClientMessage, type WsServerMessage } from "@/lib/types";
+import type { WsClientMessage, WsServerMessage } from "@/lib/types";
 import { useLayoutEffect, useRef } from "react";
 import { useMountEffect } from "@/hooks/useMountEffect";
 

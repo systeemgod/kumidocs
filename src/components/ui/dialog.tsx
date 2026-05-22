@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";

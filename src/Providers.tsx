@@ -5,13 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type ReactNode, useState } from "react";
 import { UserProvider, useUser } from "@/store/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { ReactNode } from "react";
 import { ThemeProvider } from "@/store/theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useState } from "react";
 
 const TOOLTIP_DELAY = 300;
 

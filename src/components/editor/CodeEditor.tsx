@@ -1,6 +1,7 @@
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
-import { type LanguageName, loadLanguage } from "@uiw/codemirror-extensions-langs";
 import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
+import type { LanguageName } from "@uiw/codemirror-extensions-langs";
+import { loadLanguage } from "@uiw/codemirror-extensions-langs";
 import { useTheme } from "@/store/theme";
 
 interface CodeEditorProps {

@@ -1,4 +1,4 @@
-import { type PresenceUser, type TreeNode } from "../../lib/types";
+import type { PresenceUser, TreeNode } from "../../lib/types";
 import { useCallback, useRef, useState } from "react";
 import { useWsListener, wsClient } from "../../store/ws";
 import { NewPageDialog } from "../dialogs/NewPageDialog";

@@ -12,7 +12,7 @@
  *
  * The block is removed from the rendered output after parsing.
  */
-import { type Element, type ElementContent, type Root } from "hast";
+import type { Element, ElementContent, Root } from "hast";
 
 // Matches a {key=value …} block — no nested braces.
 const ATTRS_RE = /^\{([^}]+)\}/u;

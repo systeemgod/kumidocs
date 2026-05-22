@@ -11,18 +11,11 @@ import {
   Spotlight,
   Square,
 } from "lucide-react";
-import {
-  type ParsedSlide,
-  type SlideDirectives,
-  type SlideThemeDef,
-  type SlideThemeMap,
-  isBgDark,
-  parseSlideDirectives,
-  resolveTheme,
-} from "@/lib/slide";
+import type { ParsedSlide, SlideDirectives, SlideThemeDef, SlideThemeMap } from "@/lib/slide";
+import { isBgDark, parseSlideDirectives, resolveTheme } from "@/lib/slide";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { type jsPDF as JsPDF } from "jspdf";
+import type { jsPDF as JsPDF } from "jspdf";
 import { SlideMarkdownViewer } from "./SlideMarkdownViewer";
 import { SlideOverlay } from "./SlideOverlay";
 import { cn } from "@/lib/utils";

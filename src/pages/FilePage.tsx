@@ -1,33 +1,30 @@
 import {
-  type PageMeta as DocMeta,
-  buildFrontmatter,
-  extractHeadingTitle,
-  parseFrontmatter,
-} from "@/lib/frontmatter";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-import { type FileType, type PresenceUser, type User } from "../lib/types";
+import type { FileType, PresenceUser, User } from "../lib/types";
 import { InfoRegular, MoreHorizontalRegular, SaveRegular } from "@fluentui/react-icons";
-import { type ReactNode, useCallback, useRef, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
+import { buildFrontmatter, extractHeadingTitle, parseFrontmatter } from "@/lib/frontmatter";
 import { extensionToType, pathExtension } from "@/lib/filetypes";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useWsListener, wsClient } from "../store/ws";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { CodeEditor } from "../components/editor/CodeEditor";
+import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import { EmojiPickerPopover } from "../components/ui/EmojiPickerPopover";
-import { type jsPDF as JsPDF } from "jspdf";
+import type { jsPDF as JsPDF } from "jspdf";
 import { MarkdownEditor } from "../components/editor/MarkdownEditor";
 import { MarkdownViewer } from "../components/editor/MarkdownViewer";
 import { NotFound } from "./NotFound";
 import { PageInfoPanel } from "../components/layout/PageInfoPanel";
 import { PageMenuItems } from "../components/ui/PageMenuItems";
+import type { ReactNode } from "react";
 import { ScrollArea } from "../components/ui/scroll-area";
-import { type SlideThemeMap } from "@/lib/slide";
+import type { SlideThemeMap } from "@/lib/slide";
 import { SlideViewer } from "../components/editor/SlideViewer";
 import { UserAvatar } from "../components/ui/avatar";
 import { toast } from "sonner";

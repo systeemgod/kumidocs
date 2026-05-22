@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { EmojiIcon } from "../ui/EmojiIcon";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { type MarkdownType } from "@/lib/types";
+import type { MarkdownType } from "@/lib/types";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 

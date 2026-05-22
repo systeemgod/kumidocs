@@ -1,4 +1,3 @@
-import { BUILTIN_SLIDE_THEMES, type SlideThemeMap } from "@/lib/slide";
 import {
   Bold,
   Code,
@@ -16,13 +15,16 @@ import {
   TextQuote,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { type PageMeta, buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { MarkdownViewer } from "./MarkdownViewer";
+import type { PageMeta } from "@/lib/frontmatter";
+import type { SlideThemeMap } from "@/lib/slide";
 import { SlideViewer } from "./SlideViewer";
 import { toast } from "sonner";
 

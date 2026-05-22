@@ -1,8 +1,9 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SLIDE_H, SLIDE_W, ScaledSlide, SlideViewer } from "@/components/editor/SlideViewer";
-import { type SlideThemeDef, type SlideThemeMap, parseSlideDirectives } from "@/lib/slide";
+import type { SlideThemeDef, SlideThemeMap } from "@/lib/slide";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { parseSlideDirectives } from "@/lib/slide";
 import { useState } from "react";
 import { useUser } from "@/store/user";
 

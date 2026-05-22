@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
-import { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
