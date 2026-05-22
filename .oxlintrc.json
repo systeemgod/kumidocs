@@ -55,7 +55,6 @@
     "unicorn/consistent-existence-index-check": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/filename-case": "off",
-    "unicorn/no-array-callback-reference": "off",
     "unicorn/no-negated-condition": "off",
     "unicorn/prefer-global-this": "off"
   },

@@ -427,7 +427,7 @@ function SlideViewer({
 }: SlideViewerProps) {
   // Parse slides once per value change
   const parsedSlides = useMemo<ParsedSlide[]>(
-    () => splitSlides(value).map(parseSlideDirectives),
+    () => splitSlides(value).map((slide) => parseSlideDirectives(slide)),
     [value],
   );
   const total = parsedSlides.length;
