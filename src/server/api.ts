@@ -273,7 +273,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
         .toReversed()
         .map((op) =>
           rename(join(config.repoPath, op.relTo), join(config.repoPath, op.relFrom)).catch(
-            () => {},
+            (_err: unknown) => { /* rollback best-effort, ignore failure */ },
           ),
         ),
     );
