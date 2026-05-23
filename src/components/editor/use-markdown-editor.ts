@@ -1,19 +1,17 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import {
   HEADING_OPTIONS,
-  insertImage,
   insertLink,
   insertWrap,
   setLinePrefix,
   toggleListPrefix,
-  uploadImageFile,
 } from "./markdown-editor-utils";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
-import { toast } from "sonner";
+import useMarkdownImageHandler from "./use-markdown-image-handler";
 
 interface UseMarkdownEditorProps {
   value: string;
@@ -44,12 +42,10 @@ interface UseMarkdownEditorReturn {
   handleTask: () => void;
   handleUnordered: () => void;
   headingValue: string;
-  helpOpen: boolean;
   previewRef: RefObject<HTMLDivElement | null>;
   previewValue: string;
   propsOpen: boolean;
   saveSelection: () => void;
-  setHelpOpen: Dispatch<SetStateAction<boolean>>;
   setShowPreview: Dispatch<SetStateAction<boolean>>;
   showPreview: boolean;
   taRef: RefObject<HTMLTextAreaElement | null>;
@@ -67,7 +63,6 @@ function useMarkdownEditor({
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [headingValue, setHeadingValue] = useState("normal");
-  const [helpOpen, setHelpOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
   const [propsOpen, setPropsOpen] = useState(false);
   const [dlgMeta, setDlgMeta] = useState<PageMeta>({});
@@ -99,6 +94,8 @@ function useMarkdownEditor({
       onChange(taRef.current.value);
     }
   }, [onChange]);
+
+  const { handleImageFiles, handleDragOver, handleDrop } = useMarkdownImageHandler(taRef, onChange);
 
   const handlePropsOpen = useCallback(
     (open: boolean) => {
@@ -211,56 +208,6 @@ function useMarkdownEditor({
     syncChange();
   }, [syncChange]);
 
-  const handleImageFiles = useCallback(
-    (files: FileList | File[]) => {
-      const images = [...files].filter((file) => file.type.startsWith("image/"));
-      if (images.length === 0) {
-        return;
-      }
-      const ta = taRef.current;
-      for (const file of images) {
-        const toastId = toast.loading(`Uploading ${file.name}…`);
-        void (async (): Promise<void> => {
-          const url = await uploadImageFile(file);
-          toast.dismiss(toastId);
-          if (url && ta) {
-            insertImage(ta, url);
-            syncChange();
-            toast.success("Image uploaded");
-          }
-        })();
-      }
-    },
-    [syncChange],
-  );
-
-  const handleDragOver = useCallback((ev: React.DragEvent) => {
-    if (
-      [...ev.dataTransfer.items].some(
-        (item) => item.kind === "file" && item.type.startsWith("image/"),
-      )
-    ) {
-      ev.preventDefault();
-      ev.dataTransfer.dropEffect = "copy";
-    }
-  }, []);
-
-  const handleDrop = useCallback(
-    (ev: React.DragEvent) => {
-      const files = ev.dataTransfer.files;
-      if (files.length === 0) {
-        return;
-      }
-      const hasImage = [...files].some((file) => file.type.startsWith("image/"));
-      if (!hasImage) {
-        return;
-      }
-      ev.preventDefault();
-      handleImageFiles(files);
-    },
-    [handleImageFiles],
-  );
-
   const handleKeyDown = useCallback(
     (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
@@ -311,12 +258,10 @@ function useMarkdownEditor({
     handleTask,
     handleUnordered,
     headingValue,
-    helpOpen,
     previewRef,
     previewValue,
     propsOpen,
     saveSelection,
-    setHelpOpen,
     setShowPreview,
     showPreview,
     taRef,

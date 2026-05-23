@@ -3,7 +3,6 @@ import {
   Code,
   Eye,
   EyeOff,
-  FileQuestionMark,
   Image,
   Italic,
   Link2,
@@ -14,14 +13,6 @@ import {
   Strikethrough,
   TextQuote,
 } from "lucide-react";
-import { CHEATSHEET_ROWS, HEADING_OPTIONS } from "./markdown-editor-utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -30,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { HEADING_OPTIONS } from "./markdown-editor-utils";
+import MarkdownCheatsheet from "./markdown-cheatsheet";
 import type React from "react";
 
 interface MarkdownToolbarProps {
@@ -47,8 +40,6 @@ interface MarkdownToolbarProps {
   handleTask: () => void;
   handleUnordered: () => void;
   headingValue: string;
-  helpOpen: boolean;
-  setHelpOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setShowPreview: React.Dispatch<React.SetStateAction<boolean>>;
   showPreview: boolean;
 }
@@ -57,7 +48,6 @@ function MarkdownToolbar({
   disabled,
   headingValue,
   showPreview,
-  helpOpen,
   handleHeading,
   handleBold,
   handleItalic,
@@ -71,7 +61,6 @@ function MarkdownToolbar({
   fileInputRef,
   handlePropsOpen,
   setShowPreview,
-  setHelpOpen,
 }: MarkdownToolbarProps): JSX.Element {
   return (
     <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border bg-background shrink-0">
@@ -271,34 +260,7 @@ function MarkdownToolbar({
           {showPreview ? <Eye /> : <EyeOff />}
         </Button>
         <div className="w-px h-4 bg-border mx-0.5" />
-        <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
-              <span className="text-muted-foreground">
-                <FileQuestionMark />
-              </span>
-              Cheatsheet
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Markdown Cheatsheet</DialogTitle>
-            </DialogHeader>
-            <div className="text-xs space-y-1 mt-2">
-              {CHEATSHEET_ROWS.map(([syntax, label]) => (
-                <div
-                  key={label}
-                  className="flex items-start gap-3 py-1 border-b border-border/50 last:border-0"
-                >
-                  <code className="flex-1 font-mono text-muted-foreground whitespace-pre-wrap">
-                    {syntax}
-                  </code>
-                  <span className="text-foreground shrink-0 w-28 text-right">{label}</span>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <MarkdownCheatsheet />
       </div>
     </div>
   );

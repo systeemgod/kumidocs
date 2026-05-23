@@ -45,8 +45,6 @@ export default function MarkdownEditor({
     previewRef,
     fileInputRef,
     headingValue,
-    helpOpen,
-    setHelpOpen,
     showPreview,
     setShowPreview,
     propsOpen,
@@ -79,7 +77,6 @@ export default function MarkdownEditor({
         disabled={disabled}
         headingValue={headingValue}
         showPreview={showPreview}
-        helpOpen={helpOpen}
         handleHeading={handleHeading}
         handleBold={handleBold}
         handleItalic={handleItalic}
@@ -93,7 +90,6 @@ export default function MarkdownEditor({
         fileInputRef={fileInputRef}
         handlePropsOpen={handlePropsOpen}
         setShowPreview={setShowPreview}
-        setHelpOpen={setHelpOpen}
       />
       {/* ── Properties dialog ── */}
       <Dialog open={propsOpen} onOpenChange={handlePropsOpen}>

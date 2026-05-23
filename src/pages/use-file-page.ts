@@ -1,12 +1,7 @@
 import type { Dispatch, MutableRefObject, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
-import {
-  addLinkOverlayToPage,
-  addTextOverlayToPage,
-  computeTitle,
-  resolveFileType,
-} from "./file-page-utils";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
+import { computeTitle, resolveFileType } from "./file-page-utils";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useWsListener, wsClient } from "@/store/ws";
@@ -18,6 +13,7 @@ import { toast } from "sonner";
 import { useFilePageSave } from "./use-file-page-save";
 import useMountEffect from "@/hooks/use-mount-effect";
 import usePageActions from "@/hooks/use-page-actions";
+import usePagePdfExport from "./use-page-pdf-export";
 import { useUser } from "@/store/user";
 
 interface OutletCtx {
@@ -96,8 +92,6 @@ function useFilePage(): UseFilePageReturn {
     () => localStorage.getItem("kumidocs:info-open") === "true",
   );
   const [remoteBanner, setRemoteBanner] = useState<string | undefined>();
-  const [isPdfExporting, setIsPdfExporting] = useState(false);
-  const pdfContentRef = useRef<HTMLDivElement>(null);
 
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
 
@@ -178,6 +172,7 @@ function useFilePage(): UseFilePageReturn {
   const fileType = resolveFileType(rawExt, meta.slides);
   const title = computeTitle(fileType, content, filePath);
   const breadcrumb = filePath.replace(/\.md$/u, "").split("/").slice(0, -1);
+  const { exportPagePdf, pdfContentRef } = usePagePdfExport(title);
 
   const enterEdit = useCallback(() => {
     if (!user?.canEdit) {
@@ -255,55 +250,6 @@ function useFilePage(): UseFilePageReturn {
       toast.error("Duplicate failed");
     }
   }, [filePath, navigate, reloadTree]);
-
-  const exportPagePdf = useCallback(async () => {
-    if (isPdfExporting) {
-      return;
-    }
-    setIsPdfExporting(true);
-    try {
-      const el = pdfContentRef.current;
-      if (!el) {
-        return;
-      }
-      const { default: html2canvas } = await import("html2canvas-pro");
-      const { jsPDF } = await import("jspdf");
-      const RENDER_W = 800;
-      const SCALE = 1.5;
-      const PAGE_H_PX = Math.floor((RENDER_W * 297) / 210);
-      const rootRect = el.getBoundingClientRect();
-      const canvas = await html2canvas(el, {
-        logging: false,
-        scale: SCALE,
-        useCORS: true,
-        width: RENDER_W,
-      });
-      const pdf = new jsPDF({ format: [RENDER_W, PAGE_H_PX], orientation: "portrait", unit: "px" });
-      const totalH = canvas.height;
-      const scaledPageH = PAGE_H_PX * SCALE;
-      let yOffset = 0;
-      while (yOffset < totalH) {
-        const sliceH = Math.min(scaledPageH, totalH - yOffset);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = Math.ceil(sliceH);
-        const ctx = sliceCanvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(canvas, 0, -yOffset);
-        }
-        if (yOffset > 0) {
-          pdf.addPage();
-        }
-        pdf.addImage(sliceCanvas.toDataURL("image/png"), "PNG", 0, 0, RENDER_W, sliceH / SCALE);
-        yOffset += scaledPageH;
-      }
-      addTextOverlayToPage(pdf, el, rootRect, PAGE_H_PX);
-      addLinkOverlayToPage(pdf, el, rootRect, PAGE_H_PX);
-      pdf.save(`${title}.pdf`);
-    } finally {
-      setIsPdfExporting(false);
-    }
-  }, [isPdfExporting, title]);
 
   return {
     breadcrumb,
