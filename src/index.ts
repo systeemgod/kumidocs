@@ -79,8 +79,8 @@ async function loadPermissions(): Promise<void> {
     // If file doesn't exist, create it with default config
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       const defaultConfig = {
-        instanceName: config.instanceName,
         editors: [],
+        instanceName: config.instanceName,
       };
       await Bun.write(configPath, JSON.stringify(defaultConfig, undefined, 2));
       setPermissions(defaultConfig);
@@ -380,8 +380,8 @@ const server = serve<WsData>({
 
   // oxlint-disable-next-line node/no-process-env
   development: process.env.NODE_ENV !== "production" && {
-    hmr: true,
     console: true,
+    hmr: true,
   },
 });
 

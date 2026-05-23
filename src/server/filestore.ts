@@ -170,13 +170,13 @@ function buildFileTree(): TreeNode[] {
 
       if (isLast) {
         const fileEntry = parseFileEntry(filePath);
-        const node: TreeNode = { path: filePath, name: part, type: "file", fileEntry };
+        const node: TreeNode = { fileEntry, name: part, path: filePath, type: "file" };
         current.push(node);
         nodeMap.set(cumPath, node);
       } else {
         let dirNode = nodeMap.get(cumPath);
         if (!dirNode) {
-          dirNode = { path: cumPath, name: part, type: "dir", children: [] };
+          dirNode = { children: [], name: part, path: cumPath, type: "dir" };
           current.push(dirNode);
           nodeMap.set(cumPath, dirNode);
         }
@@ -229,7 +229,7 @@ function parseFileEntry(path: string): FileEntry {
     }
   }
 
-  return { path, type, title, emoji, description };
+  return { description, emoji, path, title, type };
 }
 
 export {

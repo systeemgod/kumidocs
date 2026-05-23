@@ -45,8 +45,8 @@ function isSafePath(repoPath: string, userPath: string): boolean {
 function apiMe(user: User, config: Config): Response {
   return Response.json({
     ...user,
-    instanceName: config.instanceName,
     autoSaveDelay: config.autoSaveDelay,
+    instanceName: config.instanceName,
     slideThemes: getPermissions().slideThemes ?? {},
   });
 }
@@ -72,7 +72,7 @@ async function apiFileGet(url: URL, config: Config): Promise<Response> {
   }
 
   const sha = await getHeadSha(config);
-  return Response.json({ path, content, sha });
+  return Response.json({ content, path, sha });
 }
 
 // PUT /api/file?path=<path>   body: { content: string }
@@ -94,7 +94,7 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
   const lockHolder = getEditorForPage(path);
   if (lockHolder && lockHolder.id !== user.id) {
     return Response.json(
-      { error: "Page is locked by another editor", editedBy: lockHolder.displayName },
+      { editedBy: lockHolder.displayName, error: "Page is locked by another editor" },
       { status: 423 }, // 423 Locked
     );
   }
@@ -127,7 +127,7 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
   if (result.error === "push_failed") {
     // Commit is local — content is safe, but could not sync to remote.
     // Return 200 so the client marks the page as saved.
-    return Response.json({ sha: result.sha, pushWarning: true });
+    return Response.json({ pushWarning: true, sha: result.sha });
   }
   return Response.json({ sha: result.sha });
 }
@@ -173,7 +173,7 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
   );
 
   broadcastPageCreated(path, path);
-  return Response.json({ sha: result.sha, path });
+  return Response.json({ path, sha: result.sha });
 }
 
 // DELETE /api/file?path=<path>
@@ -230,7 +230,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
     return new Response("Forbidden", { status: 403 });
   }
   if (from === to) {
-    return Response.json({ sha: undefined, from, to });
+    return Response.json({ from, sha: undefined, to });
   }
 
   // Collect all files that must move: the page itself plus any sub-pages living
@@ -312,7 +312,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
   for (const newPath of newPaths) {
     broadcastPageCreated(newPath, newPath);
   }
-  return Response.json({ sha: undefined, from, to });
+  return Response.json({ from, sha: undefined, to });
 }
 
 // GET /api/search?q=<query>
@@ -334,8 +334,8 @@ async function apiAvatarProxy(hash: string): Promise<Response> {
   const body = await upstream.arrayBuffer();
   return new Response(body, {
     headers: {
-      "Content-Type": upstream.headers.get("Content-Type") ?? "image/jpeg",
       "Cache-Control": "public, max-age=3600",
+      "Content-Type": upstream.headers.get("Content-Type") ?? "image/jpeg",
     },
   });
 }
@@ -421,7 +421,7 @@ async function apiImagesList(config: Config): Promise<Response> {
         return content.includes(sha256);
       });
 
-      return { filename, path: repoPath, url: `/images/${filename}`, size, usedIn };
+      return { filename, path: repoPath, size, url: `/images/${filename}`, usedIn };
     }),
   );
 
@@ -500,14 +500,14 @@ async function apiFileHistory(url: URL, config: Config): Promise<Response> {
         }
       }
       return {
-        sha: commit.sha,
+        added,
+        author: commit.author,
+        authorEmail: commit.author,
+        date: commit.date,
         fullSha: commit.fullSha,
         message: commit.message,
-        author: commit.author,
-        date: commit.date,
-        added,
         removed,
-        authorEmail: commit.author,
+        sha: commit.sha,
       };
     }),
   );
@@ -555,10 +555,10 @@ async function apiFileDiff(url: URL, config: Config): Promise<Response> {
       : `diff --git a/${path} b/${path}\nindex 0000000..0000000 100644\n--- a/${path}\n+++ b/${path}\n${rawPatch.slice(hunkStart + 1)}`;
 
   return Response.json({
-    sha: commit.sha,
-    message: commit.message,
     author: commit.author,
     date: commit.date,
+    message: commit.message,
+    sha: commit.sha,
     unifiedDiff,
   });
 }
@@ -571,13 +571,13 @@ function serveRepoAsset(assetPath: string, config: Config): Response {
 
   const fullPath = resolve(config.repoPath, assetPath);
   const MIME: Record<string, string> = {
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
     ".gif": "image/gif",
-    ".webp": "image/webp",
-    ".svg": "image/svg+xml",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
     ".pdf": "application/pdf",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
   };
   const ext = extname(assetPath).toLowerCase();
   const mime = MIME[ext] ?? "application/octet-stream";
@@ -585,8 +585,8 @@ function serveRepoAsset(assetPath: string, config: Config): Response {
   try {
     return new Response(Bun.file(fullPath), {
       headers: {
-        "Content-Type": mime,
         "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": mime,
       },
     });
   } catch {

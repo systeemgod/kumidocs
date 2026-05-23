@@ -34,7 +34,7 @@
     "eslint/no-use-before-define": "off",
     "eslint/no-void": "off",
     "eslint/prefer-destructuring": "off",
-    "eslint/sort-keys": "off",
+
     "import/max-dependencies": "off",
     "import/no-named-as-default-member": "off",
     "import/no-named-export": "off",

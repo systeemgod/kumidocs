@@ -38,12 +38,12 @@ function gitPull(config: Config): Promise<void> {
 async function _gitPull(config: Config): Promise<void> {
   try {
     await git.pull({
+      author: { email: "kumidocs@localhost", name: "KumiDocs" },
+      dir: config.repoPath,
+      fastForward: true,
       fs,
       http,
-      dir: config.repoPath,
-      author: { name: "KumiDocs", email: "kumidocs@localhost" },
       singleBranch: true,
-      fastForward: true,
     });
     console.log("Git: pulled from remote");
   } catch {
@@ -69,36 +69,36 @@ async function _stageAndCommit(
   authorEmail: string,
 ): Promise<{ sha: string; error?: string; committed?: boolean }> {
   try {
-    await Promise.all(filePaths.map((fp) => git.add({ fs, dir: config.repoPath, filepath: fp })));
+    await Promise.all(filePaths.map((fp) => git.add({ dir: config.repoPath, filepath: fp, fs })));
 
     // Scope the status check to the paths we staged so we don't accidentally
     // commit unrelated workdir noise or pick up changes staged concurrently.
     // When filePaths is empty (remove/move callers pre-stage externally) we
     // fall back to the full scan — the lock guarantees exclusivity in that case.
     const statusOpts = filePaths.length > 0 ? { filepaths: filePaths } : {};
-    const status = await git.statusMatrix({ fs, dir: config.repoPath, ...statusOpts });
+    const status = await git.statusMatrix({ dir: config.repoPath, fs, ...statusOpts });
     // stage=1 means index equals HEAD (nothing staged for this file)
     const hasChanges = status.some((row: [string, number, number, number]) => row[3] !== 1);
     if (!hasChanges) {
-      const sha = await git.resolveRef({ fs, dir: config.repoPath, ref: "HEAD" });
-      return { sha: sha.slice(0, 7), committed: false };
+      const sha = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" });
+      return { committed: false, sha: sha.slice(0, 7) };
     }
 
     const sha = await git.commit({
-      fs,
+      author: { email: authorEmail, name: authorName },
       dir: config.repoPath,
+      fs,
       message,
-      author: { name: authorName, email: authorEmail },
     });
 
     const result = await pushWithRetry(config, sha);
     return { ...result, committed: true };
   } catch (error) {
     try {
-      const sha = await git.resolveRef({ fs, dir: config.repoPath, ref: "HEAD" });
-      return { sha: sha.slice(0, 7), error: String(error) };
+      const sha = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" });
+      return { error: String(error), sha: sha.slice(0, 7) };
     } catch {
-      return { sha: "unknown", error: String(error) };
+      return { error: String(error), sha: "unknown" };
     }
   }
 }
@@ -108,30 +108,30 @@ async function pushWithRetry(
   commitSha: string,
 ): Promise<{ sha: string; error?: string }> {
   try {
-    await git.push({ fs, http, dir: config.repoPath, remote: "origin" });
+    await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
   } catch {
     // Push failed (non-fast-forward) — fetch + merge remote changes, then retry.
     // isomorphic-git does not support rebase, so we merge instead.
     try {
       await git.fetch({
+        dir: config.repoPath,
         fs,
         http,
-        dir: config.repoPath,
         remote: "origin",
         singleBranch: true,
       });
       await git.merge({
-        fs,
+        author: { email: "kumidocs@localhost", name: "KumiDocs" },
         dir: config.repoPath,
+        fs,
         ours: "HEAD",
         theirs: "FETCH_HEAD",
-        author: { name: "KumiDocs", email: "kumidocs@localhost" },
       });
-      await git.push({ fs, http, dir: config.repoPath, remote: "origin" });
+      await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
     } catch {
       // The commit is still present locally — the content is safe.
       // 'push_failed' signals a remote-sync problem, not data loss.
-      return { sha: commitSha.slice(0, 7), error: "push_failed" };
+      return { error: "push_failed", sha: commitSha.slice(0, 7) };
     }
   }
   return { sha: commitSha.slice(0, 7) };
@@ -145,7 +145,7 @@ function gitRemoveAndCommit(
   authorEmail: string,
 ): Promise<{ sha: string; error?: string }> {
   return withGitLock(async () => {
-    await git.remove({ fs, dir: config.repoPath, filepath: filePath });
+    await git.remove({ dir: config.repoPath, filepath: filePath, fs });
     return _stageAndCommit(config, [], message, authorName, authorEmail);
   });
 }
@@ -161,12 +161,12 @@ function gitMoveAndCommit(
 ): Promise<{ sha: string; error?: string }> {
   return withGitLock(async () => {
     // isomorphic-git has no native move: add the new path, remove the old one.
-    await git.add({ fs, dir: config.repoPath, filepath: to });
-    await git.remove({ fs, dir: config.repoPath, filepath: from });
+    await git.add({ dir: config.repoPath, filepath: to, fs });
+    await git.remove({ dir: config.repoPath, filepath: from, fs });
     await Promise.all(
       (extraMoves ?? []).map(async (extra) => {
-        await git.add({ fs, dir: config.repoPath, filepath: extra.to });
-        await git.remove({ fs, dir: config.repoPath, filepath: extra.from });
+        await git.add({ dir: config.repoPath, filepath: extra.to, fs });
+        await git.remove({ dir: config.repoPath, filepath: extra.from, fs });
       }),
     );
     return _stageAndCommit(config, [], message, authorName, authorEmail);
@@ -182,22 +182,22 @@ function gitFetchAndRebase(
 async function _fetchAndRebase(
   config: Config,
 ): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
-  const before = await git.resolveRef({ fs, dir: config.repoPath, ref: "HEAD" }).catch(() => "");
+  const before = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" }).catch(() => "");
 
   try {
-    await git.fetch({ fs, http, dir: config.repoPath, remote: "origin", singleBranch: true });
+    await git.fetch({ dir: config.repoPath, fs, http, remote: "origin", singleBranch: true });
     await git.merge({
-      fs,
+      author: { email: "kumidocs@localhost", name: "KumiDocs" },
       dir: config.repoPath,
+      fs,
       ours: "HEAD",
       theirs: "FETCH_HEAD",
-      author: { name: "KumiDocs", email: "kumidocs@localhost" },
     });
   } catch {
     // No remote, offline, or merge conflict — skip this cycle
   }
 
-  const after = await git.resolveRef({ fs, dir: config.repoPath, ref: "HEAD" }).catch(() => "");
+  const after = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" }).catch(() => "");
   const advanced = before !== after && before !== "";
   const sha = after.slice(0, 7);
 
@@ -205,9 +205,8 @@ async function _fetchAndRebase(
   if (advanced) {
     try {
       await git.walk({
-        fs,
         dir: config.repoPath,
-        trees: [TREE({ ref: before }), TREE({ ref: after })],
+        fs,
         map: async (filepath, [entryA, entryB]) => {
           if ((await entryA?.type()) === "tree" || (await entryB?.type()) === "tree") {
             return;
@@ -218,20 +217,21 @@ async function _fetchAndRebase(
             changed.push(filepath);
           }
         },
+        trees: [TREE({ ref: before }), TREE({ ref: after })],
       });
     } catch (error: unknown) {
       console.warn("Failed to enumerate changed files after pull:", error);
     }
   }
 
-  return { changed, sha, advanced };
+  return { advanced, changed, sha };
 }
 
 async function getHeadSha(config: Config): Promise<string> {
   try {
     const sha = await git.resolveRef({
-      fs,
       dir: config.repoPath,
+      fs,
       ref: "HEAD",
     });
     return sha.slice(0, 7);
@@ -250,13 +250,13 @@ interface CommitEntry {
 
 /** Return commits that touched `filepath`, most recent first. */
 async function gitFileLog(config: Config, filepath: string, limit = 50): Promise<CommitEntry[]> {
-  const commits = await git.log({ fs, dir: config.repoPath, filepath, depth: limit });
+  const commits = await git.log({ depth: limit, dir: config.repoPath, filepath, fs });
   return commits.map((commit) => ({
-    sha: commit.oid.slice(0, 7),
-    fullSha: commit.oid,
-    message: commit.commit.message.trim(),
     author: commit.commit.author.name,
     date: new Date(commit.commit.author.timestamp * 1000).toISOString(),
+    fullSha: commit.oid,
+    message: commit.commit.message.trim(),
+    sha: commit.oid.slice(0, 7),
   }));
 }
 
@@ -264,10 +264,10 @@ async function gitFileLog(config: Config, filepath: string, limit = 50): Promise
 async function gitBlobAt(config: Config, commitSha: string, filepath: string): Promise<string> {
   try {
     const { blob } = await git.readBlob({
-      fs,
       dir: config.repoPath,
-      oid: commitSha,
       filepath,
+      fs,
+      oid: commitSha,
     });
     return new TextDecoder().decode(blob);
   } catch {

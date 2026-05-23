@@ -90,8 +90,8 @@ function addTextOverlayToPage(
     const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
     pdf.setCharSpace(charSpace);
     pdf.text(text, br.left - rootRect.left, yOnPage, {
-      renderingMode: "invisible",
       baseline: "top",
+      renderingMode: "invisible",
     });
     pdf.setCharSpace(0);
   }
@@ -159,10 +159,10 @@ function getSaveBadgeClass(saveStatus: SaveStatus): string {
 }
 
 const SAVE_BADGE_TEXT: Record<SaveStatus, string> = {
+  error: "Error",
   saved: "Saved",
   saving: "Saving…",
   unsaved: "Unsaved",
-  error: "Error",
 };
 
 interface EditorContentProps {
@@ -627,9 +627,9 @@ export default function FilePage(): JSX.Element {
 
         try {
           const res = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ content: fullContent }),
+            headers: { "Content-Type": "application/json" },
+            method: "PUT",
           });
           if (res.ok) {
             const data = (await res.json()) as { sha: string; pushWarning?: boolean };
@@ -770,9 +770,9 @@ export default function FilePage(): JSX.Element {
       const data = (await res.json()) as { content: string };
       const newPath = `${filePath.replace(/\.md$/iu, "")}-copy.md`;
       const saveRes = await fetch("/api/file", {
-        method: "POST",
+        body: JSON.stringify({ content: data.content, path: newPath }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: newPath, content: data.content }),
+        method: "POST",
       });
       if (saveRes.ok) {
         reloadTree();
@@ -805,15 +805,15 @@ export default function FilePage(): JSX.Element {
       const PAGE_H_PX = Math.floor((RENDER_W * 297) / 210); // A4 portrait ratio ≈ 1131px
       const rootRect = el.getBoundingClientRect();
       const canvas = await html2canvas(el, {
-        width: RENDER_W,
+        logging: false,
         scale: SCALE,
         useCORS: true,
-        logging: false,
+        width: RENDER_W,
       });
       const pdf = new jsPDF({
+        format: [RENDER_W, PAGE_H_PX],
         orientation: "portrait",
         unit: "px",
-        format: [RENDER_W, PAGE_H_PX],
       });
       const totalH = canvas.height;
       const scaledPageH = PAGE_H_PX * SCALE;
@@ -859,17 +859,17 @@ export default function FilePage(): JSX.Element {
   }
 
   const editorContent = buildEditorContent({
-    fileType,
-    editMode,
     content,
-    rawContent,
-    rawExt,
+    editMode,
+    fileType,
     handleChange,
     handleSave,
     meta,
-    slideThemes,
-    setMeta,
     metaRef,
+    rawContent,
+    rawExt,
+    setMeta,
+    slideThemes,
     title,
   });
 
@@ -975,12 +975,12 @@ export default function FilePage(): JSX.Element {
           ref={pdfContentRef}
           aria-hidden="true"
           style={{
+            left: 0,
+            pointerEvents: "none",
             position: "fixed",
             top: 0,
-            left: 0,
             width: 800,
             zIndex: -9999,
-            pointerEvents: "none",
           }}
         >
           <MarkdownViewer value={content} />

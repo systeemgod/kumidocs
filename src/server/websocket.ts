@@ -57,9 +57,9 @@ function presenceUpdate(pageId: string): WsServerMessage {
       continue;
     }
     const presenceUser: PresenceUser = {
+      email: ws.data.user.email,
       id: ws.data.user.id,
       name: ws.data.user.displayName,
-      email: ws.data.user.email,
     };
     viewers.push(presenceUser);
     if (sid === editorSid) {
@@ -67,7 +67,7 @@ function presenceUpdate(pageId: string): WsServerMessage {
     }
   }
 
-  return { type: "presence_update", pageId, viewers, editor };
+  return { editor, pageId, type: "presence_update", viewers };
 }
 
 function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
@@ -180,11 +180,11 @@ function broadcastPageChanged(
   changedByName: string,
 ): void {
   const msg: WsServerMessage = {
-    type: "page_changed",
-    pageId,
-    commitSha,
     changedBy,
     changedByName,
+    commitSha,
+    pageId,
+    type: "page_changed",
   };
   // Broadcast to all sessions — the client suppresses echoes of its own saves
   // via the `if (msg.changedBy === user?.id) return;` check in the WS listener.
@@ -194,14 +194,14 @@ function broadcastPageChanged(
 }
 
 function broadcastPageDeleted(pageId: string): void {
-  const msg: WsServerMessage = { type: "page_deleted", pageId };
+  const msg: WsServerMessage = { pageId, type: "page_deleted" };
   for (const ws of sessions.values()) {
     send(ws, msg);
   }
 }
 
 function broadcastPageCreated(pageId: string, path: string): void {
-  const msg: WsServerMessage = { type: "page_created", pageId, path };
+  const msg: WsServerMessage = { pageId, path, type: "page_created" };
   for (const ws of sessions.values()) {
     send(ws, msg);
   }
@@ -211,10 +211,10 @@ function sendSaveConflict(userId: string, pageId: string): void {
   for (const ws of sessions.values()) {
     if (ws.data.user.id === userId) {
       send(ws, {
-        type: "save_conflict_lost",
-        pageId,
         message:
           "Your changes could not be saved: a remote conflict occurred and could not be resolved.",
+        pageId,
+        type: "save_conflict_lost",
       });
     }
   }
