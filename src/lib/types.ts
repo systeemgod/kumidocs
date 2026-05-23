@@ -68,6 +68,14 @@ type WsServerMessage =
   | { type: "save_conflict_lost"; pageId: string; message: string }
   | { type: "heartbeat_ack" };
 
+interface PageNode {
+  path: string; // always a .md path (may not exist on disk for virtual nodes)
+  displayTitle: string;
+  fileEntry?: FileEntry;
+  children: PageNode[];
+  isVirtual: boolean; // true = no .md file on disk
+}
+
 interface SidebarItem {
   title: string;
   href: string;
@@ -103,6 +111,7 @@ export type {
   FileType,
   FileEntry,
   TreeNode,
+  PageNode,
   SearchResult,
   PresenceUser,
   WsClientMessage,

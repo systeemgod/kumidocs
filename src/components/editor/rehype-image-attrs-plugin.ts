@@ -52,6 +52,7 @@ function styleFingerprint(attrs: Record<string, string>): number {
     .join(";");
   let hashVal = 5381;
   for (let idx = 0; idx < str.length; idx++) {
+    // oxlint-disable-next-line no-bitwise
     hashVal = Math.trunc((hashVal << 5) - hashVal + (str.codePointAt(idx) ?? 0));
   }
   return (Math.abs(hashVal) % 1_000_000) + 1;

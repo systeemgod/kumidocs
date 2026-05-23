@@ -1,0 +1,198 @@
+import type { Dispatch, SetStateAction } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { FileType, PresenceUser, User } from "@/lib/types";
+import { InfoRegular, MoreHorizontalRegular } from "@fluentui/react-icons";
+import { SAVE_BADGE_TEXT, getEditButtonClass, getSaveBadgeClass } from "./file-page-utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { PageMeta as DocMeta } from "@/lib/frontmatter";
+import EmojiPickerPopover from "@/components/ui/emoji-picker-popover";
+import { PageMenuItems } from "@/components/ui/page-menu-items";
+import type { SaveStatus } from "./use-file-page-save";
+import { UserAvatar } from "@/components/ui/avatar";
+
+interface FilePageHeaderProps {
+  meta: DocMeta;
+  fileType: FileType;
+  title: string;
+  user: User | undefined;
+  editMode: boolean;
+  editLocked: PresenceUser | undefined;
+  viewers: PresenceUser[];
+  saveStatus: SaveStatus;
+  infoOpen: boolean;
+  rawPath: string;
+  filePath: string;
+  handleEmojiChange: (emoji: string) => void;
+  exitEdit: () => Promise<void>;
+  enterEdit: () => void;
+  setInfoOpen: Dispatch<SetStateAction<boolean>>;
+  handlePageDuplicate: () => void;
+  exportPagePdf: () => void;
+  openMove: (path: string) => Promise<void>;
+  openDelete: () => void;
+}
+
+function FilePageHeader({
+  meta,
+  fileType,
+  title,
+  user,
+  editMode,
+  editLocked,
+  viewers,
+  saveStatus,
+  infoOpen,
+  rawPath,
+  filePath,
+  handleEmojiChange,
+  exitEdit,
+  enterEdit,
+  setInfoOpen,
+  handlePageDuplicate,
+  exportPagePdf,
+  openMove,
+  openDelete,
+}: FilePageHeaderProps): JSX.Element {
+  const editButtonClass = getEditButtonClass(editMode, editLocked, user);
+  const saveBadgeClass = getSaveBadgeClass(saveStatus);
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
+      {/* Left: icon + title */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <EmojiPickerPopover
+          emoji={meta.emoji}
+          fileType={fileType}
+          size={24}
+          editable={editMode}
+          onSelect={handleEmojiChange}
+        />
+        <h1 className="font-semibold text-base truncate">{title}</h1>
+      </div>
+
+      {/* Center: Read/Edit segmented switch */}
+      {user?.canEdit && (
+        <div
+          className="flex items-center rounded-md border border-border bg-muted h-7 p-0.5 gap-0.5 shrink-0"
+          title={
+            editLocked && editLocked.id !== user.id ? `${editLocked.name} is editing` : undefined
+          }
+        >
+          <button
+            className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editMode ? "text-muted-foreground hover:text-foreground" : "bg-background text-foreground shadow-sm"}`}
+            onClick={async () => {
+              if (editMode) {
+                try {
+                  await exitEdit();
+                } catch (error: unknown) {
+                  console.error("Failed to exit edit mode:", error);
+                }
+              }
+            }}
+          >
+            Read
+          </button>
+          <button
+            className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editButtonClass}`}
+            onClick={() => {
+              if (!editMode && !(editLocked && editLocked.id !== user.id)) {
+                enterEdit();
+              }
+            }}
+            disabled={editMode || Boolean(editLocked && editLocked.id !== user.id)}
+          >
+            Edit
+          </button>
+        </div>
+      )}
+
+      {/* Save status – inline next to Edit button */}
+      {editMode && (
+        <Badge variant="outline" className={`text-xs h-5 shrink-0${saveBadgeClass}`}>
+          {SAVE_BADGE_TEXT[saveStatus]}
+        </Badge>
+      )}
+
+      {/* Right: viewers + info + dropdown */}
+      <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+        {/* Viewers — deduplicated by id (same user may have multiple tabs open) */}
+        <div className="flex -space-x-1">
+          {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()]
+            .slice(0, 5)
+            .map((viewer: PresenceUser) => (
+              <Tooltip key={viewer.id}>
+                <TooltipTrigger asChild>
+                  <UserAvatar
+                    name={viewer.name}
+                    email={viewer.email}
+                    size="sm"
+                    className="border border-background ring-1 ring-border"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>{viewer.name}</TooltipContent>
+              </Tooltip>
+            ))}
+        </div>
+
+        {/* Dedicated info button */}
+        {!editMode && (
+          <Button
+            size="sm"
+            variant={infoOpen ? "secondary" : "ghost"}
+            className="h-7 gap-1 text-xs px-2"
+            onClick={() => {
+              setInfoOpen((prev) => {
+                const next = !prev;
+                if (next) {
+                  localStorage.setItem("kumidocs:info-open", "true");
+                } else {
+                  localStorage.removeItem("kumidocs:info-open");
+                }
+                return next;
+              });
+            }}
+          >
+            <InfoRegular className="w-4 h-4" />
+            Info
+          </Button>
+        )}
+
+        {/* Advanced / dangerous actions only */}
+        {user?.canEdit && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-7 w-7">
+                <MoreHorizontalRegular className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <PageMenuItems
+                variant="dropdown"
+                href={`/p/${rawPath}`}
+                path={filePath}
+                displayTitle={title}
+                onDuplicate={handlePageDuplicate}
+                onExportPdf={fileType === "doc" && !editMode ? exportPagePdf : undefined}
+                onMove={async (movePath) => {
+                  try {
+                    await openMove(movePath);
+                  } catch (error: unknown) {
+                    console.error("Failed to open move dialog:", error);
+                  }
+                }}
+                onDelete={openDelete}
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default FilePageHeader;

@@ -15,11 +15,10 @@
     "eslint/func-style": "off",
     "eslint/init-declarations": "off",
     "eslint/max-lines-per-function": "off",
-    "eslint/max-lines": "off",
+
     "eslint/max-params": "off",
     "eslint/max-statements": "off",
     "eslint/new-cap": "off",
-    "eslint/no-bitwise": "off",
     "eslint/no-console": "off",
     "eslint/no-continue": "off",
     "eslint/no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
