@@ -31,10 +31,6 @@ async function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult
   return fnResult;
 }
 
-function gitPull(config: Config): Promise<void> {
-  return withGitLock(() => _gitPull(config));
-}
-
 async function _gitPull(config: Config): Promise<void> {
   try {
     await git.pull({
@@ -51,14 +47,42 @@ async function _gitPull(config: Config): Promise<void> {
   }
 }
 
-function gitStageAndCommit(
+function gitPull(config: Config): Promise<void> {
+  return withGitLock(() => _gitPull(config));
+}
+
+async function pushWithRetry(
   config: Config,
-  filePaths: string[],
-  message: string,
-  authorName: string,
-  authorEmail: string,
-): Promise<{ sha: string; error?: string; committed?: boolean }> {
-  return withGitLock(() => _stageAndCommit(config, filePaths, message, authorName, authorEmail));
+  commitSha: string,
+): Promise<{ sha: string; error?: string }> {
+  try {
+    await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
+  } catch {
+    // Push failed (non-fast-forward) — fetch + merge remote changes, then retry.
+    // isomorphic-git does not support rebase, so we merge instead.
+    try {
+      await git.fetch({
+        dir: config.repoPath,
+        fs,
+        http,
+        remote: "origin",
+        singleBranch: true,
+      });
+      await git.merge({
+        author: { email: "kumidocs@localhost", name: "KumiDocs" },
+        dir: config.repoPath,
+        fs,
+        ours: "HEAD",
+        theirs: "FETCH_HEAD",
+      });
+      await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
+    } catch {
+      // The commit is still present locally — the content is safe.
+      // 'push_failed' signals a remote-sync problem, not data loss.
+      return { error: "push_failed", sha: commitSha.slice(0, 7) };
+    }
+  }
+  return { sha: commitSha.slice(0, 7) };
 }
 
 async function _stageAndCommit(
@@ -103,38 +127,14 @@ async function _stageAndCommit(
   }
 }
 
-async function pushWithRetry(
+function gitStageAndCommit(
   config: Config,
-  commitSha: string,
-): Promise<{ sha: string; error?: string }> {
-  try {
-    await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
-  } catch {
-    // Push failed (non-fast-forward) — fetch + merge remote changes, then retry.
-    // isomorphic-git does not support rebase, so we merge instead.
-    try {
-      await git.fetch({
-        dir: config.repoPath,
-        fs,
-        http,
-        remote: "origin",
-        singleBranch: true,
-      });
-      await git.merge({
-        author: { email: "kumidocs@localhost", name: "KumiDocs" },
-        dir: config.repoPath,
-        fs,
-        ours: "HEAD",
-        theirs: "FETCH_HEAD",
-      });
-      await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
-    } catch {
-      // The commit is still present locally — the content is safe.
-      // 'push_failed' signals a remote-sync problem, not data loss.
-      return { error: "push_failed", sha: commitSha.slice(0, 7) };
-    }
-  }
-  return { sha: commitSha.slice(0, 7) };
+  filePaths: string[],
+  message: string,
+  authorName: string,
+  authorEmail: string,
+): Promise<{ sha: string; error?: string; committed?: boolean }> {
+  return withGitLock(() => _stageAndCommit(config, filePaths, message, authorName, authorEmail));
 }
 
 function gitRemoveAndCommit(
@@ -171,12 +171,6 @@ function gitMoveAndCommit(
     );
     return _stageAndCommit(config, [], message, authorName, authorEmail);
   });
-}
-
-function gitFetchAndRebase(
-  config: Config,
-): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
-  return withGitLock(() => _fetchAndRebase(config));
 }
 
 async function _fetchAndRebase(
@@ -225,6 +219,12 @@ async function _fetchAndRebase(
   }
 
   return { advanced, changed, sha };
+}
+
+function gitFetchAndRebase(
+  config: Config,
+): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
+  return withGitLock(() => _fetchAndRebase(config));
 }
 
 async function getHeadSha(config: Config): Promise<string> {

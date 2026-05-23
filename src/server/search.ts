@@ -15,31 +15,6 @@ interface DocEntry {
 
 let index: MiniSearch<DocEntry> | undefined;
 
-function initSearch(): void {
-  index = new MiniSearch<DocEntry>({
-    fields: ["title", "content", "path", "description"],
-    searchOptions: {
-      boost: { title: 3 },
-      fuzzy: 0.2,
-      prefix: true,
-    },
-    storeFields: ["title", "path", "emoji", "description", "type"],
-  });
-  rebuildIndex();
-}
-
-function rebuildIndex(): void {
-  if (!index) {
-    return;
-  }
-  index.removeAll();
-  const docs = buildDocs(getAllPaths());
-  if (docs.length > 0) {
-    index.addAll(docs);
-  }
-  console.log(`Search: indexed ${String(docs.length)} documents`);
-}
-
 function buildDocs(paths: string[]): DocEntry[] {
   return paths
     .filter((filePath) => filePath.endsWith(".md") && !filePath.startsWith("."))
@@ -69,6 +44,31 @@ function buildDocs(paths: string[]): DocEntry[] {
 
       return { content: stripped, description, emoji, id: path, path, title, type };
     });
+}
+
+function rebuildIndex(): void {
+  if (!index) {
+    return;
+  }
+  index.removeAll();
+  const docs = buildDocs(getAllPaths());
+  if (docs.length > 0) {
+    index.addAll(docs);
+  }
+  console.log(`Search: indexed ${String(docs.length)} documents`);
+}
+
+function initSearch(): void {
+  index = new MiniSearch<DocEntry>({
+    fields: ["title", "content", "path", "description"],
+    searchOptions: {
+      boost: { title: 3 },
+      fuzzy: 0.2,
+      prefix: true,
+    },
+    storeFields: ["title", "path", "emoji", "description", "type"],
+  });
+  rebuildIndex();
 }
 
 function updateInIndex(path: string): void {
@@ -102,6 +102,23 @@ function removeFromIndex(path: string): void {
   }
 }
 
+function buildSnippet(path: string, query: string): string {
+  const content = getFile(path) ?? "";
+  const body = content.replace(/^---[\s\S]*?---\n/u, "");
+  const word = query.split(" ")[0]?.toLowerCase() ?? "";
+  const idx = body.toLowerCase().indexOf(word);
+  if (idx === -1) {
+    return `${body.replaceAll("\n", " ").slice(0, 140)}…`;
+  }
+  const start = Math.max(0, idx - 60);
+  const end = Math.min(body.length, idx + 120);
+  return (
+    (start > 0 ? "…" : "") +
+    body.slice(start, end).replaceAll("\n", " ") +
+    (end < body.length ? "…" : "")
+  );
+}
+
 function searchDocs(query: string, limit = 20): SearchResult[] {
   if (!index || !query.trim()) {
     return [];
@@ -118,23 +135,6 @@ function searchDocs(query: string, limit = 20): SearchResult[] {
     title: result.title as string,
     type: (result.type as FileType | undefined) ?? "doc",
   }));
-}
-
-function buildSnippet(path: string, query: string): string {
-  const content = getFile(path) ?? "";
-  const body = content.replace(/^---[\s\S]*?---\n/u, "");
-  const word = query.split(" ")[0]?.toLowerCase() ?? "";
-  const idx = body.toLowerCase().indexOf(word);
-  if (idx === -1) {
-    return `${body.replaceAll("\n", " ").slice(0, 140)}…`;
-  }
-  const start = Math.max(0, idx - 60);
-  const end = Math.min(body.length, idx + 120);
-  return (
-    (start > 0 ? "…" : "") +
-    body.slice(start, end).replaceAll("\n", " ") +
-    (end < body.length ? "…" : "")
-  );
 }
 
 export { initSearch, rebuildIndex, updateInIndex, removeFromIndex, searchDocs };

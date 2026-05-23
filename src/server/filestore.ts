@@ -37,12 +37,6 @@ const IGNORED_NAMES = new Set([
 
 const IGNORED_EXT = new Set([".lock", ".log", ".map"]);
 
-async function loadFilestore(config: Config): Promise<void> {
-  fileCache.clear();
-  await scanDir(config.repoPath, config.repoPath);
-  console.log(`Filestore: loaded ${String(fileCache.size)} files`);
-}
-
 async function scanDir(basePath: string, dirPath: string): Promise<void> {
   let entries;
   try {
@@ -81,6 +75,12 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
       }
     }),
   );
+}
+
+async function loadFilestore(config: Config): Promise<void> {
+  fileCache.clear();
+  await scanDir(config.repoPath, config.repoPath);
+  console.log(`Filestore: loaded ${String(fileCache.size)} files`);
 }
 
 function getFile(path: string): string | undefined {
@@ -135,6 +135,46 @@ function moveInCache(from: string, to: string): void {
   fileCache.set(to, content);
   fileCache.delete(from);
   invalidateTree();
+}
+
+/** Return the text of the first `# Heading` line in a markdown body, or null.
+ * Imported from @/lib/frontmatter — re-exported here for convenience.
+ */
+function parseFileEntry(path: string): FileEntry {
+  const ext = pathExtension(path);
+  const fileName = path.split("/").pop() ?? path;
+  const baseName = fileName.replace(/\.md$/u, "");
+  const titleFromName = baseName.replaceAll(/[-_]/gu, " ");
+
+  let type: FileEntry["type"] = extensionToType(ext);
+  let title = titleFromName;
+  let emoji: string | undefined;
+  let description: string | undefined;
+
+  if (ext === "md") {
+    type = "doc";
+    const content = fileCache.get(path) ?? "";
+    try {
+      const parsed = matter(content);
+      const headingTitle = extractHeadingTitle(parsed.content);
+      if (headingTitle) {
+        title = headingTitle;
+      }
+      if (parsed.data.emoji) {
+        emoji = parsed.data.emoji as string;
+      }
+      if (parsed.data.slides === true) {
+        type = "slide";
+      }
+      if (typeof parsed.data.description === "string" && parsed.data.description.trim()) {
+        description = parsed.data.description.trim();
+      }
+    } catch (error: unknown) {
+      console.warn("Failed to parse frontmatter:", error);
+    }
+  }
+
+  return { description, emoji, path, title, type };
 }
 
 // Build file tree for /api/tree
@@ -192,59 +232,19 @@ function buildFileTree(): TreeNode[] {
   return root;
 }
 
-/** Return the text of the first `# Heading` line in a markdown body, or null.
- * Imported from @/lib/frontmatter — re-exported here for convenience.
- */
-function parseFileEntry(path: string): FileEntry {
-  const ext = pathExtension(path);
-  const fileName = path.split("/").pop() ?? path;
-  const baseName = fileName.replace(/\.md$/u, "");
-  const titleFromName = baseName.replaceAll(/[-_]/gu, " ");
-
-  let type: FileEntry["type"] = extensionToType(ext);
-  let title = titleFromName;
-  let emoji: string | undefined;
-  let description: string | undefined;
-
-  if (ext === "md") {
-    type = "doc";
-    const content = fileCache.get(path) ?? "";
-    try {
-      const parsed = matter(content);
-      const headingTitle = extractHeadingTitle(parsed.content);
-      if (headingTitle) {
-        title = headingTitle;
-      }
-      if (parsed.data.emoji) {
-        emoji = parsed.data.emoji as string;
-      }
-      if (parsed.data.slides === true) {
-        type = "slide";
-      }
-      if (typeof parsed.data.description === "string" && parsed.data.description.trim()) {
-        description = parsed.data.description.trim();
-      }
-    } catch (error: unknown) {
-      console.warn("Failed to parse frontmatter:", error);
-    }
-  }
-
-  return { description, emoji, path, title, type };
-}
-
 export {
-  markWritten,
-  consumeWritten,
-  loadFilestore,
-  getFile,
-  getAllPaths,
-  writeFileToRepo,
-  deleteFileFromRepo,
-  reloadFile,
   addToCache,
-  removeFromCache,
-  moveInCache,
   buildFileTree,
+  consumeWritten,
+  deleteFileFromRepo,
   extractHeadingTitle,
+  getAllPaths,
+  getFile,
+  loadFilestore,
+  markWritten,
+  moveInCache,
   parseFileEntry,
+  reloadFile,
+  removeFromCache,
+  writeFileToRepo,
 };
