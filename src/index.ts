@@ -55,7 +55,7 @@ async function serveSPA(req: Request): Promise<Response> {
   if (await file.exists()) {
     return new Response(file, {
       headers:
-        rel !== "index.html" ? { "Cache-Control": "public, max-age=31536000, immutable" } : {},
+        rel === "index.html" ? {} : { "Cache-Control": "public, max-age=31536000, immutable" },
     });
   }
   // SPA fallback — let React Router handle unknown paths

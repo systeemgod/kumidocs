@@ -104,7 +104,7 @@ function walk(node: Root | Element): void {
     const match =
       sibling?.type === "text" ? (ATTRS_RE.exec(sibling.value) ?? undefined) : undefined;
     const rawAttrs = match?.[1];
-    const attrs = rawAttrs !== undefined ? parseBlock(rawAttrs) : undefined;
+    const attrs = rawAttrs === undefined ? undefined : parseBlock(rawAttrs);
 
     if (match === undefined || attrs === undefined) {
       idx++;

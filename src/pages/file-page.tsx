@@ -312,7 +312,7 @@ function FilePageHeader({
           }
         >
           <button
-            className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${!editMode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            className={`h-6 px-2.5 rounded text-xs transition-colors select-none ${editMode ? "text-muted-foreground hover:text-foreground" : "bg-background text-foreground shadow-sm"}`}
             onClick={async () => {
               if (editMode) {
                 try {
@@ -425,7 +425,7 @@ function FilePageHeader({
 
 export function FilePage(): JSX.Element {
   const { "*": rawPath = "" } = useParams();
-  const filePath = !rawPath.includes(".") ? `${rawPath}.md` : rawPath; // default to .md if no extension
+  const filePath = rawPath.includes(".") ? rawPath : `${rawPath}.md`; // default to .md if no extension
 
   const navigate = useNavigate();
   const { reloadTree, autoSaveDelay } = useOutletContext<OutletCtx>();
@@ -570,7 +570,9 @@ export function FilePage(): JSX.Element {
       if (msg.changedBy === user?.id) {
         return;
       }
-      if (!isDirtyRef.current) {
+      if (isDirtyRef.current) {
+        setRemoteBanner(`${msg.changedByName} saved this page remotely`);
+      } else {
         void (async (): Promise<void> => {
           try {
             await loadDoc(filePath);
@@ -579,8 +581,6 @@ export function FilePage(): JSX.Element {
           }
         })();
         toast.info(`Page updated by ${msg.changedByName}`);
-      } else {
-        setRemoteBanner(`${msg.changedByName} saved this page remotely`);
       }
     }
     if (msg.type === "page_deleted" && msg.pageId === filePath) {
