@@ -144,32 +144,32 @@ const isBgDark = (color: string): boolean => {
 
 /** Built-in slide themes expressed as code. 'default' is intentionally absent — it inherits app tokens via .slide-canvas CSS. */
 const BUILTIN_SLIDE_THEMES: SlideThemeMap = {
+  corporate: {
+    bg: "#ffffff",
+    contentPadding: { bottom: 36 },
+    elements: [{ bottom: 0, fill: "#005251", height: 36, left: 0, right: 0, type: "rect" }],
+    fg: "#1a1a1a",
+    fontFamily: "Georgia, 'Times New Roman', serif",
+    layouts: {
+      title: {
+        bg: "#005251",
+        contentPadding: { bottom: 60, left: 60, right: 60, top: 80 },
+        elements: [],
+        fg: "#ffffff",
+      },
+    },
+  },
   dark: {
     bg: "oklch(0.13 0 0)",
     fg: "oklch(0.93 0 0)",
   },
-  corporate: {
-    bg: "#ffffff",
-    fg: "#1a1a1a",
-    fontFamily: "Georgia, 'Times New Roman', serif",
-    contentPadding: { bottom: 36 },
-    elements: [{ type: "rect", fill: "#005251", left: 0, right: 0, bottom: 0, height: 36 }],
-    layouts: {
-      title: {
-        bg: "#005251",
-        fg: "#ffffff",
-        contentPadding: { top: 80, left: 60, right: 60, bottom: 60 },
-        elements: [],
-      },
-    },
+  gradient: {
+    bg: "linear-gradient(72.44deg, rgb(156, 246, 250) 0%, rgb(227, 237, 185) 100%)",
+    fg: "#1a2020",
   },
   minimal: {
     bg: "oklch(0.96 0.005 240)",
     fg: "oklch(0.18 0.01 240)",
-  },
-  gradient: {
-    bg: "linear-gradient(72.44deg, rgb(156, 246, 250) 0%, rgb(227, 237, 185) 100%)",
-    fg: "#1a2020",
   },
 };
 
@@ -186,10 +186,10 @@ const resolveCustomTheme = (
   const layoutKey = layoutClass || "default";
   const baseDef: Omit<SlideThemeDef, "layouts"> = {
     bg: base.bg,
-    fg: base.fg,
-    fontFamily: base.fontFamily,
     contentPadding: base.contentPadding,
     elements: base.elements,
+    fg: base.fg,
+    fontFamily: base.fontFamily,
   };
   if (base.layouts) {
     const override = base.layouts[layoutKey];
@@ -197,10 +197,10 @@ const resolveCustomTheme = (
       // Inherit fontFamily from base when the layout override does not set it
       return {
         bg: override.bg,
-        fg: override.fg,
-        fontFamily: override.fontFamily ?? baseDef.fontFamily,
         contentPadding: override.contentPadding,
         elements: override.elements,
+        fg: override.fg,
+        fontFamily: override.fontFamily ?? baseDef.fontFamily,
       };
     }
   }

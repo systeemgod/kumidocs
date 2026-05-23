@@ -17,10 +17,10 @@ interface UserContextValue {
 const UserContext = createContext<UserContextValue>({
   loading: true,
   needsEmailSetup: false,
-  slideThemes: {},
   setEmailAndRefetch: () => {
     globalThis.location.reload();
   },
+  slideThemes: {},
 });
 
 interface MeResponse extends User {
@@ -37,13 +37,13 @@ interface FetchMeResult {
 
 const handleFetchError = (error: unknown): FetchMeResult => {
   const needs401 = (error as { status?: number }).status === HTTP_UNAUTHORIZED;
-  return { slideThemes: {}, needs401 };
+  return { needs401, slideThemes: {} };
 };
 
 const parseData = (data: MeResponse): FetchMeResult => {
   const { id, email, name, displayName, canEdit, slideThemes: themeData } = data;
-  const user: User = { id, email, name, displayName, canEdit };
-  return { user, slideThemes: themeData ?? {}, needs401: false };
+  const user: User = { canEdit, displayName, email, id, name };
+  return { needs401: false, slideThemes: themeData ?? {}, user };
 };
 
 const handleHttpResponse = (response: Response): Response => {
@@ -91,9 +91,9 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
     try {
       await globalThis.cookieStore.set({
         name: "kumidocs_email",
-        value: encodeURIComponent(email.trim().toLowerCase()),
         path: "/",
         sameSite: "lax",
+        value: encodeURIComponent(email.trim().toLowerCase()),
       });
     } catch {
       // ignore — reload regardless
@@ -103,7 +103,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
 
   return (
     <UserContext.Provider
-      value={{ user, loading, needsEmailSetup, slideThemes, setEmailAndRefetch }}
+      value={{ loading, needsEmailSetup, setEmailAndRefetch, slideThemes, user }}
     >
       {children}
     </UserContext.Provider>

@@ -18,12 +18,12 @@ let index: MiniSearch<DocEntry> | undefined;
 function initSearch(): void {
   index = new MiniSearch<DocEntry>({
     fields: ["title", "content", "path", "description"],
-    storeFields: ["title", "path", "emoji", "description", "type"],
     searchOptions: {
       boost: { title: 3 },
       fuzzy: 0.2,
       prefix: true,
     },
+    storeFields: ["title", "path", "emoji", "description", "type"],
   });
   rebuildIndex();
 }
@@ -67,7 +67,7 @@ function buildDocs(paths: string[]): DocEntry[] {
         .replaceAll(/\s+/gu, " ")
         .trim();
 
-      return { id: path, path, title, emoji, description, type, content: stripped };
+      return { content: stripped, description, emoji, id: path, path, title, type };
     });
 }
 
@@ -110,13 +110,13 @@ function searchDocs(query: string, limit = 20): SearchResult[] {
     index.search(query) as unknown as (Record<string, unknown> & { score: number })[]
   ).slice(0, limit);
   return results.map((result) => ({
-    path: result.path as string,
-    title: result.title as string,
-    emoji: result.emoji as string | undefined,
-    type: (result.type as FileType | undefined) ?? "doc",
     description: result.description as string | undefined,
-    snippet: buildSnippet(result.path as string, query),
+    emoji: result.emoji as string | undefined,
+    path: result.path as string,
     score: result.score,
+    snippet: buildSnippet(result.path as string, query),
+    title: result.title as string,
+    type: (result.type as FileType | undefined) ?? "doc",
   }));
 }
 

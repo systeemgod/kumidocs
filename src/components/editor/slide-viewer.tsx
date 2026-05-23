@@ -63,8 +63,8 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
     const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
     pdf.setCharSpace(charSpace);
     pdf.text(text, br.left - rootRect.left, br.top - rootRect.top, {
-      renderingMode: "invisible",
       baseline: "top",
+      renderingMode: "invisible",
     });
     pdf.setCharSpace(0);
   }
@@ -213,11 +213,11 @@ function ScaledSlide({
   return (
     <div
       style={{
-        width: SLIDE_W,
+        flexShrink: 0,
         height: SLIDE_H,
         transform: `scale(${String(scale)})`,
         transformOrigin: origin,
-        flexShrink: 0,
+        width: SLIDE_W,
         ...canvasStyle,
       }}
       className={cn(
@@ -596,19 +596,19 @@ function SlideViewer({
       const { default: html2canvas } = await import("html2canvas-pro");
       const { jsPDF } = await import("jspdf");
       const pdf = new jsPDF({
+        format: [SLIDE_W, SLIDE_H],
         orientation: "landscape",
         unit: "px",
-        format: [SLIDE_W, SLIDE_H],
       });
       const slideEls = ([...container.children] as HTMLElement[]).filter(Boolean);
       const canvases = await Promise.all(
         slideEls.map((el) =>
           html2canvas(el, {
-            width: SLIDE_W,
             height: SLIDE_H,
+            logging: false,
             scale: 2,
             useCORS: true,
-            logging: false,
+            width: SLIDE_W,
           }),
         ),
       );
@@ -637,12 +637,12 @@ function SlideViewer({
         ref={offscreenRef}
         aria-hidden="true"
         style={{
+          left: 0,
+          opacity: 0,
+          pointerEvents: "none",
           position: "fixed",
           top: 0,
-          left: 0,
           zIndex: -9999,
-          pointerEvents: "none",
-          opacity: 0,
         }}
       >
         {parsedSlides.map((slide, idx) => (
@@ -650,10 +650,10 @@ function SlideViewer({
           <div
             key={idx}
             style={{
-              width: SLIDE_W,
+              flexShrink: 0,
               height: SLIDE_H,
               overflow: "hidden",
-              flexShrink: 0,
+              width: SLIDE_W,
             }}
           >
             <ScaledSlide
@@ -716,17 +716,17 @@ function SlideViewer({
               <div
                 aria-hidden="true"
                 style={{
-                  position: "fixed",
+                  backgroundColor: "rgba(255, 30, 30, 0.92)",
+                  borderRadius: "50%",
+                  boxShadow:
+                    "0 0 10px 8px rgba(255, 60, 60, 0.85), 0 0 36px 16px rgba(255, 0, 0, 0.5)",
+                  height: 18,
                   left: pointerPos.xPos,
+                  pointerEvents: "none",
+                  position: "fixed",
                   top: pointerPos.yPos,
                   transform: "translate(-50%, -50%)",
                   width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  backgroundColor: "rgba(255, 30, 30, 0.92)",
-                  boxShadow:
-                    "0 0 10px 8px rgba(255, 60, 60, 0.85), 0 0 36px 16px rgba(255, 0, 0, 0.5)",
-                  pointerEvents: "none",
                   zIndex: 10_000,
                 }}
               />
@@ -735,8 +735,8 @@ function SlideViewer({
             {spotlightMenu && (
               <div
                 style={{
-                  position: "fixed",
                   left: spotlightMenu.xPos,
+                  position: "fixed",
                   top: spotlightMenu.yPos,
                   zIndex: 10_001,
                 }}
@@ -823,10 +823,10 @@ function SlideViewer({
                   slideElemsRef.current[idx] = el;
                 }}
                 style={{
+                  flexShrink: 0,
+                  height: SLIDE_H * scale,
                   position: "relative",
                   width: SLIDE_W * scale,
-                  height: SLIDE_H * scale,
-                  flexShrink: 0,
                 }}
                 className="shadow-xl rounded-sm overflow-hidden"
               >

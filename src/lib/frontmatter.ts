@@ -47,7 +47,7 @@ const applyKv = (data: PageMeta, key: string, val: string): void => {
 const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/u.exec(raw);
   if (!match) {
-    return { data: {}, content: raw };
+    return { content: raw, data: {} };
   }
   const fullMatch = match.at(0) ?? "";
   const block = match.at(1) ?? "";
@@ -63,7 +63,7 @@ const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
       }
     }
   }
-  return { data, content };
+  return { content, data };
 };
 
 /** Serialise only the whitelisted KumiDocs frontmatter fields back to a YAML block. */

@@ -379,9 +379,9 @@ const server = serve<WsData>({
   },
 
   websocket: {
-    open: wsOpen,
-    message: wsMessage,
     close: wsClose,
+    message: wsMessage,
+    open: wsOpen,
   },
 });
 

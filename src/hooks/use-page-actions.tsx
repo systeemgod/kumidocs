@@ -104,8 +104,8 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
       const pages: PageOption[] = flattenTree(tree)
         .filter(({ path: pagePath }) => pagePath.endsWith(".md") && pagePath !== filePath)
         .map(({ path: pagePath, fileEntry }) => ({
-          path: pagePath,
           dir: pagePath.replace(/\.md$/iu, ""),
+          path: pagePath,
           title: fileEntry?.title ?? pagePath.replace(/\.md$/iu, ""),
         }))
         .toSorted((pageA, pageB) =>
@@ -129,9 +129,9 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     const parent = moveParent === ROOT ? "" : moveParent;
     const toPath = parent ? `${parent}/${slug}.md` : `${slug}.md`;
     const res = await fetch("/api/file/rename", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ from: moveFrom, to: toPath }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
     });
     if (res.ok) {
       toast.success("Page moved");
@@ -345,5 +345,5 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     </>
   );
 
-  return { openMove, openDelete, dialogs };
+  return { dialogs, openDelete, openMove };
 }

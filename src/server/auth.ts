@@ -76,7 +76,7 @@ const parseUser = (headers: Headers, authHeader: string): User | undefined => {
   // If no editors configured at all, everyone can edit
   const canEdit = editors.length === 0 || editors.includes(email);
 
-  return { id: email, email, name: displayName, displayName, canEdit };
+  return { canEdit, displayName, email, id: email, name: displayName };
 };
 
 export type { KumiDocsPermissions };

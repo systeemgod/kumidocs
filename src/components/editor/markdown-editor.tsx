@@ -14,8 +14,20 @@ import {
   Strikethrough,
   TextQuote,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
@@ -151,7 +163,7 @@ async function uploadImageFile(file: File): Promise<string | undefined> {
   const form = new FormData();
   form.append("file", file);
   try {
-    const res = await fetch("/api/upload/image", { method: "POST", body: form });
+    const res = await fetch("/api/upload/image", { body: form, method: "POST" });
     if (!res.ok) {
       const error = (await res.json().catch(() => ({ error: "Upload failed" }))) as {
         error: string;
@@ -202,13 +214,13 @@ interface MarkdownEditorProps {
 }
 
 const HEADING_OPTIONS = [
-  { value: "normal", label: "Normal", prefix: "" },
-  { value: "h1", label: "Heading 1", prefix: "#" },
-  { value: "h2", label: "Heading 2", prefix: "##" },
-  { value: "h3", label: "Heading 3", prefix: "###" },
-  { value: "h4", label: "Heading 4", prefix: "####" },
-  { value: "h5", label: "Heading 5", prefix: "#####" },
-  { value: "h6", label: "Heading 6", prefix: "######" },
+  { label: "Normal", prefix: "", value: "normal" },
+  { label: "Heading 1", prefix: "#", value: "h1" },
+  { label: "Heading 2", prefix: "##", value: "h2" },
+  { label: "Heading 3", prefix: "###", value: "h3" },
+  { label: "Heading 4", prefix: "####", value: "h4" },
+  { label: "Heading 5", prefix: "#####", value: "h5" },
+  { label: "Heading 6", prefix: "######", value: "h6" },
 ];
 
 export default function MarkdownEditor({
@@ -243,12 +255,12 @@ export default function MarkdownEditor({
   }, [slideThemes]);
   // Track the last known cursor/selection so toolbar actions that steal focus
   // (especially the heading Select dropdown) still operate at the right position.
-  const savedSelectionRef = useRef({ start: 0, end: 0 });
+  const savedSelectionRef = useRef({ end: 0, start: 0 });
   const saveSelection = useCallback(() => {
     if (taRef.current) {
       savedSelectionRef.current = {
-        start: taRef.current.selectionStart,
         end: taRef.current.selectionEnd,
+        start: taRef.current.selectionStart,
       };
     }
   }, []);

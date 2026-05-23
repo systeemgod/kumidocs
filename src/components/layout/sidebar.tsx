@@ -87,11 +87,11 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
   for (const [baseName, fileNode] of fileMap) {
     const dir = dirMap.get(baseName);
     result.push({
-      path: fileNode.path,
+      children: dir ? buildPageTree(dir.children ?? []) : [],
       displayTitle: fileNode.fileEntry?.title ?? baseName.replaceAll(/[-_]/gu, " "),
       fileEntry: fileNode.fileEntry,
-      children: dir ? buildPageTree(dir.children ?? []) : [],
       isVirtual: false,
+      path: fileNode.path,
     });
   }
 
@@ -101,11 +101,11 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
       continue;
     }
     result.push({
-      path: `${dirNode.path}.md`,
+      children: buildPageTree(dirNode.children ?? []),
       displayTitle: name.replaceAll(/[-_]/gu, " "),
       fileEntry: undefined,
-      children: buildPageTree(dirNode.children ?? []),
       isVirtual: true,
+      path: `${dirNode.path}.md`,
     });
   }
 
@@ -151,7 +151,7 @@ function PageNodeRow({
   const presenceUsers =
     isActive && currentUser
       ? [
-          { id: currentUser.id, name: currentUser.displayName, email: currentUser.email },
+          { email: currentUser.email, id: currentUser.id, name: currentUser.displayName },
           ...othersOnPage,
         ]
       : othersOnPage;
@@ -169,9 +169,9 @@ function PageNodeRow({
       const base = node.path.replace(/\.md$/iu, "");
       const newPath = `${base}-copy.md`;
       const saveRes = await fetch("/api/file", {
-        method: "POST",
+        body: JSON.stringify({ content: data.content, path: newPath }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: newPath, content: data.content }),
+        method: "POST",
       });
       if (saveRes.ok) {
         toast.success("Page duplicated");

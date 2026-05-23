@@ -33,8 +33,8 @@ class WsClient {
     this.ws.addEventListener("open", (): void => {
       if (this.currentPageId && this.userId) {
         this.send({
-          type: "hello",
           pageId: this.currentPageId,
+          type: "hello",
           userId: this.userId,
         });
       }
@@ -78,7 +78,7 @@ class WsClient {
     }
     this.currentPageId = pageId;
     if (this.userId) {
-      this.send({ type: "hello", pageId, userId: this.userId });
+      this.send({ pageId, type: "hello", userId: this.userId });
     }
   }
 
@@ -91,11 +91,11 @@ class WsClient {
   }
 
   public startEditing(pageId: string): void {
-    this.send({ type: "editing_start", pageId });
+    this.send({ pageId, type: "editing_start" });
   }
 
   public stopEditing(pageId: string): void {
-    this.send({ type: "editing_stop", pageId });
+    this.send({ pageId, type: "editing_stop" });
   }
 
   public addListener(fn: WsListener): void {
