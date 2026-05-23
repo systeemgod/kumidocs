@@ -5,16 +5,16 @@ import {
   DismissRegular,
   DocumentRegular,
 } from "@fluentui/react-icons";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Diff, Hunk, parseDiff } from "react-diff-view";
 import { useMemo, useState } from "react";
-import { Button } from "../ui/button";
-import type { CommitEntry } from "../../lib/types";
+import { Button } from "@/components/ui/button";
+import type { CommitEntry } from "@/lib/types";
 import type { ReactNode } from "react";
-import { ScrollArea } from "../ui/scroll-area";
-import { UserAvatar } from "../ui/avatar";
-import { emailToDisplayName } from "../../lib/avatar";
-import useMountEffect from "../../hooks/use-mount-effect";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserAvatar } from "@/components/ui/avatar";
+import { emailToDisplayName } from "@/lib/avatar";
+import useMountEffect from "@/hooks/use-mount-effect";
 
 interface DiffData {
   sha: string;

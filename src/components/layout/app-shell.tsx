@@ -1,14 +1,14 @@
-import type { PresenceUser, TreeNode } from "../../lib/types";
+import type { PresenceUser, TreeNode } from "@/lib/types";
 import { useCallback, useRef, useState } from "react";
-import { useWsListener, wsClient } from "../../store/ws";
-import NewPageDialog from "../dialogs/new-page-dialog";
+import { useWsListener, wsClient } from "@/store/ws";
+import NewPageDialog from "@/components/dialogs/new-page-dialog";
 import { Outlet } from "react-router-dom";
-import SearchPalette from "../search/search-palette";
+import SearchPalette from "@/components/search/search-palette";
 import Sidebar from "./sidebar";
-import Toaster from "../ui/sonner";
+import Toaster from "@/components/ui/sonner";
 import TopBar from "./top-bar";
-import useMountEffect from "../../hooks/use-mount-effect";
-import { useUser } from "../../store/user";
+import useMountEffect from "@/hooks/use-mount-effect";
+import { useUser } from "@/store/user";
 
 // Connects the WS client once on mount (rendered only when user is available)
 function WsConnector({ userId }: { userId: string }): JSX.Element {

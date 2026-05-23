@@ -40,7 +40,6 @@
     "import/no-named-export": "off",
     "import/no-default-export": "off",
     "import/no-nodejs-modules": "off",
-    "import/no-relative-parent-imports": "off",
     "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
     "oxc/no-async-await": "off",
     "oxc/no-optional-chaining": "off",

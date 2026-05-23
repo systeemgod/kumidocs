@@ -14,14 +14,14 @@ import {
   Strikethrough,
   TextQuote,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
-import { Button } from "../ui/button";
-import Checkbox from "../ui/checkbox";
-import Label from "../ui/label";
+import { Button } from "@/components/ui/button";
+import Checkbox from "@/components/ui/checkbox";
+import Label from "@/components/ui/label";
 import MarkdownViewer from "./markdown-viewer";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";

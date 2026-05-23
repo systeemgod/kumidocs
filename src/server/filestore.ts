@@ -1,5 +1,5 @@
 import { CODE_TYPES, IMAGE_TYPES, extensionToType, pathExtension } from "@/lib/filetypes";
-import type { FileEntry, TreeNode } from "../lib/types";
+import type { FileEntry, TreeNode } from "@/lib/types";
 import { dirname, extname, join, relative } from "node:path";
 import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import type { Config } from "./config";

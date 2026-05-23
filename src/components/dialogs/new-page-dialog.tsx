@@ -5,12 +5,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import { useCallback, useState } from "react";
-import { Button } from "../ui/button";
-import { EmojiIcon } from "../ui/emoji-icon";
-import Input from "../ui/input";
-import Label from "../ui/label";
+import { Button } from "@/components/ui/button";
+import { EmojiIcon } from "@/components/ui/emoji-icon";
+import Input from "@/components/ui/input";
+import Label from "@/components/ui/label";
 import type { MarkdownType } from "@/lib/types";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";

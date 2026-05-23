@@ -12,24 +12,24 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "../ui/context-menu";
+} from "@/components/ui/context-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { EmojiIcon, TitleWithEmoji } from "../ui/emoji-icon";
-import type { FileEntry, PresenceUser, TreeNode, User } from "../../lib/types";
+} from "@/components/ui/dropdown-menu";
+import { EmojiIcon, TitleWithEmoji } from "@/components/ui/emoji-icon";
+import type { FileEntry, PresenceUser, TreeNode, User } from "@/lib/types";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { Button } from "../ui/button";
-import { PageMenuItems } from "../ui/page-menu-items";
-import { UserAvatar } from "../ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { PageMenuItems } from "@/components/ui/page-menu-items";
+import { UserAvatar } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import usePageActions from "../../hooks/use-page-actions";
+import usePageActions from "@/hooks/use-page-actions";
 import { useState } from "react";
-import { useUser } from "../../store/user";
+import { useUser } from "@/store/user";
 
 interface SidebarProps {
   tree: TreeNode[];

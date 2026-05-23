@@ -2,35 +2,35 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
-import type { FileType, PresenceUser, User } from "../lib/types";
+} from "@/components/ui/dropdown-menu";
+import type { FileType, PresenceUser, User } from "@/lib/types";
 import { InfoRegular, MoreHorizontalRegular, SaveRegular } from "@fluentui/react-icons";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { buildFrontmatter, extractHeadingTitle, parseFrontmatter } from "@/lib/frontmatter";
 import { extensionToType, pathExtension } from "@/lib/filetypes";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { useWsListener, wsClient } from "../store/ws";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import CodeEditor from "../components/editor/code-editor";
+import { useWsListener, wsClient } from "@/store/ws";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import CodeEditor from "@/components/editor/code-editor";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
-import EmojiPickerPopover from "../components/ui/emoji-picker-popover";
+import EmojiPickerPopover from "@/components/ui/emoji-picker-popover";
 import type { jsPDF as JsPDF } from "jspdf";
-import MarkdownEditor from "../components/editor/markdown-editor";
-import MarkdownViewer from "../components/editor/markdown-viewer";
+import MarkdownEditor from "@/components/editor/markdown-editor";
+import MarkdownViewer from "@/components/editor/markdown-viewer";
 import NotFound from "./not-found";
-import PageInfoPanel from "../components/layout/page-info-panel";
-import { PageMenuItems } from "../components/ui/page-menu-items";
+import PageInfoPanel from "@/components/layout/page-info-panel";
+import { PageMenuItems } from "@/components/ui/page-menu-items";
 import type { ReactNode } from "react";
-import { ScrollArea } from "../components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { SlideThemeMap } from "@/lib/slide";
-import { SlideViewer } from "../components/editor/slide-viewer";
-import { UserAvatar } from "../components/ui/avatar";
+import { SlideViewer } from "@/components/editor/slide-viewer";
+import { UserAvatar } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import useMountEffect from "../hooks/use-mount-effect";
-import usePageActions from "../hooks/use-page-actions";
-import { useUser } from "../store/user";
+import useMountEffect from "@/hooks/use-mount-effect";
+import usePageActions from "@/hooks/use-page-actions";
+import { useUser } from "@/store/user";
 
 interface OutletCtx {
   reloadTree: () => void;

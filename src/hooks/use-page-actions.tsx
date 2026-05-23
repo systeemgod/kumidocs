@@ -6,7 +6,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../components/ui/command";
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +14,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
+} from "@/components/ui/dialog";
 import { useCallback, useRef, useState } from "react";
-import { Button } from "../components/ui/button";
-import Input from "../components/ui/input";
-import Label from "../components/ui/label";
+import { Button } from "@/components/ui/button";
+import Input from "@/components/ui/input";
+import Label from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
