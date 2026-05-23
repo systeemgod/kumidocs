@@ -29,10 +29,10 @@ import { Fragment } from "react";
 
 // File type strings for EmojiIcon — well-known values listed for autocomplete, open to any string
 const FILE_TYPE_ICONS: Record<string, FC<{ style?: CSSProperties; className?: string }>> = {
-  doc: TextBulletListSquare24Color,
-  slide: SlideTextSparkle24Color,
   code: Code24Color,
+  doc: TextBulletListSquare24Color,
   image: Image24Color,
+  slide: SlideTextSparkle24Color,
 };
 
 interface EmojiIconProps {
@@ -49,15 +49,15 @@ interface EmojiIconProps {
 
 function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconProps): JSX.Element {
   const wrapStyle: CSSProperties = {
-    display: "inline-flex",
     alignItems: "center",
+    display: "inline-flex",
+    height: size,
     justifyContent: "center",
     width: size,
-    height: size,
   };
   // Force the inner SVG/img to fill the wrapper exactly,
   // overriding any hardcoded width/height attributes.
-  const innerStyle: CSSProperties = { width: "100%", height: "100%" };
+  const innerStyle: CSSProperties = { height: "100%", width: "100%" };
 
   // Emoji path — check for overrides first
   if (emoji) {
@@ -70,9 +70,9 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
             alt={emoji}
             style={{
               display: "block",
+              height: "100%",
               margin: 0,
               width: "100%",
-              height: "100%",
             }}
           />
         </span>

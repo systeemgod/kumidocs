@@ -39,14 +39,14 @@ const emojiData = data as unknown as MartData;
 // ── Category display config ───────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
-  people: { label: "Smileys & People", icon: "😀" },
-  nature: { label: "Animals & Nature", icon: "🐾" },
-  foods: { label: "Food & Drink", icon: "🍕" },
-  activity: { label: "Activities", icon: "⚽" },
-  places: { label: "Travel & Places", icon: "✈️" },
-  objects: { label: "Objects", icon: "💡" },
-  symbols: { label: "Symbols", icon: "💫" },
-  flags: { label: "Flags", icon: "🏁" },
+  activity: { icon: "⚽", label: "Activities" },
+  flags: { icon: "🏁", label: "Flags" },
+  foods: { icon: "🍕", label: "Food & Drink" },
+  nature: { icon: "🐾", label: "Animals & Nature" },
+  objects: { icon: "💡", label: "Objects" },
+  people: { icon: "�", label: "Smileys & People" },
+  places: { icon: "✈️", label: "Travel & Places" },
+  symbols: { icon: "💫", label: "Symbols" },
 };
 
 // ── Pre-built indexes (run once at module load, not per render) ───────────────
@@ -65,7 +65,7 @@ for (const cat of emojiData.categories) {
     if (!(skin.native in EMOJI_SVGS)) {
       return [];
     }
-    return [{ native: skin.native, name: entry.name }];
+    return [{ name: entry.name, native: skin.native }];
   });
 }
 
@@ -80,8 +80,8 @@ const SEARCH_INDEX = Object.values(emojiData.emojis).flatMap(
     }
     return [
       {
-        native: skin.native,
         name: entry.name,
+        native: skin.native,
         searchText: `${entry.name} ${entry.keywords.join(" ")}`.toLowerCase(),
       },
     ];

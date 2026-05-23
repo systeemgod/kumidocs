@@ -12,17 +12,17 @@ const CARD_SCALE = CARD_W / SLIDE_W;
 const CARD_H = Math.round(SLIDE_H * CARD_SCALE);
 
 interface BuiltInTheme {
+  description: string;
   id: string;
   name: string;
-  description: string;
 }
 
 const BUILTIN_THEMES: BuiltInTheme[] = [
-  { id: "default", name: "Default", description: "Follows site light / dark mode" },
-  { id: "dark", name: "Dark", description: "Near-black background, light text" },
-  { id: "corporate", name: "Corporate", description: "Navy blue background" },
-  { id: "minimal", name: "Minimal", description: "Soft off-white, minimal chrome" },
-  { id: "gradient", name: "Gradient", description: "Purple-to-pink gradient" },
+  { description: "Follows site light / dark mode", id: "default", name: "Default" },
+  { description: "Near-black background, light text", id: "dark", name: "Dark" },
+  { description: "Navy blue background", id: "corporate", name: "Corporate" },
+  { description: "Soft off-white, minimal chrome", id: "minimal", name: "Minimal" },
+  { description: "Purple-to-pink gradient", id: "gradient", name: "Gradient" },
 ];
 
 const STANDARD_LAYOUTS = new Set([
@@ -67,7 +67,7 @@ const ThemeCard = (allProps: ThemeCardProps): JSX.Element => {
   return (
     <button type="button" className="flex flex-col gap-2 text-left group" onClick={onClick}>
       <div className="rounded-md overflow-hidden border border-border shadow-sm group-hover:border-primary/50 group-hover:shadow-md transition-[box-shadow,border-color]">
-        <div style={{ width: CARD_W, height: CARD_H, overflow: "hidden", position: "relative" }}>
+        <div style={{ height: CARD_H, overflow: "hidden", position: "relative", width: CARD_W }}>
           <ScaledSlide
             slide={titleSlide}
             scale={CARD_SCALE}
@@ -203,7 +203,7 @@ const ThemesGrid = (allProps: ThemesGridProps): JSX.Element => {
                   custom={def}
                   slideThemes={slideThemes}
                   onClick={(): void => {
-                    onSelect({ id, name: id, custom: def });
+                    onSelect({ custom: def, id, name: id });
                   }}
                 />
               ),

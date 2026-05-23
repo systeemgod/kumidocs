@@ -63,9 +63,9 @@ export default function NewPageDialog({
     const stub = `${slidesHeader}# ${title.trim()}\n`;
 
     const res = await fetch("/api/file", {
-      method: "POST",
+      body: JSON.stringify({ content: stub, path: finalPath }),
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: finalPath, content: stub }),
+      method: "POST",
     });
 
     setCreating(false);

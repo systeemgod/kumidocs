@@ -182,9 +182,9 @@ export default function SlideOverlay({
                 color: el.color,
                 fontSize: el.fontSize,
                 fontWeight: el.bold ? "bold" : undefined,
+                lineHeight: 1.2,
                 textAlign: el.align,
                 whiteSpace: "pre",
-                lineHeight: 1.2,
                 ...posStyle,
               }}
             >
@@ -200,9 +200,9 @@ export default function SlideOverlay({
             src={patchSvgDimensions(el.src, el.width, el.height)}
             alt=""
             style={{
-              opacity: el.opacity,
               objectFit: "contain",
               objectPosition: "left center",
+              opacity: el.opacity,
               ...posStyle,
             }}
           />

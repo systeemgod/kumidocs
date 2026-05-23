@@ -8,10 +8,10 @@ import { useMemo } from "react";
 type AvatarSize = "xs" | "sm" | "md" | "lg";
 
 const sizeMap: Record<AvatarSize, { circle: string; text: string }> = {
-  xs: { circle: "h-[18px] w-[18px]", text: "text-[8px]" },
-  sm: { circle: "h-6 w-6", text: "text-[9px]" },
-  md: { circle: "h-7 w-7", text: "text-[10px]" },
   lg: { circle: "h-10 w-10", text: "text-xs" },
+  md: { circle: "h-7 w-7", text: "text-[10px]" },
+  sm: { circle: "h-6 w-6", text: "text-[9px]" },
+  xs: { circle: "h-[18px] w-[18px]", text: "text-[8px]" },
 };
 
 const HEX_RADIX = 16;

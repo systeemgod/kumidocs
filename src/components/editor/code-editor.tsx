@@ -13,20 +13,20 @@ interface CodeEditorProps {
 }
 
 const EXT_TO_LANG: Record<string, string> = {
-  mjs: "js",
-  cjs: "js",
   bash: "sh",
-  zsh: "sh",
+  cjs: "js",
   fish: "sh",
-  htm: "html",
-  scss: "sass",
-  yml: "yaml",
-  jsonc: "json",
   gql: "graphql",
+  htm: "html",
+  jsonc: "json",
   kt: "kotlin",
   kts: "kotlin",
+  mjs: "js",
+  scss: "sass",
   tf: "hcl",
   tfvars: "hcl",
+  yml: "yaml",
+  zsh: "sh",
 };
 
 const resolveLanguage = (ext: string): NonNullable<ReturnType<typeof loadLanguage>>[] => {
@@ -77,12 +77,12 @@ const CodeEditor = (allProps: CodeEditorProps): JSX.Element => {
         extensions={extensions}
         readOnly={readOnly}
         basicSetup={{
-          lineNumbers: true,
+          autocompletion: false,
+          closeBrackets: false,
           foldGutter: true,
           highlightActiveLine: !readOnly,
           highlightSelectionMatches: true,
-          autocompletion: false,
-          closeBrackets: false,
+          lineNumbers: true,
         }}
         onChange={onChange}
       />

@@ -22,7 +22,7 @@ if (!sanitizePlugin) {
 
 const REHYPE_PLUGINS: PluggableList = [
   sanitizePlugin,
-  [harden, { allowedLinkPrefixes: ["*"], allowedImagePrefixes: ["*"] }],
+  [harden, { allowedImagePrefixes: ["*"], allowedLinkPrefixes: ["*"] }],
   rehypeHeadingIdsPlugin,
   rehypeImageAttrsPlugin,
   rehypeEmojiPlugin,
@@ -61,7 +61,7 @@ const AnchorComponent = (allProps: { href?: string; children?: ReactNode }): JSX
 };
 
 // oxfmt-ignore
-const COMPONENTS = { "kumi-emoji": KumiEmojiComponent, "a": AnchorComponent };
+const COMPONENTS = { "a": AnchorComponent, "kumi-emoji": KumiEmojiComponent };
 
 const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
   const { value } = allProps;

@@ -15,10 +15,10 @@ const splitText = (text: string): ElementContent[] => {
       parts.push({ type: "text", value: text.slice(lastIndex, start) });
     }
     parts.push({
-      type: "element",
-      tagName: "kumi-emoji",
-      properties: { dataEmoji: emoji },
       children: [],
+      properties: { dataEmoji: emoji },
+      tagName: "kumi-emoji",
+      type: "element",
     });
     lastIndex = start + emoji.length;
     match = re.exec(text);

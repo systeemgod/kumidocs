@@ -30,7 +30,11 @@ interface PageInfoPanelProps {
   onClose?: () => void;
 }
 
-export default function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps): JSX.Element {
+export default function PageInfoPanel({
+  filePath,
+  title,
+  onClose,
+}: PageInfoPanelProps): JSX.Element {
   const [commits, setCommits] = useState<CommitEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -47,11 +51,11 @@ export default function PageInfoPanel({ filePath, title, onClose }: PageInfoPane
       const key = date.toISOString().slice(0, 10);
       if (!groups.has(key)) {
         const label = date.toLocaleDateString(undefined, {
-          month: "short",
           day: "numeric",
+          month: "short",
           year: "numeric",
         });
-        groups.set(key, { label, commits: [] });
+        groups.set(key, { commits: [], label });
       }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- we just ensured this
       groups.get(key)!.commits.push(commit);
@@ -235,11 +239,11 @@ export default function PageInfoPanel({ filePath, title, onClose }: PageInfoPane
               <p className="text-xs text-muted-foreground">
                 {diffData.author} ·{" "}
                 {new Date(diffData.date).toLocaleString(undefined, {
-                  month: "short",
                   day: "numeric",
-                  year: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",
+                  month: "short",
+                  year: "numeric",
                 })}
               </p>
             )}

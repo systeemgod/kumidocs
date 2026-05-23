@@ -17,7 +17,7 @@ if (!sanitizePlugin) {
 
 const REHYPE_PLUGINS: PluggableList = [
   sanitizePlugin,
-  [harden, { allowedLinkPrefixes: ["*"], allowedImagePrefixes: ["*"] }],
+  [harden, { allowedImagePrefixes: ["*"], allowedLinkPrefixes: ["*"] }],
   rehypeHeadingIdsPlugin,
   rehypeImageAttrsPlugin,
   rehypeEmojiPlugin,
@@ -67,8 +67,8 @@ const SlideAnchorComponent = (allProps: SlideAnchorProps): JSX.Element => {
 
 // oxfmt-ignore
 const COMPONENTS = {
-  "kumi-emoji": KumiEmojiComponent,
   "a": SlideAnchorComponent,
+  "kumi-emoji": KumiEmojiComponent,
 };
 
 interface SlideStreamdownProps {

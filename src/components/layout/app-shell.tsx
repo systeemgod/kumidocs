@@ -5,7 +5,7 @@ import NewPageDialog from "@/components/dialogs/new-page-dialog";
 import { Outlet } from "react-router-dom";
 import SearchPalette from "@/components/search/search-palette";
 import Sidebar from "./sidebar";
-import Toaster from "@/components/ui/sonner";
+import Toaster from "@/components/ui/toaster";
 import TopBar from "./top-bar";
 import useMountEffect from "@/hooks/use-mount-effect";
 import { useUser } from "@/store/user";
@@ -200,7 +200,7 @@ export default function AppShell(): JSX.Element {
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">
-          <Outlet context={{ reloadTree: loadTree, autoSaveDelay }} />
+          <Outlet context={{ autoSaveDelay, reloadTree: loadTree }} />
         </main>
       </div>
 
