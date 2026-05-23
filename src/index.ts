@@ -224,60 +224,20 @@ const server = serve<WsData>({
       },
     },
 
-    "/api/me": {
-      GET(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiMe(user, config);
-      },
-    },
-
-    "/api/headers": {
-      GET(req: Request) {
-        const headers: Record<string, string> = {};
-        for (const [key, value] of req.headers) {
-          headers[key] = value;
-        }
-        return Response.json(headers);
-      },
-    },
-
-    "/api/tree": {
-      GET(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiTree();
-      },
-    },
-
-    "/api/sidebar": {
-      GET(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiSidebar();
-      },
-    },
-
     "/api/file": {
+      DELETE(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiFileDelete(new URL(req.url), user, config);
+      },
       GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         return apiFileGet(new URL(req.url), config);
-      },
-      PUT(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiFilePut(new URL(req.url), req, user, config);
       },
       POST(req: Request) {
         const user = requireUser(req);
@@ -286,32 +246,12 @@ const server = serve<WsData>({
         }
         return apiFileCreate(req, user, config);
       },
-      DELETE(req: Request) {
+      PUT(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
-        return apiFileDelete(new URL(req.url), user, config);
-      },
-    },
-
-    "/api/file/rename": {
-      POST(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiFileRename(req, user, config);
-      },
-    },
-
-    "/api/file/history": {
-      GET(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiFileHistory(new URL(req.url), config);
+        return apiFilePut(new URL(req.url), req, user, config);
       },
     },
 
@@ -325,23 +265,33 @@ const server = serve<WsData>({
       },
     },
 
-    "/api/search": {
+    "/api/file/history": {
       GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
-        return apiSearch(new URL(req.url));
+        return apiFileHistory(new URL(req.url), config);
       },
     },
 
-    "/api/upload/image": {
+    "/api/file/rename": {
       POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
-        return apiUploadImage(req, user, config);
+        return apiFileRename(req, user, config);
+      },
+    },
+
+    "/api/headers": {
+      GET(req: Request) {
+        const headers: Record<string, string> = {};
+        for (const [key, value] of req.headers) {
+          headers[key] = value;
+        }
+        return Response.json(headers);
       },
     },
 
@@ -363,6 +313,56 @@ const server = serve<WsData>({
         }
         const filename = new URL(req.url).pathname.slice("/api/images/".length);
         return apiImageDelete(decodeURIComponent(filename), user, config);
+      },
+    },
+
+    "/api/me": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiMe(user, config);
+      },
+    },
+
+    "/api/search": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiSearch(new URL(req.url));
+      },
+    },
+
+    "/api/sidebar": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiSidebar();
+      },
+    },
+
+    "/api/tree": {
+      GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiTree();
+      },
+    },
+
+    "/api/upload/image": {
+      POST(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiUploadImage(req, user, config);
       },
     },
 
