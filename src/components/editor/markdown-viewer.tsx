@@ -7,9 +7,9 @@ import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
 import { memo } from "react";
-import { rehypeEmojiPlugin } from "./rehype-emoji-plugin";
-import { rehypeHeadingIdsPlugin } from "./rehype-heading-ids-plugin";
-import { rehypeImageAttrsPlugin } from "./rehype-image-attrs-plugin";
+import rehypeEmojiPlugin from "./rehype-emoji-plugin";
+import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
+import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
 
 interface MarkdownViewerProps {
   value: string;
@@ -83,4 +83,4 @@ const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
 
 const MarkdownViewer = memo(MarkdownViewerInner);
 
-export { MarkdownViewer };
+export default MarkdownViewer;

@@ -9,8 +9,8 @@ import {
 import { useCallback, useState } from "react";
 import { Button } from "../ui/button";
 import { EmojiIcon } from "../ui/emoji-icon";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import Input from "../ui/input";
+import Label from "../ui/label";
 import type { MarkdownType } from "@/lib/types";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +33,7 @@ function slugify(title: string): string {
     .replaceAll(/^-+|-+$/gu, "");
 }
 
-export function NewPageDialog({
+export default function NewPageDialog({
   open,
   onClose,
   parentDir,

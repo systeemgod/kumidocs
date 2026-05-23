@@ -20,9 +20,9 @@ import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
 import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { MarkdownViewer } from "./markdown-viewer";
+import Checkbox from "../ui/checkbox";
+import Label from "../ui/label";
+import MarkdownViewer from "./markdown-viewer";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
 import { SlideViewer } from "./slide-viewer";
@@ -211,7 +211,7 @@ const HEADING_OPTIONS = [
   { value: "h6", label: "Heading 6", prefix: "######" },
 ];
 
-export function MarkdownEditor({
+export default function MarkdownEditor({
   value,
   onChange,
   onSave,

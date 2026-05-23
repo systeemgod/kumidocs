@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 const Input = (allProps: ComponentProps<"input">): JSX.Element => {
   const { className } = allProps;
@@ -18,4 +18,4 @@ const Input = (allProps: ComponentProps<"input">): JSX.Element => {
   );
 };
 
-export { Input };
+export default Input;

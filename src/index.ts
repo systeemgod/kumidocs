@@ -378,6 +378,7 @@ const server = serve<WsData>({
     close: wsClose,
   },
 
+  // oxlint-disable-next-line node/no-process-env
   development: process.env.NODE_ENV !== "production" && {
     hmr: true,
     console: true,

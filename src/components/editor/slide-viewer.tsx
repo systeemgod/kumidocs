@@ -16,10 +16,10 @@ import { isBgDark, parseSlideDirectives, resolveTheme } from "@/lib/slide";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import type { jsPDF as JsPDF } from "jspdf";
-import { SlideMarkdownViewer } from "./slide-markdown-viewer";
-import { SlideOverlay } from "./slide-overlay";
-import { cn } from "@/lib/utils";
-import { useMountEffect } from "@/hooks/use-mount-effect";
+import SlideMarkdownViewer from "./slide-markdown-viewer";
+import SlideOverlay from "./slide-overlay";
+import cn from "@/lib/utils";
+import useMountEffect from "@/hooks/use-mount-effect";
 import { useTheme } from "@/store/theme";
 
 // ── PDF selectable layer ─────────────────────────────────────────────────────

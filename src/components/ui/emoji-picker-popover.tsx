@@ -6,10 +6,10 @@
  */
 import { useCallback, useState } from "react";
 import { EmojiIcon } from "./emoji-icon";
-import { EmojiPicker } from "./emoji-picker";
+import EmojiPicker from "./emoji-picker";
 import type { FileType } from "@/lib/types";
 import { Popover } from "radix-ui";
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 interface EmojiPickerPopoverProps {
   /** Currently selected emoji (undefined = use fileType default). */
@@ -74,4 +74,4 @@ const EmojiPickerPopover = ({
   );
 };
 
-export { EmojiPickerPopover };
+export default EmojiPickerPopover;

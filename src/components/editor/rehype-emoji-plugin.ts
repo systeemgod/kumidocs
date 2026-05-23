@@ -65,4 +65,4 @@ const rehypeEmojiPlugin =
     walk(tree);
   };
 
-export { rehypeEmojiPlugin };
+export default rehypeEmojiPlugin;

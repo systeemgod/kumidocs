@@ -90,4 +90,4 @@ const CodeEditor = (allProps: CodeEditorProps): JSX.Element => {
   );
 };
 
-export { CodeEditor };
+export default CodeEditor;

@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { ScrollArea as ScrollAreaPrimitive } from "radix-ui";
 
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 const ScrollBar = (
   allProps: ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,

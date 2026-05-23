@@ -91,4 +91,4 @@ const TopBar = (allProps: TopBarProps): JSX.Element => {
   );
 };
 
-export { TopBar };
+export default TopBar;

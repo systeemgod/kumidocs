@@ -144,4 +144,4 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
   );
 };
 
-export { SearchPalette };
+export default SearchPalette;

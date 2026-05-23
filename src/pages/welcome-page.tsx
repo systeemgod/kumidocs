@@ -12,4 +12,4 @@ const WelcomePage = (): JSX.Element => (
   </div>
 );
 
-export { WelcomePage };
+export default WelcomePage;

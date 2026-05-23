@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { UserAvatar } from "../ui/avatar";
 import { emailToDisplayName } from "../../lib/avatar";
-import { useMountEffect } from "../../hooks/use-mount-effect";
+import useMountEffect from "../../hooks/use-mount-effect";
 
 interface DiffData {
   sha: string;
@@ -30,7 +30,7 @@ interface PageInfoPanelProps {
   onClose?: () => void;
 }
 
-export function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps): JSX.Element {
+export default function PageInfoPanel({ filePath, title, onClose }: PageInfoPanelProps): JSX.Element {
   const [commits, setCommits] = useState<CommitEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());

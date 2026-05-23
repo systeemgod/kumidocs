@@ -157,7 +157,7 @@ interface SlideOverlayProps {
   themeVars?: Record<string, string>;
 }
 
-export function SlideOverlay({
+export default function SlideOverlay({
   elements,
   slideNum,
   total,

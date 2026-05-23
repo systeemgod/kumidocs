@@ -6,9 +6,9 @@ import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
-import { rehypeEmojiPlugin } from "@/components/editor/rehype-emoji-plugin";
-import { rehypeHeadingIdsPlugin } from "@/components/editor/rehype-heading-ids-plugin";
-import { rehypeImageAttrsPlugin } from "@/components/editor/rehype-image-attrs-plugin";
+import rehypeEmojiPlugin from "@/components/editor/rehype-emoji-plugin";
+import rehypeHeadingIdsPlugin from "@/components/editor/rehype-heading-ids-plugin";
+import rehypeImageAttrsPlugin from "@/components/editor/rehype-image-attrs-plugin";
 
 const sanitizePlugin = defaultRehypePlugins.sanitize;
 if (!sanitizePlugin) {
@@ -91,4 +91,4 @@ const SlideStreamdown = (allProps: SlideStreamdownProps): JSX.Element => {
   );
 };
 
-export { SlideStreamdown };
+export default SlideStreamdown;

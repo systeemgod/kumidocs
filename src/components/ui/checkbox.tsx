@@ -2,7 +2,7 @@ import { CheckIcon } from "lucide-react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 const Checkbox = (allProps: ComponentProps<typeof CheckboxPrimitive.Root>): JSX.Element => {
   const { className } = allProps;
@@ -25,4 +25,4 @@ const Checkbox = (allProps: ComponentProps<typeof CheckboxPrimitive.Root>): JSX.
   );
 };
 
-export { Checkbox };
+export default Checkbox;

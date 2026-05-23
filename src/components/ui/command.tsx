@@ -8,7 +8,7 @@ import {
 import { Command as CommandPrimitive } from "cmdk";
 import type { ComponentProps } from "react";
 import { SearchIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 interface CommandDialogProps extends ComponentProps<typeof Dialog> {
   title?: string;

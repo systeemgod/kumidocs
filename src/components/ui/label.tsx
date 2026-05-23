@@ -3,7 +3,7 @@
 import type { ComponentProps } from "react";
 import { Root as LabelRoot } from "@radix-ui/react-label";
 
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 function Label({ className, ...props }: ComponentProps<typeof LabelRoot>): JSX.Element {
   return (
@@ -18,4 +18,4 @@ function Label({ className, ...props }: ComponentProps<typeof LabelRoot>): JSX.E
   );
 }
 
-export { Label };
+export default Label;

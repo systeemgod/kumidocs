@@ -1,11 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AppShell } from "@/components/layout/app-shell";
-import { FilePageRoute } from "@/pages/file-page-route";
-import { ImageLibraryPage } from "@/pages/image-library-page";
-import { NotFound } from "@/pages/not-found";
-import { Providers } from "@/providers";
-import { ThemeLibraryPage } from "@/pages/theme-library-page";
-import { WelcomePage } from "@/pages/welcome-page";
+import AppShell from "@/components/layout/app-shell";
+import FilePageRoute from "@/pages/file-page-route";
+import ImageLibraryPage from "@/pages/image-library-page";
+import NotFound from "@/pages/not-found";
+import Providers from "@/providers";
+import ThemeLibraryPage from "@/pages/theme-library-page";
+import WelcomePage from "@/pages/welcome-page";
 
 const App = (): JSX.Element => (
   <BrowserRouter>
@@ -25,4 +25,4 @@ const App = (): JSX.Element => (
   </BrowserRouter>
 );
 
-export { App };
+export default App;

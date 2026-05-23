@@ -1,4 +1,4 @@
-import { FilePage } from "@/pages/file-page";
+import FilePage from "@/pages/file-page";
 import { useParams } from "react-router-dom";
 import { useUser } from "@/store/user";
 
@@ -15,4 +15,4 @@ const FilePageRoute = (): JSX.Element => {
   return <FilePage key={`${rawPath}-${userKey}`} />;
 };
 
-export { FilePageRoute };
+export default FilePageRoute;

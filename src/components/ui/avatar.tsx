@@ -1,7 +1,7 @@
 import { avatarColor, avatarInitials } from "@/lib/avatar";
 import { Avatar as AvatarPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { useMemo } from "react";
 

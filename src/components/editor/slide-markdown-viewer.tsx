@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { ParsedSlide } from "@/lib/slide";
-import { SlideStreamdown } from "@/components/editor/slide-streamdown";
-import { cn } from "@/lib/utils";
+import SlideStreamdown from "@/components/editor/slide-streamdown";
+import cn from "@/lib/utils";
 import { memo } from "react";
 import { splitAtSecondH2 } from "@/lib/slide";
 
@@ -91,4 +91,4 @@ const SlideMarkdownViewerInner = (allProps: SlideMarkdownViewerProps): JSX.Eleme
 
 const SlideMarkdownViewer = memo(SlideMarkdownViewerInner);
 
-export { SlideMarkdownViewer };
+export default SlideMarkdownViewer;

@@ -255,4 +255,4 @@ const ThemeLibraryPage = (): JSX.Element => {
   );
 };
 
-export { ThemeLibraryPage };
+export default ThemeLibraryPage;

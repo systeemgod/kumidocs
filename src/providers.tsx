@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { UserProvider, useUser } from "@/store/user";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import Input from "@/components/ui/input";
+import Label from "@/components/ui/label";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@/store/theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -81,4 +81,4 @@ const Providers = (allProps: ProvidersProps): JSX.Element => {
   );
 };
 
-export { Providers };
+export default Providers;

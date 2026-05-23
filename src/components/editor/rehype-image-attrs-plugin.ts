@@ -129,7 +129,7 @@ function walk(node: Root | Element): void {
   }
 }
 
-export function rehypeImageAttrsPlugin(): (tree: Root) => void {
+export default function rehypeImageAttrsPlugin(): (tree: Root) => void {
   return (tree: Root) => {
     walk(tree);
   };

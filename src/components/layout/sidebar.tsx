@@ -27,7 +27,7 @@ import { Button } from "../ui/button";
 import { PageMenuItems } from "../ui/page-menu-items";
 import { UserAvatar } from "../ui/avatar";
 import { toast } from "sonner";
-import { usePageActions } from "../../hooks/use-page-actions";
+import usePageActions from "../../hooks/use-page-actions";
 import { useState } from "react";
 import { useUser } from "../../store/user";
 
@@ -346,7 +346,7 @@ function PageNodeRow({
   );
 }
 
-export function Sidebar({
+export default function Sidebar({
   tree,
   width,
   onNewPage,

@@ -17,8 +17,8 @@ import {
 } from "../components/ui/dialog";
 import { useCallback, useRef, useState } from "react";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import Input from "../components/ui/input";
+import Label from "../components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -56,7 +56,7 @@ interface UsePageActionsResult {
  *   const { openMove, openDelete, dialogs } = usePageActions(reloadTree);
  *   // ... render {dialogs} somewhere in the component tree
  */
-export function usePageActions(reloadTree: () => void): UsePageActionsResult {
+export default function usePageActions(reloadTree: () => void): UsePageActionsResult {
   const navigate = useNavigate();
 
   // ── Move dialog ──────────────────────────────────────────────────────────

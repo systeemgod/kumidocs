@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import type { ComponentProps } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 
 interface DialogContentProps extends ComponentProps<typeof DialogPrimitive.Content> {
   showCloseButton?: boolean;

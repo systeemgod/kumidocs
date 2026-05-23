@@ -8,9 +8,9 @@
 import { memo, useMemo, useState } from "react";
 import EMOJI_SVGS from "./emoji/emojis";
 import { EmojiIcon } from "./emoji-icon";
-import { Input } from "./input";
+import Input from "./input";
 import { ScrollArea } from "./scroll-area";
-import { cn } from "@/lib/utils";
+import cn from "@/lib/utils";
 import data from "./emoji/emojimart-data-all-15.json";
 
 // ── Typed subset of emojimart-data-all-15.json ───────────────────────────────
@@ -244,4 +244,4 @@ const EmojiPickerInner = (allProps: EmojiPickerProps): JSX.Element => {
 
 const EmojiPicker = memo(EmojiPickerInner);
 
-export { EmojiPicker };
+export default EmojiPicker;

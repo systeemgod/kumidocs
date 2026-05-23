@@ -14,4 +14,5 @@ import { twMerge } from "tailwind-merge";
  * cn({ 'text-red-500': true, 'text-blue-500': false }) // Returns 'text-red-500'
  * cn('flex', ['gap-2', 'gap-4']) // Returns 'flex gap-4'
  */
-export const cn = (...inputs: ClassValue[]): string => twMerge(clsx(inputs));
+const cn = (...inputs: ClassValue[]): string => twMerge(clsx(inputs));
+export default cn;

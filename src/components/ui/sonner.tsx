@@ -39,4 +39,4 @@ const Toaster = (allProps: ToasterProps): JSX.Element => {
   );
 };
 
-export { Toaster };
+export default Toaster;

@@ -32,4 +32,4 @@ const rehypeHeadingIdsPlugin =
     walk(tree);
   };
 
-export { rehypeHeadingIdsPlugin };
+export default rehypeHeadingIdsPlugin;
