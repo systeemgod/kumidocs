@@ -31,7 +31,7 @@ async function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult
   return fnResult;
 }
 
-async function _gitPull(config: Config): Promise<void> {
+async function gitPullNoLock(config: Config): Promise<void> {
   try {
     await git.pull({
       author: { email: "kumidocs@localhost", name: "KumiDocs" },
@@ -48,7 +48,7 @@ async function _gitPull(config: Config): Promise<void> {
 }
 
 function gitPull(config: Config): Promise<void> {
-  return withGitLock(() => _gitPull(config));
+  return withGitLock(() => gitPullNoLock(config));
 }
 
 async function pushWithRetry(
@@ -85,7 +85,7 @@ async function pushWithRetry(
   return { sha: commitSha.slice(0, 7) };
 }
 
-async function _stageAndCommit(
+async function stageAndCommitNoLock(
   config: Config,
   filePaths: string[],
   message: string,
@@ -134,7 +134,9 @@ function gitStageAndCommit(
   authorName: string,
   authorEmail: string,
 ): Promise<{ sha: string; error?: string; committed?: boolean }> {
-  return withGitLock(() => _stageAndCommit(config, filePaths, message, authorName, authorEmail));
+  return withGitLock(() =>
+    stageAndCommitNoLock(config, filePaths, message, authorName, authorEmail),
+  );
 }
 
 function gitRemoveAndCommit(
@@ -146,7 +148,7 @@ function gitRemoveAndCommit(
 ): Promise<{ sha: string; error?: string }> {
   return withGitLock(async () => {
     await git.remove({ dir: config.repoPath, filepath: filePath, fs });
-    return _stageAndCommit(config, [], message, authorName, authorEmail);
+    return stageAndCommitNoLock(config, [], message, authorName, authorEmail);
   });
 }
 
@@ -169,11 +171,11 @@ function gitMoveAndCommit(
         await git.remove({ dir: config.repoPath, filepath: extra.from, fs });
       }),
     );
-    return _stageAndCommit(config, [], message, authorName, authorEmail);
+    return stageAndCommitNoLock(config, [], message, authorName, authorEmail);
   });
 }
 
-async function _fetchAndRebase(
+async function fetchAndRebaseNoLock(
   config: Config,
 ): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
   const before = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" }).catch(() => "");
@@ -224,7 +226,7 @@ async function _fetchAndRebase(
 function gitFetchAndRebase(
   config: Config,
 ): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
-  return withGitLock(() => _fetchAndRebase(config));
+  return withGitLock(() => fetchAndRebaseNoLock(config));
 }
 
 async function getHeadSha(config: Config): Promise<string> {

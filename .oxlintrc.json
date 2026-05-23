@@ -30,8 +30,6 @@
     "eslint/no-plusplus": "off",
     "eslint/no-ternary": "off",
     "eslint/no-undefined": "off",
-    "eslint/no-underscore-dangle": "off",
-
     "eslint/no-void": "off",
     "eslint/prefer-destructuring": "off",
     "import/max-dependencies": "off",

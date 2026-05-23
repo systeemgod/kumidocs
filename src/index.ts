@@ -41,6 +41,7 @@ import devIndex from "./index.html";
 import { loadConfig } from "./server/config";
 import { serve } from "bun";
 
+// oxlint-disable-next-line no-underscore-dangle
 declare const __BUNDLED__: boolean | undefined;
 const isBundled = __BUNDLED__ !== undefined;
 const publicDir = join(import.meta.dir, "public");
