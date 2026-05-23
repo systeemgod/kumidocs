@@ -185,6 +185,33 @@ setInterval(() => {
 setInterval(pruneDeadSessions, 30_000);
 
 const server = serve<WsData>({
+  // oxlint-disable-next-line node/no-process-env
+  development: process.env.NODE_ENV !== "production" && {
+    console: true,
+    hmr: true,
+  },
+
+  fetch(req, srv) {
+    const url = new URL(req.url);
+
+    // WebSocket upgrade
+    if (url.pathname === "/ws") {
+      const user = requireUser(req);
+      if (!user) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const upgraded = srv.upgrade(req, {
+        data: {
+          lastHeartbeat: Date.now(),
+          pageId: undefined,
+          sessionId: "",
+          user,
+        },
+      });
+      return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
+    }
+  },
+
   port: config.port,
 
   routes: {
@@ -351,37 +378,10 @@ const server = serve<WsData>({
     },
   },
 
-  fetch(req, srv) {
-    const url = new URL(req.url);
-
-    // WebSocket upgrade
-    if (url.pathname === "/ws") {
-      const user = requireUser(req);
-      if (!user) {
-        return new Response("Unauthorized", { status: 401 });
-      }
-      const upgraded = srv.upgrade(req, {
-        data: {
-          user,
-          pageId: undefined,
-          sessionId: "",
-          lastHeartbeat: Date.now(),
-        },
-      });
-      return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
-    }
-  },
-
   websocket: {
     open: wsOpen,
     message: wsMessage,
     close: wsClose,
-  },
-
-  // oxlint-disable-next-line node/no-process-env
-  development: process.env.NODE_ENV !== "production" && {
-    console: true,
-    hmr: true,
   },
 });
 
