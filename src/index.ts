@@ -30,7 +30,7 @@ import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
 import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
 import { join, sep } from "node:path";
 import { parseUser, setPermissions } from "./server/auth";
-import { readFile, writeFile } from "node:fs/promises";
+
 import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
@@ -73,7 +73,7 @@ if (!existsSync(join(config.repoPath, ".git"))) {
 async function loadPermissions(): Promise<void> {
   const configPath = join(config.repoPath, ".kumidocs.json");
   try {
-    const raw = await readFile(configPath, "utf8");
+    const raw = await Bun.file(configPath).text();
     setPermissions(JSON.parse(raw) as KumiDocsPermissions);
   } catch (error: unknown) {
     // If file doesn't exist, create it with default config
@@ -82,7 +82,7 @@ async function loadPermissions(): Promise<void> {
         instanceName: config.instanceName,
         editors: [],
       };
-      await writeFile(configPath, JSON.stringify(defaultConfig, undefined, 2));
+      await Bun.write(configPath, JSON.stringify(defaultConfig, undefined, 2));
       setPermissions(defaultConfig);
       console.log("Created .kumidocs.json with default configuration");
 

@@ -22,12 +22,12 @@ import {
   gitRemoveAndCommit,
   gitStageAndCommit,
 } from "./git";
-import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { mkdir, rename } from "node:fs/promises";
 import { removeFromIndex, searchDocs, updateInIndex } from "./search";
 import type { Config } from "./config";
 import { IMAGE_TYPES } from "@/lib/filetypes";
 import type { User } from "@/lib/types";
-import { createHash } from "node:crypto";
+
 import { createTwoFilesPatch } from "diff";
 import { getPermissions } from "./auth";
 
@@ -375,13 +375,13 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
   }
 
   const bytes = await file.arrayBuffer();
-  const sha256 = createHash("sha256").update(Buffer.from(bytes)).digest("hex");
+  const sha256 = new Bun.CryptoHasher("sha256").update(bytes).digest("hex");
   const filename = `${sha256}${ext}`;
   const repoPath = `images/${filename}`;
   const fullPath = join(config.repoPath, repoPath);
 
   await mkdir(join(config.repoPath, "images"), { recursive: true });
-  await writeFile(fullPath, Buffer.from(bytes));
+  await Bun.write(fullPath, bytes);
   addToCache(repoPath, "");
 
   const msg = `docs: upload image ${filename} by ${user.displayName}`;
@@ -403,7 +403,7 @@ async function apiImagesList(config: Config): Promise<Response> {
   const mdPaths = all.filter((filePath) => filePath.endsWith(".md"));
 
   const results = await Promise.all(
-    imagePaths.map(async (repoPath) => {
+    imagePaths.map((repoPath) => {
       const filename = repoPath.slice("images/".length);
       // The sha256 portion is the part before the extension
       const dotIdx = filename.lastIndexOf(".");
@@ -411,8 +411,7 @@ async function apiImagesList(config: Config): Promise<Response> {
 
       let size = 0;
       try {
-        const fileStats = await stat(join(config.repoPath, repoPath));
-        size = fileStats.size;
+        size = Bun.file(join(config.repoPath, repoPath)).size;
       } catch {
         // file may be transiently unavailable
       }
@@ -565,7 +564,7 @@ async function apiFileDiff(url: URL, config: Config): Promise<Response> {
 }
 
 // GET /images/:filename
-async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
+function serveRepoAsset(assetPath: string, config: Config): Response {
   if (!isSafePath(config.repoPath, assetPath)) {
     return new Response("Forbidden", { status: 403 });
   }
@@ -584,8 +583,7 @@ async function serveRepoAsset(assetPath: string, config: Config): Promise<Respon
   const mime = MIME[ext] ?? "application/octet-stream";
 
   try {
-    const data = await readFile(fullPath);
-    return new Response(data, {
+    return new Response(Bun.file(fullPath), {
       headers: {
         "Content-Type": mime,
         "Cache-Control": "public, max-age=31536000, immutable",

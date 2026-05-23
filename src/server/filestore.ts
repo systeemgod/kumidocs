@@ -1,7 +1,7 @@
 import { CODE_TYPES, IMAGE_TYPES, extensionToType, pathExtension } from "@/lib/filetypes";
 import type { FileEntry, TreeNode } from "@/lib/types";
 import { dirname, extname, join, relative } from "node:path";
-import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readdir, unlink } from "node:fs/promises";
 import type { Config } from "./config";
 import { extractHeadingTitle } from "@/lib/frontmatter";
 import matter from "gray-matter";
@@ -69,7 +69,7 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
         // Only read text files; for others store empty string as marker
         if (ext === ".md" || CODE_TYPES.has(ext) || ext === "") {
           try {
-            const content = await readFile(fullPath, "utf8");
+            const content = await Bun.file(fullPath).text();
             fileCache.set(relPath, content);
           } catch {
             fileCache.set(relPath, "");
@@ -97,7 +97,7 @@ async function writeFileToRepo(path: string, content: string, config: Config): P
   await mkdir(dirname(fullPath), { recursive: true });
   const isBinary = IMAGE_TYPES.has(extname(path).toLowerCase());
   const normalised = isBinary || content.endsWith("\n") ? content : `${content}\n`;
-  await writeFile(fullPath, normalised, "utf8");
+  await Bun.write(fullPath, normalised);
   fileCache.set(path, normalised);
   invalidateTree();
 }
@@ -112,7 +112,7 @@ async function deleteFileFromRepo(path: string, config: Config): Promise<void> {
 async function reloadFile(path: string, config: Config): Promise<void> {
   const fullPath = join(config.repoPath, path);
   try {
-    const content = await readFile(fullPath, "utf8");
+    const content = await Bun.file(fullPath).text();
     fileCache.set(path, content);
   } catch {
     fileCache.delete(path);
