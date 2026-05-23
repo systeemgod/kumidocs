@@ -32,7 +32,26 @@ import {
 import { Button } from "@/components/ui/button";
 import type React from "react";
 
-interface MarkdownToolbarProps { disabled?: boolean; fileInputRef: React.RefObject<HTMLInputElement | null>; handleBold: () => void; handleCode: () => void; handleHeading: (val: string) => void; handleItalic: () => void; handleLink: () => void; handleNumbered: () => void; handlePropsOpen: (open: boolean) => void; handleQuote: () => void; handleStrikethrough: () => void; handleTask: () => void; handleUnordered: () => void; headingValue: string; helpOpen: boolean; setHelpOpen: React.Dispatch<React.SetStateAction<boolean>>; setShowPreview: React.Dispatch<React.SetStateAction<boolean>>; showPreview: boolean }
+interface MarkdownToolbarProps {
+  disabled?: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  handleBold: () => void;
+  handleCode: () => void;
+  handleHeading: (val: string) => void;
+  handleItalic: () => void;
+  handleLink: () => void;
+  handleNumbered: () => void;
+  handlePropsOpen: (open: boolean) => void;
+  handleQuote: () => void;
+  handleStrikethrough: () => void;
+  handleTask: () => void;
+  handleUnordered: () => void;
+  headingValue: string;
+  helpOpen: boolean;
+  setHelpOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowPreview: React.Dispatch<React.SetStateAction<boolean>>;
+  showPreview: boolean;
+}
 
 function MarkdownToolbar({
   disabled,

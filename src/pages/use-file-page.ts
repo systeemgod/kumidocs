@@ -20,8 +20,48 @@ import useMountEffect from "@/hooks/use-mount-effect";
 import usePageActions from "@/hooks/use-page-actions";
 import { useUser } from "@/store/user";
 
-interface OutletCtx { autoSaveDelay: number; reloadTree: () => void }
-interface UseFilePageReturn { breadcrumb: string[]; content: string; editLocked: PresenceUser | undefined; editMode: boolean; enterEdit: () => void; exitEdit: () => Promise<void>; exportPagePdf: () => Promise<void>; filePath: string; fileType: FileType; handleChange: (val: string) => void; handleEmojiChange: (newEmoji: string) => void; handlePageDuplicate: () => Promise<void>; handleSave: () => Promise<void>; infoOpen: boolean; lastSha: string | undefined; loadDoc: (path: string) => Promise<void>; loading: boolean; meta: DocMeta; metaRef: MutableRefObject<DocMeta>; notFound: boolean; openDelete: (filePath: string, title?: string) => void; openMove: (filePath: string) => Promise<void>; pageActionDialogs: ReactNode; pdfContentRef: RefObject<HTMLDivElement | null>; rawContent: string; rawExt: string; rawPath: string; remoteBanner: string | undefined; saveStatus: SaveStatus; setInfoOpen: Dispatch<SetStateAction<boolean>>; setMeta: Dispatch<SetStateAction<DocMeta>>; setRemoteBanner: Dispatch<SetStateAction<string | undefined>>; slideThemes: SlideThemeMap; title: string; user: User | undefined; viewers: PresenceUser[] }
+interface OutletCtx {
+  autoSaveDelay: number;
+  reloadTree: () => void;
+}
+interface UseFilePageReturn {
+  breadcrumb: string[];
+  content: string;
+  editLocked: PresenceUser | undefined;
+  editMode: boolean;
+  enterEdit: () => void;
+  exitEdit: () => Promise<void>;
+  exportPagePdf: () => Promise<void>;
+  filePath: string;
+  fileType: FileType;
+  handleChange: (val: string) => void;
+  handleEmojiChange: (newEmoji: string) => void;
+  handlePageDuplicate: () => Promise<void>;
+  handleSave: () => Promise<void>;
+  infoOpen: boolean;
+  lastSha: string | undefined;
+  loadDoc: (path: string) => Promise<void>;
+  loading: boolean;
+  meta: DocMeta;
+  metaRef: MutableRefObject<DocMeta>;
+  notFound: boolean;
+  openDelete: (filePath: string, title?: string) => void;
+  openMove: (filePath: string) => Promise<void>;
+  pageActionDialogs: ReactNode;
+  pdfContentRef: RefObject<HTMLDivElement | null>;
+  rawContent: string;
+  rawExt: string;
+  rawPath: string;
+  remoteBanner: string | undefined;
+  saveStatus: SaveStatus;
+  setInfoOpen: Dispatch<SetStateAction<boolean>>;
+  setMeta: Dispatch<SetStateAction<DocMeta>>;
+  setRemoteBanner: Dispatch<SetStateAction<string | undefined>>;
+  slideThemes: SlideThemeMap;
+  title: string;
+  user: User | undefined;
+  viewers: PresenceUser[];
+}
 
 function useFilePage(): UseFilePageReturn {
   const { "*": rawPath = "" } = useParams();
@@ -31,7 +71,24 @@ function useFilePage(): UseFilePageReturn {
   const { user, slideThemes } = useUser();
 
   const [editMode, setEditMode] = useState(false);
-  const { content, doSave, handleChange, handleSave, isDirtyRef, lastSha, loadDoc, loading, meta, metaRef, notFound, rawContent, rawContentRef, savePromiseRef, saveStatus, setMeta } = useFilePageSave({ autoSaveDelay, filePath, reloadTree, setEditMode });
+  const {
+    content,
+    doSave,
+    handleChange,
+    handleSave,
+    isDirtyRef,
+    lastSha,
+    loadDoc,
+    loading,
+    meta,
+    metaRef,
+    notFound,
+    rawContent,
+    rawContentRef,
+    savePromiseRef,
+    saveStatus,
+    setMeta,
+  } = useFilePageSave({ autoSaveDelay, filePath, reloadTree, setEditMode });
 
   const [editLocked, setEditLocked] = useState<PresenceUser | undefined>();
   const [viewers, setViewers] = useState<PresenceUser[]>([]);

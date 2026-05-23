@@ -23,7 +23,38 @@ interface UseMarkdownEditorProps {
   onMetaChange?: (meta: PageMeta) => void;
 }
 
-interface UseMarkdownEditorReturn { applyMeta: (newMeta: PageMeta) => void; dlgMeta: PageMeta; fileInputRef: RefObject<HTMLInputElement | null>; handleBold: () => void; handleCode: () => void; handleDragOver: (ev: React.DragEvent) => void; handleDrop: (ev: React.DragEvent) => void; handleEditorScroll: (ev: React.UIEvent<HTMLTextAreaElement>) => void; handleHeading: (val: string) => void; handleImageFiles: (files: FileList | File[]) => void; handleItalic: () => void; handleKeyDown: (ev: React.KeyboardEvent<HTMLTextAreaElement>) => void; handleLink: () => void; handleNumbered: () => void; handlePropsOpen: (open: boolean) => void; handleQuote: () => void; handleStrikethrough: () => void; handleTask: () => void; handleUnordered: () => void; headingValue: string; helpOpen: boolean; previewRef: RefObject<HTMLDivElement | null>; previewValue: string; propsOpen: boolean; saveSelection: () => void; setHelpOpen: Dispatch<SetStateAction<boolean>>; setShowPreview: Dispatch<SetStateAction<boolean>>; showPreview: boolean; taRef: RefObject<HTMLTextAreaElement | null>; themeOptions: string[] }
+interface UseMarkdownEditorReturn {
+  applyMeta: (newMeta: PageMeta) => void;
+  dlgMeta: PageMeta;
+  fileInputRef: RefObject<HTMLInputElement | null>;
+  handleBold: () => void;
+  handleCode: () => void;
+  handleDragOver: (ev: React.DragEvent) => void;
+  handleDrop: (ev: React.DragEvent) => void;
+  handleEditorScroll: (ev: React.UIEvent<HTMLTextAreaElement>) => void;
+  handleHeading: (val: string) => void;
+  handleImageFiles: (files: FileList | File[]) => void;
+  handleItalic: () => void;
+  handleKeyDown: (ev: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleLink: () => void;
+  handleNumbered: () => void;
+  handlePropsOpen: (open: boolean) => void;
+  handleQuote: () => void;
+  handleStrikethrough: () => void;
+  handleTask: () => void;
+  handleUnordered: () => void;
+  headingValue: string;
+  helpOpen: boolean;
+  previewRef: RefObject<HTMLDivElement | null>;
+  previewValue: string;
+  propsOpen: boolean;
+  saveSelection: () => void;
+  setHelpOpen: Dispatch<SetStateAction<boolean>>;
+  setShowPreview: Dispatch<SetStateAction<boolean>>;
+  showPreview: boolean;
+  taRef: RefObject<HTMLTextAreaElement | null>;
+  themeOptions: string[];
+}
 
 function useMarkdownEditor({
   value,
