@@ -139,20 +139,22 @@ async function apiImageDelete(filename: string, user: User, config: Config): Pro
  * and javascript: URI values in href / xlink:href / action / src attributes.
  */
 function sanitizeSvg(raw: string): string {
-  return raw
-    // <script> blocks (any content, including CDATA)
-    .replaceAll(/<script[\s\S]*?<\/script\s*>/giu, "")
-    // self-closing <script ... />
-    .replaceAll(/<script[^>]*\/>/giu, "")
-    // <foreignObject> blocks (can embed arbitrary HTML/JS)
-    .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
-    // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
-    .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
-    // javascript: URIs in href, xlink:href, action, src
-    .replaceAll(
-      /((?:xlink:)?href|action|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/giu,
-      "",
-    );
+  return (
+    raw
+      // <script> blocks (any content, including CDATA)
+      .replaceAll(/<script[\s\S]*?<\/script\s*>/giu, "")
+      // self-closing <script ... />
+      .replaceAll(/<script[^>]*\/>/giu, "")
+      // <foreignObject> blocks (can embed arbitrary HTML/JS)
+      .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
+      // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
+      .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
+      // javascript: URIs in href, xlink:href, action, src
+      .replaceAll(
+        /((?:xlink:)?href|action|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/giu,
+        "",
+      )
+  );
 }
 
 // GET /images/:filename
