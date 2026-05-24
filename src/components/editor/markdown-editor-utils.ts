@@ -1,3 +1,4 @@
+import { ApiError, uploadImage } from "@/lib/api";
 import { toast } from "sonner";
 
 function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): void {
@@ -116,21 +117,13 @@ function insertImage(ta: HTMLTextAreaElement, url: string): void {
 
 /** Upload an image File to /api/upload/image and return the URL, or undefined on failure. */
 async function uploadImageFile(file: File): Promise<string | undefined> {
-  const form = new FormData();
-  form.append("file", file);
   try {
-    const res = await fetch("/api/upload/image", { body: form, method: "POST" });
-    if (!res.ok) {
-      const error = (await res.json().catch(() => ({ error: "Upload failed" }))) as {
-        error: string;
-      };
-      toast.error(error.error);
-      return undefined;
-    }
-    const data = (await res.json()) as { url: string };
+    const data = await uploadImage(file);
     return data.url;
-  } catch {
-    toast.error("Upload failed");
+  } catch (error: unknown) {
+    const body =
+      error instanceof ApiError ? (error.body as { error?: string } | undefined) : undefined;
+    toast.error(body?.error ?? "Upload failed");
     return undefined;
   }
 }

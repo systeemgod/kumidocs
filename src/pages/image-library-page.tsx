@@ -1,3 +1,4 @@
+import { ApiError, deleteImage, getImages } from "@/lib/api";
 import { DeleteRegular, DismissRegular } from "@fluentui/react-icons";
 import {
   Dialog,
@@ -11,18 +12,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { ImageEntry } from "@/lib/api";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import useMountEffect from "@/hooks/use-mount-effect";
 import { useUser } from "@/store/user";
-
-interface ImageEntry {
-  filename: string;
-  path: string;
-  url: string;
-  size: number;
-  usedIn: string[];
-}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
@@ -48,23 +42,22 @@ function ImageDetailPanel({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleDelete = useCallback(async () => {
-    const res = await fetch(`/api/images/${encodeURIComponent(image.filename)}`, {
-      method: "DELETE",
-    });
     setConfirmOpen(false);
-    if (res.ok) {
+    try {
+      await deleteImage(image.filename);
       toast.success("Image deleted");
       onDeleted();
       void navigate("/i", { replace: true });
-    } else {
-      const error = (await res.json().catch(() => ({ error: "Delete failed" }))) as {
-        error: string;
-        usedIn?: string[];
-      };
-      if (error.usedIn && error.usedIn.length > 0) {
-        toast.error(`In use by: ${error.usedIn.join(", ")}`);
+    } catch (error: unknown) {
+      if (error instanceof ApiError) {
+        const body = error.body as { error?: string; usedIn?: string[] } | undefined;
+        if (body?.usedIn && body.usedIn.length > 0) {
+          toast.error(`In use by: ${body.usedIn.join(", ")}`);
+        } else {
+          toast.error(body?.error ?? "Delete failed");
+        }
       } else {
-        toast.error(error.error);
+        toast.error("Delete failed");
       }
     }
   }, [image.filename, onDeleted, navigate]);
@@ -188,8 +181,7 @@ export default function ImageLibraryPage(): JSX.Element {
 
   const fetchImages = useCallback(async () => {
     try {
-      const res = await fetch("/api/images");
-      const data = await (res.json() as Promise<ImageEntry[]>);
+      const data = await getImages();
       setImages(data);
       setLoading(false);
     } catch {

@@ -9,6 +9,7 @@ import {
 import { useLayoutEffect, useState } from "react";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { SearchResult } from "@/lib/types";
+import { searchPages } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 
 const SEARCH_DELAY_MS = 150;
@@ -91,13 +92,7 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
       void (async (): Promise<void> => {
         setLoading(true);
         try {
-          const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-          if (!res.ok) {
-            console.error(`Search HTTP ${String(res.status)}`);
-            setLoading(false);
-            return;
-          }
-          const data = await (res.json() as Promise<SearchResult[]>);
+          const data = await searchPages(query);
           setResults(data);
           setLoading(false);
         } catch (error: unknown) {

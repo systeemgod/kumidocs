@@ -4,10 +4,11 @@ import {
   DismissRegular,
   DocumentRegular,
 } from "@fluentui/react-icons";
+import { getFileDiff, getFileHistory } from "@/lib/api";
 import { useMemo, useState } from "react";
-import { CommitDiffDialog } from "./commit-diff-dialog";
+import CommitDiffDialog from "./commit-diff-dialog";
 import type { CommitEntry } from "@/lib/types";
-import type { DiffData } from "./commit-diff-dialog";
+import type { DiffData } from "@/lib/api";
 import type { ReactNode } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAvatar } from "@/components/ui/avatar";
@@ -68,8 +69,7 @@ export default function PageInfoPanel({
   useMountEffect(() => {
     void (async (): Promise<void> => {
       try {
-        const res = await fetch(`/api/file/history?path=${encodeURIComponent(filePath)}`);
-        const data = await (res.json() as Promise<CommitEntry[]>);
+        const data = await getFileHistory(filePath);
         setCommits(data);
       } catch {
         setCommits([]);
@@ -84,8 +84,7 @@ export default function PageInfoPanel({
     setDiffOpen(true);
     setDiffData(undefined);
     try {
-      const res = await fetch(`/api/file/diff?path=${encodeURIComponent(filePath)}&sha=${sha}`);
-      const data = await (res.json() as Promise<DiffData>);
+      const data = await getFileDiff(filePath, sha);
       setDiffData(data);
     } catch {
       setDiffData(undefined);

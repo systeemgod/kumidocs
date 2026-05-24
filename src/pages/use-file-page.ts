@@ -1,3 +1,4 @@
+import { ApiError, createFile, getFile } from "@/lib/api";
 import type { Dispatch, MutableRefObject, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
@@ -225,29 +226,18 @@ function useFilePage(): UseFilePageReturn {
 
   const handlePageDuplicate = useCallback(async () => {
     try {
-      const res = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`);
-      if (!res.ok) {
-        toast.error("Duplicate failed");
-        return;
-      }
-      const data = (await res.json()) as { content: string };
+      const data = await getFile(filePath);
       const newPath = `${filePath.replace(/\.md$/iu, "")}-copy.md`;
-      const saveRes = await fetch("/api/file", {
-        body: JSON.stringify({ content: data.content, path: newPath }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-      if (saveRes.ok) {
-        reloadTree();
-        toast.success("Page duplicated");
-        navigate(`/p/${newPath}`);
-      } else if (saveRes.status === 409) {
+      await createFile(newPath, data.content);
+      reloadTree();
+      toast.success("Page duplicated");
+      navigate(`/p/${newPath}`);
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 409) {
         toast.error("A copy already exists at that path");
       } else {
         toast.error("Duplicate failed");
       }
-    } catch {
-      toast.error("Duplicate failed");
     }
   }, [filePath, navigate, reloadTree]);
 

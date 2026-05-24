@@ -2,15 +2,8 @@ import "react-diff-view/style/index.css";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Diff, Hunk, parseDiff } from "react-diff-view";
 import { Button } from "@/components/ui/button";
+import type { DiffData } from "@/lib/api";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface DiffData {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-  unifiedDiff: string;
-}
 
 interface CommitDiffDialogProps {
   open: boolean;
@@ -19,7 +12,7 @@ interface CommitDiffDialogProps {
   diffLoading: boolean;
 }
 
-export function CommitDiffDialog({
+export default function CommitDiffDialog({
   open,
   onOpenChange,
   diffData,
@@ -122,5 +115,3 @@ export function CommitDiffDialog({
     </Dialog>
   );
 }
-
-export type { DiffData };

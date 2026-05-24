@@ -1,4 +1,5 @@
 import type { PresenceUser, TreeNode } from "@/lib/types";
+import { getMe, getTree } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
 import { useWsListener, wsClient } from "@/store/ws";
 import NewPageDialog from "@/components/dialogs/new-page-dialog";
@@ -50,8 +51,7 @@ export default function AppShell(): JSX.Element {
   // Returns void so it's safe to pass as event handler or onCreated callback.
   const loadTree = useCallback(async (): Promise<void> => {
     try {
-      const res = await fetch("/api/tree");
-      const data = await (res.json() as Promise<TreeNode[]>);
+      const data = await getTree();
       setTree(data);
     } catch (error: unknown) {
       console.error("Failed to load file tree:", error);
@@ -62,11 +62,7 @@ export default function AppShell(): JSX.Element {
   useMountEffect(() => {
     void (async (): Promise<void> => {
       try {
-        const res = await fetch("/api/me");
-        const data = await (res.json() as Promise<{
-          instanceName?: string;
-          autoSaveDelay?: number;
-        }>);
+        const data = await getMe();
         if (data.instanceName) {
           setInstanceName(data.instanceName);
         }

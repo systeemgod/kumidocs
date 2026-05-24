@@ -1,17 +1,12 @@
 import { PageActionDialogs, ROOT } from "@/components/dialogs/page-action-dialogs";
+import { deleteFile, getTree, renameFile } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
 import type { PageOption } from "@/components/dialogs/page-action-dialogs";
+import type { TreeNode } from "@/lib/types";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-interface RawNode {
-  path: string;
-  type: string;
-  fileEntry?: { title?: string };
-  children?: RawNode[];
-}
-
-function flattenTree(nodes: RawNode[]): RawNode[] {
+function flattenTree(nodes: TreeNode[]): TreeNode[] {
   return nodes.flatMap((node) => (node.type === "dir" ? flattenTree(node.children ?? []) : [node]));
 }
 
@@ -71,8 +66,7 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     setMoveSlug(slug);
     setParentSearch("");
     try {
-      const res = await fetch("/api/tree");
-      const tree = (await res.json()) as RawNode[];
+      const tree = await getTree();
       // Flatten the nested tree into a flat list of file nodes
       const pages: PageOption[] = flattenTree(tree)
         .filter(({ path: pagePath }) => pagePath.endsWith(".md") && pagePath !== filePath)
@@ -101,16 +95,12 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     }
     const parent = moveParent === ROOT ? "" : moveParent;
     const toPath = parent ? `${parent}/${slug}.md` : `${slug}.md`;
-    const res = await fetch("/api/file/rename", {
-      body: JSON.stringify({ from: moveFrom, to: toPath }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-    if (res.ok) {
+    try {
+      await renameFile(moveFrom, toPath);
       toast.success("Page moved");
       reloadTree();
       navigate(`/p/${toPath}`);
-    } else {
+    } catch {
       toast.error("Move failed");
     }
     setMoveOpen(false);
@@ -128,14 +118,12 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
   }, []);
 
   const confirmDelete = useCallback(async () => {
-    const res = await fetch(`/api/file?path=${encodeURIComponent(deleteTarget)}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
+    try {
+      await deleteFile(deleteTarget);
       toast.success("Page deleted");
       reloadTree();
       navigate("/p/README.md");
-    } else {
+    } catch {
       toast.error("Delete failed");
     }
     setDeleteOpen(false);

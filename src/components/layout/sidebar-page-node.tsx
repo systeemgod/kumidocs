@@ -1,3 +1,4 @@
+import { ApiError, createFile, getFile } from "@/lib/api";
 import {
   ChevronDownRegular,
   ChevronRightRegular,
@@ -58,29 +59,17 @@ function PageNodeRow({
 
   const handleDuplicate = async (): Promise<void> => {
     try {
-      const res = await fetch(`/api/file?path=${encodeURIComponent(node.path)}`);
-      if (!res.ok) {
-        toast.error("Duplicate failed");
-        return;
-      }
-      const data = (await res.json()) as { content: string };
-      const base = node.path.replace(/\.md$/iu, "");
-      const newPath = `${base}-copy.md`;
-      const saveRes = await fetch("/api/file", {
-        body: JSON.stringify({ content: data.content, path: newPath }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-      if (saveRes.ok) {
-        toast.success("Page duplicated");
-        void navigate(`/p/${newPath}`);
-      } else if (saveRes.status === 409) {
+      const data = await getFile(node.path);
+      const newPath = `${node.path.replace(/\.md$/iu, "")}-copy.md`;
+      await createFile(newPath, data.content);
+      toast.success("Page duplicated");
+      void navigate(`/p/${newPath}`);
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 409) {
         toast.error("A copy already exists at that path");
       } else {
         toast.error("Duplicate failed");
       }
-    } catch {
-      toast.error("Duplicate failed");
     }
   };
 

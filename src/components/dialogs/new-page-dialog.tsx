@@ -1,3 +1,4 @@
+import { ApiError, createFile } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -62,23 +63,20 @@ export default function NewPageDialog({
     const slidesHeader = pageType === "slide" ? "---\nslides: true\n---\n\n" : "";
     const stub = `${slidesHeader}# ${title.trim()}\n`;
 
-    const res = await fetch("/api/file", {
-      body: JSON.stringify({ content: stub, path: finalPath }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-
-    setCreating(false);
-
-    if (res.ok) {
+    try {
+      await createFile(finalPath, stub);
       toast.success("Page created");
       onCreated?.();
       onClose();
       navigate(`/p/${finalPath}`);
-    } else if (res.status === 409) {
-      toast.error("A page at that path already exists.");
-    } else {
-      toast.error("Failed to create page");
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.status === 409) {
+        toast.error("A page at that path already exists.");
+      } else {
+        toast.error("Failed to create page");
+      }
+    } finally {
+      setCreating(false);
     }
   }, [title, slug, slugEdited, pageType, finalPath, navigate, onCreated, onClose]);
 

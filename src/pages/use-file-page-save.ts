@@ -1,3 +1,4 @@
+import { ApiError, getFile, putFile } from "@/lib/api";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useRef, useState } from "react";
@@ -75,16 +76,7 @@ function useFilePageSave({
       setLoading(true);
       setNotFound(false);
       try {
-        const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
-        if (res.status === 404) {
-          setNotFound(true);
-          setLoading(false);
-          return;
-        }
-        const data = (await res.json()) as {
-          content: string;
-          sha: string;
-        };
+        const data = await getFile(path);
         const parsed = parseFrontmatter(data.content);
         setContent(parsed.content);
         setRawContent(data.content);
@@ -94,6 +86,12 @@ function useFilePageSave({
         setLastSha(data.sha);
         setSaveStatus("saved");
         setEditMode(false);
+      } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 404) {
+          setNotFound(true);
+        } else {
+          throw error;
+        }
       } finally {
         setLoading(false);
       }
@@ -131,38 +129,28 @@ function useFilePageSave({
           : buildFrontmatter(metaRef.current) + currentContent;
 
         try {
-          const res = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`, {
-            body: JSON.stringify({ content: fullContent }),
-            headers: { "Content-Type": "application/json" },
-            method: "PUT",
-          });
-          if (res.ok) {
-            const data = (await res.json()) as { sha: string; pushWarning?: boolean };
-            if (isRaw) {
-              const parsed = parseFrontmatter(currentContent);
-              setContent(parsed.content);
-              setSavedContent(parsed.content);
-              savedContentRef.current = parsed.content;
-              setMeta(parsed.data);
-              metaRef.current = parsed.data;
-            } else {
-              setSavedContent(currentContent);
-              savedContentRef.current = currentContent;
-            }
-            isDirtyRef.current = false;
-            setSaveStatus("saved");
-            setLastSha(data.sha);
-            reloadTree();
-            if (data.pushWarning) {
-              toast.warning("Saved locally. Remote push failed — check git remote config.");
-            }
+          const data = await putFile(filePath, fullContent);
+          if (isRaw) {
+            const parsed = parseFrontmatter(currentContent);
+            setContent(parsed.content);
+            setSavedContent(parsed.content);
+            savedContentRef.current = parsed.content;
+            setMeta(parsed.data);
+            metaRef.current = parsed.data;
           } else {
-            setSaveStatus("error");
-            toast.error("Save failed.");
+            setSavedContent(currentContent);
+            savedContentRef.current = currentContent;
           }
-        } catch {
+          isDirtyRef.current = false;
+          setSaveStatus("saved");
+          setLastSha(data.sha);
+          reloadTree();
+          if (data.pushWarning) {
+            toast.warning("Saved locally. Remote push failed — check git remote config.");
+          }
+        } catch (error: unknown) {
           setSaveStatus("error");
-          toast.error("Save failed — network error.");
+          toast.error(error instanceof ApiError ? "Save failed." : "Save failed — network error.");
         }
       })();
       savePromiseRef.current = next;
