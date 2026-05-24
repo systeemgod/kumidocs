@@ -33,7 +33,7 @@ async function apiFileHistory(url: URL, config: Config): Promise<Response> {
       return {
         added,
         author: commit.author,
-        authorEmail: commit.author,
+        authorEmail: commit.authorEmail,
         date: commit.date,
         fullSha: commit.fullSha,
         message: commit.message,

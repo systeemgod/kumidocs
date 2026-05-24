@@ -247,6 +247,7 @@ interface CommitEntry {
   fullSha: string;
   message: string;
   author: string;
+  authorEmail: string;
   date: string;
 }
 
@@ -255,6 +256,7 @@ async function gitFileLog(config: Config, filepath: string, limit = 50): Promise
   const commits = await git.log({ depth: limit, dir: config.repoPath, filepath, fs });
   return commits.map((commit) => ({
     author: commit.commit.author.name,
+    authorEmail: commit.commit.author.email,
     date: new Date(commit.commit.author.timestamp * 1000).toISOString(),
     fullSha: commit.oid,
     message: commit.commit.message.trim(),
