@@ -175,14 +175,14 @@ function wsClose(ws: ServerWebSocket<WsData>): void {
 // Called from the background pull loop after repo advances
 function broadcastPageChanged(
   pageId: string,
-  commitSha: string,
+  commitSha: string | undefined,
   changedBy: string,
   changedByName: string,
 ): void {
   const msg: WsServerMessage = {
     changedBy,
     changedByName,
-    commitSha,
+    ...(commitSha !== undefined && { commitSha }),
     pageId,
     type: "page_changed",
   };

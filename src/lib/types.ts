@@ -59,7 +59,7 @@ type WsServerMessage =
   | {
       type: "page_changed";
       pageId: string;
-      commitSha: string;
+      commitSha?: string;
       changedBy: string;
       changedByName: string;
     }

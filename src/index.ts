@@ -89,7 +89,7 @@ watch(config.repoPath, { recursive: true }, (_event, filename) => {
         updateInIndex(relPath);
         // Skip broadcast for writes originated by this server process
         if (!consumeWritten(relPath)) {
-          broadcastPageChanged(relPath, "", "disk", "Local");
+          broadcastPageChanged(relPath, undefined, "disk", "Local");
         }
       } else {
         removeFromCache(relPath);
