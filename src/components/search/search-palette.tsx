@@ -93,7 +93,7 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
         try {
           const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
           if (!res.ok) {
-            process.stderr.write(`Search HTTP ${String(res.status)}\n`);
+            console.error(`Search HTTP ${String(res.status)}`);
             setLoading(false);
             return;
           }

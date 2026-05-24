@@ -48,7 +48,7 @@ class WsClient {
           listener(msg);
         }
       } catch (error: unknown) {
-        process.stderr.write(`WebSocket message parse error: ${String(error)}\n`);
+        console.error("WebSocket message parse error:", error);
       }
     });
 
