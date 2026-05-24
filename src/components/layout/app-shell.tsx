@@ -47,6 +47,8 @@ export default function AppShell(): JSX.Element {
   // Keep a ref so the stable mousemove closure always reads the live drag-start values
   const dragStartRef = useRef(undefined as { startX: number; width: number } | undefined);
 
+  const treeReloadTimer = useRef<ReturnType<typeof setTimeout>>();
+
   // Reload full file tree for sidebar.
   // Returns void so it's safe to pass as event handler or onCreated callback.
   const loadTree = useCallback(async (): Promise<void> => {
@@ -57,6 +59,15 @@ export default function AppShell(): JSX.Element {
       console.error("Failed to load file tree:", error);
     }
   }, []);
+
+  // Debounced variant — coalesces burst WS events (e.g. multi-file git pull)
+  // into a single /api/tree fetch 200 ms after the last event.
+  const scheduleTreeReload = useCallback((): void => {
+    clearTimeout(treeReloadTimer.current);
+    treeReloadTimer.current = setTimeout((): void => {
+      void loadTree();
+    }, 200);
+  }, [loadTree]);
 
   // Load user/instance info
   useMountEffect(() => {
@@ -102,7 +113,7 @@ export default function AppShell(): JSX.Element {
       });
     }
     if (msg.type === "page_created" || msg.type === "page_changed" || msg.type === "page_deleted") {
-      loadTree();
+      scheduleTreeReload();
     }
   });
 
