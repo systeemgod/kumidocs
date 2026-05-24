@@ -7,6 +7,28 @@ import type { User } from "@/lib/types";
 import isSafePath from "./api-utils";
 import { mkdir } from "node:fs/promises";
 
+/**
+ * Strip executable content from SVG text to prevent stored XSS.
+ * Removes: <script> elements, <foreignObject> elements, on* event attributes,
+ * and javascript: URI values in href / xlink:href / action attributes.
+ */
+function sanitizeSvg(raw: string): string {
+  return raw
+    // <script> blocks (any content, including CDATA)
+    .replaceAll(/<script[\s\S]*?<\/script\s*>/giu, "")
+    // self-closing <script ... />
+    .replaceAll(/<script[^>]*\/>/giu, "")
+    // <foreignObject> blocks (can embed arbitrary HTML/JS)
+    .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
+    // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
+    .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
+    // javascript: URIs in href, xlink:href, action, src
+    .replaceAll(
+      /((?:xlink:)?href|action|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/giu,
+      "",
+    );
+}
+
 async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
@@ -35,13 +57,20 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
   }
 
   const bytes = await file.arrayBuffer();
-  const sha256 = new Bun.CryptoHasher("sha256").update(bytes).digest("hex");
+  const isSvg = ext === ".svg";
+
+  // Sanitize SVG content to strip executable payloads before storing
+  const finalBytes = isSvg
+    ? new TextEncoder().encode(sanitizeSvg(new TextDecoder().decode(bytes)))
+    : bytes;
+
+  const sha256 = new Bun.CryptoHasher("sha256").update(finalBytes).digest("hex");
   const filename = `${sha256}${ext}`;
   const repoPath = `images/${filename}`;
   const fullPath = join(config.repoPath, repoPath);
 
   await mkdir(join(config.repoPath, "images"), { recursive: true });
-  await Bun.write(fullPath, bytes);
+  await Bun.write(fullPath, finalBytes);
   addToCache(repoPath, "");
 
   const msg = `docs: upload image ${filename} by ${user.displayName}`;
