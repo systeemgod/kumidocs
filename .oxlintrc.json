@@ -15,7 +15,6 @@
     "eslint/func-style": "off",
     "eslint/init-declarations": "off",
     "eslint/max-lines-per-function": "off",
-
     "eslint/max-params": "off",
     "eslint/max-statements": "off",
     "eslint/new-cap": "off",
