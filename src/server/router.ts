@@ -116,16 +116,6 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
       },
     },
 
-    "/api/headers": {
-      GET(req: Request) {
-        const headers: Record<string, string> = {};
-        for (const [key, value] of req.headers) {
-          headers[key] = value;
-        }
-        return Response.json(headers);
-      },
-    },
-
     "/api/images": {
       GET(req: Request) {
         const user = requireUser(req);
