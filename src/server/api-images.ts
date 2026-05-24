@@ -7,28 +7,6 @@ import type { User } from "@/lib/types";
 import isSafePath from "./api-utils";
 import { mkdir } from "node:fs/promises";
 
-/**
- * Strip executable content from SVG text to prevent stored XSS.
- * Removes: <script> elements, <foreignObject> elements, on* event attributes,
- * and javascript: URI values in href / xlink:href / action attributes.
- */
-function sanitizeSvg(raw: string): string {
-  return raw
-    // <script> blocks (any content, including CDATA)
-    .replaceAll(/<script[\s\S]*?<\/script\s*>/giu, "")
-    // self-closing <script ... />
-    .replaceAll(/<script[^>]*\/>/giu, "")
-    // <foreignObject> blocks (can embed arbitrary HTML/JS)
-    .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
-    // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
-    .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
-    // javascript: URIs in href, xlink:href, action, src
-    .replaceAll(
-      /((?:xlink:)?href|action|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/giu,
-      "",
-    );
-}
-
 async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
@@ -57,20 +35,13 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
   }
 
   const bytes = await file.arrayBuffer();
-  const isSvg = ext === ".svg";
-
-  // Sanitize SVG content to strip executable payloads before storing
-  const finalBytes = isSvg
-    ? new TextEncoder().encode(sanitizeSvg(new TextDecoder().decode(bytes)))
-    : bytes;
-
-  const sha256 = new Bun.CryptoHasher("sha256").update(finalBytes).digest("hex");
+  const sha256 = new Bun.CryptoHasher("sha256").update(bytes).digest("hex");
   const filename = `${sha256}${ext}`;
   const repoPath = `images/${filename}`;
   const fullPath = join(config.repoPath, repoPath);
 
   await mkdir(join(config.repoPath, "images"), { recursive: true });
-  await Bun.write(fullPath, finalBytes);
+  await Bun.write(fullPath, bytes);
   addToCache(repoPath, "");
 
   const msg = `docs: upload image ${filename} by ${user.displayName}`;
@@ -161,8 +132,31 @@ async function apiImageDelete(filename: string, user: User, config: Config): Pro
   return Response.json({ ok: true });
 }
 
+/**
+ * Strip executable content from SVG text before serving.
+ * Applied at response time so stored files are never modified.
+ * Removes: <script> elements, <foreignObject> elements, on* event attributes,
+ * and javascript: URI values in href / xlink:href / action / src attributes.
+ */
+function sanitizeSvg(raw: string): string {
+  return raw
+    // <script> blocks (any content, including CDATA)
+    .replaceAll(/<script[\s\S]*?<\/script\s*>/giu, "")
+    // self-closing <script ... />
+    .replaceAll(/<script[^>]*\/>/giu, "")
+    // <foreignObject> blocks (can embed arbitrary HTML/JS)
+    .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
+    // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
+    .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
+    // javascript: URIs in href, xlink:href, action, src
+    .replaceAll(
+      /((?:xlink:)?href|action|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/giu,
+      "",
+    );
+}
+
 // GET /images/:filename
-function serveRepoAsset(assetPath: string, config: Config): Response {
+async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
   if (!isSafePath(config.repoPath, assetPath)) {
     return new Response("Forbidden", { status: 403 });
   }
@@ -180,16 +174,31 @@ function serveRepoAsset(assetPath: string, config: Config): Response {
   const ext = extname(assetPath).toLowerCase();
   const mime = MIME[ext] ?? "application/octet-stream";
 
-  try {
-    return new Response(Bun.file(fullPath), {
-      headers: {
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Type": mime,
-      },
-    });
-  } catch {
+  const bunFile = Bun.file(fullPath);
+  if (!(await bunFile.exists())) {
     return new Response("Not found", { status: 404 });
   }
+
+  // SVGs are sanitized in-memory at serve time so stored files are never mutated.
+  // A restrictive CSP provides defence-in-depth in case the sanitizer misses anything.
+  if (ext === ".svg") {
+    const raw = await bunFile.text();
+    const sanitized = sanitizeSvg(raw);
+    return new Response(sanitized, {
+      headers: {
+        "Cache-Control": "public, max-age=3600",
+        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+        "Content-Type": "image/svg+xml",
+      },
+    });
+  }
+
+  return new Response(bunFile, {
+    headers: {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Content-Type": mime,
+    },
+  });
 }
 
 // GET /api/avatar/:hash — proxies Gravatar so the client never contacts Gravatar directly.

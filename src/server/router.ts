@@ -188,13 +188,13 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/images/:filename": {
-      GET(req: Request) {
+      async GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         const filename = decodeURIComponent(new URL(req.url).pathname.slice("/images/".length));
-        return serveRepoAsset(`images/${filename}`, config);
+        return await serveRepoAsset(`images/${filename}`, config);
       },
     },
   };
