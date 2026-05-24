@@ -2,7 +2,9 @@ import type { Dispatch, SetStateAction } from "react";
 import useMountEffect from "./use-mount-effect";
 import { useState } from "react";
 
-export default function useInfoPanel(filePath: string): [boolean, Dispatch<SetStateAction<boolean>>] {
+export default function useInfoPanel(
+  filePath: string,
+): [boolean, Dispatch<SetStateAction<boolean>>] {
   const [infoOpen, setInfoOpen] = useState(
     () => localStorage.getItem("kumidocs:info-open") === "true",
   );
