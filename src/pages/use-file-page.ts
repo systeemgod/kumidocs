@@ -5,17 +5,18 @@ import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { computeTitle, resolveFileType } from "./file-page-utils";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { useWsListener, wsClient } from "@/store/ws";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import type { SaveStatus } from "./use-file-page-save";
 import type { SlideThemeMap } from "@/lib/slide";
 import { pathExtension } from "@/lib/filetypes";
 import { toast } from "sonner";
 import { useFilePageSave } from "./use-file-page-save";
-import useMountEffect from "@/hooks/use-mount-effect";
+import useInfoPanel from "@/hooks/use-info-panel";
 import usePageActions from "@/hooks/use-page-actions";
 import usePagePdfExport from "./use-page-pdf-export";
+import usePagePresence from "@/hooks/use-page-presence";
 import { useUser } from "@/store/user";
+import { wsClient } from "@/store/ws";
 
 interface OutletCtx {
   autoSaveDelay: number;
@@ -87,88 +88,17 @@ function useFilePage(): UseFilePageReturn {
     setMeta,
   } = useFilePageSave({ autoSaveDelay, filePath, reloadTree, setEditMode });
 
-  const [editLocked, setEditLocked] = useState<PresenceUser | undefined>();
-  const [viewers, setViewers] = useState<PresenceUser[]>([]);
-  const [infoOpen, setInfoOpen] = useState(
-    () => localStorage.getItem("kumidocs:info-open") === "true",
-  );
-  const [remoteBanner, setRemoteBanner] = useState<string | undefined>();
-
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
-
+  const [infoOpen, setInfoOpen] = useInfoPanel(filePath);
   const editModeRef = useRef(editMode);
   editModeRef.current = editMode;
-
-  useMountEffect(() => {
-    const handler = (ev: Event): void => {
-      const detail = (ev as CustomEvent<string>).detail;
-      if (detail === filePath) {
-        setInfoOpen((prev) => {
-          const next = !prev;
-          if (next) {
-            localStorage.setItem("kumidocs:info-open", "true");
-          } else {
-            localStorage.removeItem("kumidocs:info-open");
-          }
-          return next;
-        });
-      }
-    };
-    window.addEventListener("kumidocs:open-info", handler);
-    return (): void => {
-      window.removeEventListener("kumidocs:open-info", handler);
-    };
-  });
-
-  useMountEffect(() => {
-    if (user) {
-      wsClient.joinPage(filePath);
-    }
-    return (): void => {
-      if (editModeRef.current) {
-        wsClient.stopEditing(filePath);
-      }
-      wsClient.leavePage();
-    };
-  });
-
-  useWsListener((msg) => {
-    if (msg.type === "presence_update" && msg.pageId === filePath) {
-      setViewers(msg.viewers);
-      setEditLocked(msg.editor);
-    }
-    if (msg.type === "page_changed" && msg.pageId === filePath) {
-      if (msg.changedBy === user?.id) {
-        return;
-      }
-      if (isDirtyRef.current) {
-        setRemoteBanner(`${msg.changedByName} saved this page remotely`);
-      } else {
-        void (async (): Promise<void> => {
-          try {
-            await loadDoc(filePath);
-          } catch (error: unknown) {
-            console.error("Failed to reload document after remote change:", error);
-          }
-        })();
-        toast.info(`Page updated by ${msg.changedByName}`);
-      }
-    }
-    if (msg.type === "page_deleted" && msg.pageId === filePath) {
-      toast.warning("This page was deleted");
-      navigate("/p/README.md");
-    }
-    if (msg.type === "save_conflict_lost" && msg.pageId === filePath) {
-      toast.error("Your changes were lost due to a remote conflict.");
-      void (async (): Promise<void> => {
-        try {
-          await loadDoc(filePath);
-        } catch (error: unknown) {
-          console.error("Failed to reload document after conflict:", error);
-        }
-      })();
-    }
-  });
+  const { editLocked, viewers, remoteBanner, setRemoteBanner } = usePagePresence(
+    filePath,
+    user?.id,
+    editModeRef,
+    isDirtyRef,
+    loadDoc,
+  );
   const rawExt = pathExtension(filePath);
   const fileType = resolveFileType(rawExt, meta.slides);
   const title = computeTitle(fileType, content, filePath);
