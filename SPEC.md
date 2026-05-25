@@ -67,7 +67,6 @@ images/                → uploaded images (SHA256.ext naming)
 ```yaml
 ---
 emoji: 📄 # sidebar/tab icon (optional)
-description: ... # shown in search results
 slides: true # marks file as slide deck
 theme: corporate # deck-level theme (built-in or .kumidocs.json key); default: 'default'
 paginate: true # show N/total badge on each slide
@@ -358,7 +357,7 @@ All headings/body: `color: inherit`. Prose forced to `var(--slide-fg)` on canvas
 
 ## 12. Search
 
-MiniSearch, server-side index. Fields: `title`, `path`, `content` (md stripped), `description`. Updated after every commit. `GET /api/search?q=` → `[{path, title, emoji, snippet, score}]`. Ctrl+K palette.
+MiniSearch, server-side index. Fields: `title`, `path`, `content` (md stripped). Updated after every commit. `GET /api/search?q=` → `[{path, title, emoji, snippet, score}]`. Ctrl+K palette.
 
 ---
 
