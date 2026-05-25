@@ -142,7 +142,8 @@ async function gitStageAndCommitNative(
     const push = await pushWithRetryNative(config, sha);
     return { ...push, committed: true };
   } catch (error) {
-    return { error: String(error), sha: await getHeadShaNative(config) };
+    const sha = await getHeadShaNative(config).catch(() => "unknown");
+    return { error: String(error), sha };
   }
 }
 
@@ -167,14 +168,15 @@ async function gitMoveAndCommitNative(
   authorEmail: string,
   extraMoves?: { from: string; to: string }[],
 ): Promise<{ sha: string; error?: string }> {
-  // Files are already moved on disk — stage each pair: add new path, rm old from index
+  // Files are already moved on disk — stage each pair: add new path, rm old from index.
+  // Sequential execution is required: git locks .git/index between operations.
   const allMoves = [{ from, to }, ...(extraMoves ?? [])];
-  await Promise.all(
-    allMoves.flatMap((move) => [
-      runGit(config.repoPath, ["add", "--", move.to]),
-      runGit(config.repoPath, ["rm", "--cached", "--", move.from]),
-    ]),
-  );
+  for (const move of allMoves) {
+    // oxlint-disable-next-line no-await-in-loop
+    await runGit(config.repoPath, ["add", "--", move.to]);
+    // oxlint-disable-next-line no-await-in-loop
+    await runGit(config.repoPath, ["rm", "--cached", "--", move.from]);
+  }
   return gitStageAndCommitNative(config, [], message, authorName, authorEmail);
 }
 

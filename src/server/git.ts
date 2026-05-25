@@ -1,8 +1,4 @@
-import {
-  fetchAndRebaseBuiltin,
-  gitPullBuiltin,
-  stageAndCommitBuiltin,
-} from "./git-builtin";
+import { fetchAndRebaseBuiltin, gitPullBuiltin, stageAndCommitBuiltin } from "./git-builtin";
 import {
   getHeadShaNative,
   gitBlobAtNative,
@@ -13,6 +9,7 @@ import {
   gitRemoveAndCommitNative,
   gitStageAndCommitNative,
 } from "./git-cmd";
+import type { CommitEntry } from "@/lib/types";
 import type { Config } from "./config";
 import { promises as fs } from "node:fs";
 import git from "isomorphic-git";
@@ -131,15 +128,6 @@ async function getHeadSha(config: Config): Promise<string> {
   } catch {
     return "unknown";
   }
-}
-
-interface CommitEntry {
-  sha: string; // short (7-char)
-  fullSha: string;
-  message: string;
-  author: string;
-  authorEmail: string;
-  date: string;
 }
 
 /** Return commits that touched `filepath`, most recent first. */

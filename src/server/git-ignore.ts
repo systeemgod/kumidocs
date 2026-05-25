@@ -16,7 +16,9 @@ function loadGlobalGitignore(): string | undefined {
     if (result.status === 0) {
       const configPath = result.stdout.trim();
       // Expand ~ manually since spawnSync doesn't run through a shell
-      const expanded = configPath.startsWith("~/") ? join(homedir(), configPath.slice(2)) : configPath;
+      const expanded = configPath.startsWith("~/")
+        ? join(homedir(), configPath.slice(2))
+        : configPath;
       if (expanded && existsSync(expanded)) {
         return readFileSync(expanded, "utf8");
       }
