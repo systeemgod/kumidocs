@@ -1,6 +1,5 @@
 ---
 emoji: 📚
-description: Official KumiDocs user documentation — everything you need to know to write pages, build slide decks, and collaborate with your team.
 ---
 
 # KumiDocs Documentation
@@ -33,7 +32,6 @@ Create a file `my-first-page.md` in your repo:
 ```markdown
 ---
 emoji: 🚀
-description: A quick demo page.
 ---
 
 # My First Page

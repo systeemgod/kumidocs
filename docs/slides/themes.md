@@ -3,7 +3,6 @@ slides: true
 theme: default
 paginate: true
 emoji: 🎨
-description: Live demo of all five built-in KumiDocs slide themes — default, dark, corporate, minimal, and gradient.
 ---
 
 <!-- class: title -->

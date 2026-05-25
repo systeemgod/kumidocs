@@ -1,6 +1,5 @@
 ---
 emoji: 👥
-description: Real-time collaboration in KumiDocs — edit locking, presence indicators, live reload, conflict resolution, and Git push behaviour.
 ---
 
 # Collaboration

@@ -1,6 +1,5 @@
 ---
 emoji: 🚀
-description: Install, configure, and run your first KumiDocs instance in minutes.
 ---
 
 # Getting Started

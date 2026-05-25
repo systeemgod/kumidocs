@@ -3,7 +3,6 @@ slides: true
 theme: minimal
 paginate: true
 emoji: 💬
-description: Live demo of per-slide directives — class, bg, and color — that let you override individual slides without changing the deck theme.
 ---
 
 <!-- class: title -->

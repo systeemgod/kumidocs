@@ -1,6 +1,5 @@
 ---
 emoji: ⚙️
-description: Complete reference for KumiDocs environment variables, .kumidocs.json settings, and Docker Compose configuration.
 ---
 
 # Configuration

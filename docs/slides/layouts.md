@@ -3,7 +3,6 @@ slides: true
 theme: corporate
 paginate: true
 emoji: 🗂️
-description: Live demo of all six KumiDocs slide layout classes — title, section, center, split, blank, and invert. Open this page to see each layout in action.
 ---
 
 <!-- class: title -->

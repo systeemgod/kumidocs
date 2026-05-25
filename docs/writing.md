@@ -1,6 +1,5 @@
 ---
 emoji: ✏️
-description: Complete guide to writing KumiDocs pages — frontmatter, Markdown syntax, images, tables, code blocks, and callouts.
 ---
 
 # Writing Pages
@@ -14,7 +13,6 @@ Add a frontmatter block at the top of any page to set metadata:
 ```yaml
 ---
 emoji: 🚀
-description: Shown in search results and page previews.
 slides: true        # turn this page into a slide deck
 theme: corporate    # slide deck theme (slides only)
 paginate: true      # show slide numbers (slides only)

@@ -1,6 +1,5 @@
 ---
 emoji: 🖌️
-description: Define custom slide themes in .kumidocs.json — branded backgrounds, overlay elements, per-layout overrides, and template variables.
 ---
 
 # Custom Slide Themes

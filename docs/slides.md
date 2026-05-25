@@ -1,6 +1,5 @@
 ---
 emoji: 🎬
-description: Build slide presentations from Markdown. Learn frontmatter settings, layouts, directives, themes, and PDF export.
 ---
 
 # Slide Decks
@@ -150,7 +149,6 @@ slides: true
 theme: corporate
 paginate: true
 emoji: 📊
-description: Q3 results presentation
 ---
 
 <!-- class: title -->
