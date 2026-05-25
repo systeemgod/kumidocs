@@ -4,7 +4,6 @@ import { gitRemoveAndCommit, gitStageAndCommit } from "./git";
 import type { Config } from "./config";
 import { IMAGE_TYPES } from "@/lib/filetypes";
 import type { User } from "@/lib/types";
-import isSafePath from "./api-utils";
 import { mkdir } from "node:fs/promises";
 
 async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
@@ -159,11 +158,13 @@ function sanitizeSvg(raw: string): string {
 
 // GET /images/:filename
 async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
-  if (!isSafePath(config.repoPath, assetPath)) {
+  const imagesDir = resolve(config.repoPath, "images");
+  const fullPath = resolve(config.repoPath, assetPath);
+  // Restrict to the images/ subdirectory — isSafePath alone only prevents escaping
+  // repoPath, so a crafted path like 'images/../.env' would otherwise be served.
+  if (!fullPath.startsWith(`${imagesDir}/`)) {
     return new Response("Forbidden", { status: 403 });
   }
-
-  const fullPath = resolve(config.repoPath, assetPath);
   const MIME: Record<string, string> = {
     ".gif": "image/gif",
     ".jpeg": "image/jpeg",

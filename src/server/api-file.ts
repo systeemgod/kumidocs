@@ -195,6 +195,12 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
   if (from === to) {
     return Response.json({ from, sha: undefined, to });
   }
+  if (getFile(from) === undefined) {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
+  if (getFile(to) !== undefined) {
+    return Response.json({ error: "Destination already exists" }, { status: 409 });
+  }
 
   // Collect all files that must move: the page itself plus any sub-pages living
   // under the matching directory (e.g. "docs.md" → also move all "docs/*").
