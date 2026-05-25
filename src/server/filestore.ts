@@ -154,7 +154,6 @@ function parseFileEntry(path: string): FileEntry {
   let type: FileEntry["type"] = extensionToType(ext);
   let title = titleFromName;
   let emoji: string | undefined;
-  let description: string | undefined;
 
   if (ext === "md") {
     type = "doc";
@@ -171,15 +170,12 @@ function parseFileEntry(path: string): FileEntry {
       if (parsed.data.slides === true) {
         type = "slide";
       }
-      if (typeof parsed.data.description === "string" && parsed.data.description.trim()) {
-        description = parsed.data.description.trim();
-      }
     } catch (error: unknown) {
       console.warn("Failed to parse frontmatter:", error);
     }
   }
 
-  return { description, emoji, path, title, type };
+  return { emoji, path, title, type };
 }
 
 // Build file tree for /api/tree

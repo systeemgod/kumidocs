@@ -8,7 +8,6 @@ interface DocEntry {
   path: string;
   title: string;
   emoji?: string;
-  description?: string;
   type: string;
   content: string;
 }
@@ -22,13 +21,9 @@ function buildDocs(paths: string[]): DocEntry[] {
       const { title, emoji, type } = parseFileEntry(path);
 
       let body = getFile(path) ?? "";
-      let description: string | undefined;
       try {
         const parsed = matter(body);
         body = parsed.content;
-        if (typeof parsed.data.description === "string" && parsed.data.description.trim()) {
-          description = parsed.data.description.trim();
-        }
       } catch {
         // keep raw content if frontmatter parse fails
       }
@@ -42,7 +37,7 @@ function buildDocs(paths: string[]): DocEntry[] {
         .replaceAll(/\s+/gu, " ")
         .trim();
 
-      return { content: stripped, description, emoji, id: path, path, title, type };
+      return { content: stripped, emoji, id: path, path, title, type };
     });
 }
 
@@ -60,13 +55,13 @@ function rebuildIndex(): void {
 
 function initSearch(): void {
   index = new MiniSearch<DocEntry>({
-    fields: ["title", "content", "path", "description"],
+    fields: ["title", "content", "path"],
     searchOptions: {
       boost: { title: 3 },
       fuzzy: 0.2,
       prefix: true,
     },
-    storeFields: ["title", "path", "emoji", "description", "type"],
+    storeFields: ["title", "path", "emoji", "type"],
   });
   rebuildIndex();
 }
@@ -104,9 +99,13 @@ function removeFromIndex(path: string): void {
 
 function buildSnippet(path: string, query: string): string {
   const content = getFile(path) ?? "";
-  const body = content.replace(/^---[\s\S]*?---\n/u, "");
-  const word = query.split(" ")[0]?.toLowerCase() ?? "";
-  const idx = body.toLowerCase().indexOf(word);
+  const body = content.replace(/^---[\s\S]*?---\r?\n/u, "");
+  const lowerBody = body.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const idx =
+    lowerBody.indexOf(lowerQuery) !== -1
+      ? lowerBody.indexOf(lowerQuery)
+      : lowerBody.indexOf(query.split(" ")[0]?.toLowerCase() ?? "");
   if (idx === -1) {
     return `${body.replaceAll("\n", " ").slice(0, 140)}…`;
   }
@@ -127,7 +126,6 @@ function searchDocs(query: string, limit = 20): SearchResult[] {
     index.search(query) as unknown as (Record<string, unknown> & { score: number })[]
   ).slice(0, limit);
   return results.map((result) => ({
-    description: result.description as string | undefined,
     emoji: result.emoji as string | undefined,
     path: result.path as string,
     score: result.score,
