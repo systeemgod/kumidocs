@@ -1,0 +1,182 @@
+---
+emoji: ⚙️
+description: Complete reference for KumiDocs environment variables, .kumidocs.json settings, and Docker Compose configuration.
+---
+
+# Configuration
+
+KumiDocs is configured through environment variables and a `.kumidocs.json` file in your repo root.
+
+## Environment Variables
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `KUMIDOCS_REPO_PATH` | _(required)_ | Absolute path to the Git repository |
+| `KUMIDOCS_PORT` | `5864` | HTTP port to listen on |
+| `KUMIDOCS_AUTH_HEADER` | `X-Auth-Request-User` | Header name that carries the user identity (email or JWT) |
+| `KUMIDOCS_AUTO_SAVE_DELAY` | `5000` | Debounce delay in milliseconds before auto-save fires |
+| `KUMIDOCS_INSTANCE_NAME` | `KumiDocs` | Name shown in the top bar |
+| `KUMIDOCS_PULL_INTERVAL` | `60000` | Milliseconds between background `git pull --rebase` operations |
+| `KUMIDOCS_GIT_IMPL` | `native` | Git backend: `native` (subprocess) or `builtin` (isomorphic-git) |
+
+### KUMIDOCS_AUTH_HEADER
+
+KumiDocs reads the user identity from this HTTP header on every request. The value can be:
+
+- A plain email address: `alice@example.com`
+- A JWT token with an `email` or `preferred_username` claim
+
+If the header is missing or unparseable, KumiDocs returns HTTP 401.
+
+In production, set this to whatever header your SSO proxy injects (e.g. `X-Auth-Request-User` for oauth2-proxy, `X-Forwarded-Email` for Authelia).
+
+### KUMIDOCS_GIT_IMPL
+
+| Value | Description |
+| --- | --- |
+| `native` | Runs `git` as a subprocess. Requires `git` to be installed. Supports SSH keys and all credential helpers configured on the host. Default. |
+| `builtin` | Uses isomorphic-git (pure JS). No `git` binary needed. Useful in restricted environments. Note: uses merge instead of rebase for conflict resolution. |
+
+## .kumidocs.json
+
+Place this file in the root of your repository. KumiDocs re-reads it after every background pull — changes take effect without restarting.
+
+```json
+{
+  "instanceName": "My Team Wiki",
+  "editors": [
+    "alice@example.com",
+    "bob@example.com"
+  ],
+  "slideThemes": {
+    "my-brand": {
+      "bg": "#0f172a",
+      "fg": "#f8fafc"
+    }
+  }
+}
+```
+
+| Key | Type | Description |
+| --- | --- | --- |
+| `instanceName` | string | Overrides `KUMIDOCS_INSTANCE_NAME` |
+| `editors` | string[] | Email addresses allowed to edit. All authenticated users can view. |
+| `slideThemes` | object | Custom slide theme definitions — see [Custom Themes](docs/slides/custom-themes) |
+
+### editors
+
+Any authenticated user can **view** pages. Only users listed in `editors` can **edit** pages, upload images, create pages, delete pages, or move pages.
+
+```json
+{
+  "editors": ["alice@example.com", "bob@example.com"]
+}
+```
+
+To allow all authenticated users to edit, set `editors` to an empty array `[]` or omit the key entirely.
+
+## Docker Compose
+
+### Basic Setup
+
+```yaml
+services:
+  kumidocs:
+    image: oven/bun:latest
+    working_dir: /app
+    command: bunx kumidocs
+    environment:
+      KUMIDOCS_REPO_PATH: /repo
+      KUMIDOCS_INSTANCE_NAME: My Team Wiki
+    volumes:
+      - /path/to/your/repo:/repo
+      - /path/to/your/ssh:/root/.ssh:ro
+    ports:
+      - "5864:5864"
+    restart: unless-stopped
+```
+
+Mount your SSH keys read-only so KumiDocs can push to a remote repository.
+
+### With OAuth2 SSO Proxy
+
+```yaml
+services:
+  kumidocs:
+    image: oven/bun:latest
+    working_dir: /app
+    command: bunx kumidocs
+    environment:
+      KUMIDOCS_REPO_PATH: /repo
+      KUMIDOCS_AUTH_HEADER: X-Auth-Request-User
+    volumes:
+      - /path/to/your/repo:/repo
+      - /path/to/your/ssh:/root/.ssh:ro
+    # No external port — only reachable via the proxy
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    command:
+      - --provider=github
+      - --upstream=http://kumidocs:5864
+      - --http-address=0.0.0.0:4180
+      - --email-domain=yourcompany.com
+    environment:
+      OAUTH2_PROXY_CLIENT_ID: your-github-oauth-app-client-id
+      OAUTH2_PROXY_CLIENT_SECRET: your-github-oauth-app-client-secret
+      OAUTH2_PROXY_COOKIE_SECRET: a-random-32-char-secret
+      OAUTH2_PROXY_COOKIE_DOMAIN: wiki.yourcompany.com
+      OAUTH2_PROXY_COOKIE_SECURE: "true"
+    ports:
+      - "4180:4180"
+```
+
+Place a reverse proxy (nginx, Caddy, Traefik) in front of oauth2-proxy to terminate TLS.
+
+## File Layout
+
+KumiDocs manages these paths inside your repository:
+
+```
+README.md           → Home page (shown at /)
+.kumidocs.json      → Config (never shown in sidebar, never served via API)
+images/             → Uploaded images (SHA256.ext naming)
+**/*.md             → Doc pages and slide decks
+**/*.{ts,js,...}    → Code files (viewed at /code/<path>)
+```
+
+Files named `.kumidocs.json` and `_sidebar.md` are hidden from the sidebar. The `images/` directory is also hidden (accessible via the Image Library at `/images`).
+
+## Git Remote
+
+KumiDocs does not configure the Git remote — it uses whatever is already in `.git/config`. Make sure your repo has a remote configured and that the server process has credentials to push to it (SSH key or credential helper).
+
+### SSH Keys
+
+Mount your SSH key into the container:
+
+```yaml
+volumes:
+  - ~/.ssh:/root/.ssh:ro
+```
+
+Ensure your SSH key is not passphrase-protected (or use `ssh-agent`), since KumiDocs pushes non-interactively.
+
+### Personal Access Tokens
+
+For HTTPS remotes, configure the credential helper before starting KumiDocs:
+
+```bash
+git -C /path/to/repo config credential.helper store
+git -C /path/to/repo remote set-url origin https://token@github.com/org/repo.git
+```
+
+## Startup Sequence
+
+1. Validate `KUMIDOCS_REPO_PATH` (must be a Git repo)
+2. Run `git pull --rebase` (if remote configured)
+3. Read `.kumidocs.json`
+4. Load all files into in-memory state
+5. Build MiniSearch full-text index
+6. Start HTTP + WebSocket server
+7. Schedule background pull loop (every `KUMIDOCS_PULL_INTERVAL` ms)
