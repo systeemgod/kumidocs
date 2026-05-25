@@ -1,0 +1,229 @@
+import type { CommitEntry } from "@/lib/types";
+import type { Config } from "./config";
+
+// ── Subprocess helper ─────────────────────────────────────────────────────────
+
+async function runGit(
+  repoPath: string,
+  args: string[],
+  env?: Record<string, string>,
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+  const proc = Bun.spawn(["git", "-C", repoPath, ...args], {
+    env: { ...Bun.env, ...env },
+    stderr: "pipe",
+    stdout: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
+  return { exitCode, stderr, stdout };
+}
+
+// ── Read-only operations (no lock needed) ────────────────────────────────────
+
+async function getHeadShaNative(config: Config): Promise<string> {
+  const result = await runGit(config.repoPath, ["rev-parse", "--short", "HEAD"]);
+  if (result.exitCode !== 0) {
+    return "unknown";
+  }
+  return result.stdout.trim();
+}
+
+async function gitFileLogNative(
+  config: Config,
+  filepath: string,
+  limit = 50,
+): Promise<CommitEntry[]> {
+  const result = await runGit(config.repoPath, [
+    "log",
+    `-${limit}`,
+    "--format=%H%s%an%ae%aI",
+    "--",
+    filepath,
+  ]);
+  if (result.exitCode !== 0 || !result.stdout.trim()) {
+    return [];
+  }
+  return result.stdout
+    .trim()
+    .split("\n")
+    .map((line) => {
+      const [fullSha = "", message = "", author = "", authorEmail = "", date = ""] =
+        line.split("\u001F");
+      return { author, authorEmail, date, fullSha, message, sha: fullSha.slice(0, 7) };
+    });
+}
+
+async function gitBlobAtNative(
+  config: Config,
+  commitSha: string,
+  filepath: string,
+): Promise<string> {
+  const result = await runGit(config.repoPath, ["show", `${commitSha}:${filepath}`]);
+  if (result.exitCode !== 0) {
+    return "";
+  }
+  return result.stdout;
+}
+
+// ── Write operations (caller must hold the git lock) ─────────────────────────
+
+async function gitPullNative(config: Config): Promise<void> {
+  const result = await runGit(config.repoPath, ["pull", "--ff-only", "--quiet"]);
+  if (result.exitCode === 0) {
+    console.log("Git: pulled from remote");
+  }
+  // Non-zero: offline or no remote — not fatal
+}
+
+async function pushWithRetryNative(
+  config: Config,
+  sha: string,
+): Promise<{ sha: string; error?: string }> {
+  let push = await runGit(config.repoPath, ["push", "origin"]);
+  if (push.exitCode === 0) {
+    return { sha };
+  }
+
+  // Push failed (non-fast-forward) — fetch + rebase, then retry
+  await runGit(config.repoPath, ["fetch", "origin"]);
+  const rebase = await runGit(config.repoPath, ["rebase", "FETCH_HEAD"]);
+  if (rebase.exitCode !== 0) {
+    await runGit(config.repoPath, ["rebase", "--abort"]);
+    return { error: "push_failed", sha };
+  }
+
+  push = await runGit(config.repoPath, ["push", "origin"]);
+  if (push.exitCode === 0) {
+    return { sha };
+  }
+
+  return { error: "push_failed", sha };
+}
+
+async function gitStageAndCommitNative(
+  config: Config,
+  filePaths: string[],
+  message: string,
+  authorName: string,
+  authorEmail: string,
+): Promise<{ sha: string; error?: string; committed?: boolean }> {
+  try {
+    if (filePaths.length > 0) {
+      const add = await runGit(config.repoPath, ["add", "--", ...filePaths]);
+      if (add.exitCode !== 0) {
+        return { error: `git add failed: ${add.stderr}`, sha: await getHeadShaNative(config) };
+      }
+    }
+
+    // exit 0 = nothing staged, exit 1 = staged changes present
+    const status = await runGit(config.repoPath, ["diff", "--cached", "--quiet"]);
+    if (status.exitCode === 0) {
+      return { committed: false, sha: await getHeadShaNative(config) };
+    }
+
+    const env = {
+      GIT_AUTHOR_EMAIL: authorEmail,
+      GIT_AUTHOR_NAME: authorName,
+      GIT_COMMITTER_EMAIL: authorEmail,
+      GIT_COMMITTER_NAME: authorName,
+    };
+    const commit = await runGit(config.repoPath, ["commit", "-m", message], env);
+    if (commit.exitCode !== 0) {
+      return {
+        error: `git commit failed: ${commit.stderr}`,
+        sha: await getHeadShaNative(config),
+      };
+    }
+
+    const sha = await getHeadShaNative(config);
+    const push = await pushWithRetryNative(config, sha);
+    return { ...push, committed: true };
+  } catch (error) {
+    return { error: String(error), sha: await getHeadShaNative(config) };
+  }
+}
+
+async function gitRemoveAndCommitNative(
+  config: Config,
+  filePath: string,
+  message: string,
+  authorName: string,
+  authorEmail: string,
+): Promise<{ sha: string; error?: string }> {
+  // File is already deleted from disk — remove from index only
+  await runGit(config.repoPath, ["rm", "--cached", "--", filePath]);
+  return gitStageAndCommitNative(config, [], message, authorName, authorEmail);
+}
+
+async function gitMoveAndCommitNative(
+  config: Config,
+  from: string,
+  to: string,
+  message: string,
+  authorName: string,
+  authorEmail: string,
+  extraMoves?: { from: string; to: string }[],
+): Promise<{ sha: string; error?: string }> {
+  // Files are already moved on disk — stage each pair: add new path, rm old from index
+  const allMoves = [{ from, to }, ...(extraMoves ?? [])];
+  await Promise.all(
+    allMoves.flatMap((move) => [
+      runGit(config.repoPath, ["add", "--", move.to]),
+      runGit(config.repoPath, ["rm", "--cached", "--", move.from]),
+    ]),
+  );
+  return gitStageAndCommitNative(config, [], message, authorName, authorEmail);
+}
+
+async function gitFetchAndRebaseNative(
+  config: Config,
+): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
+  const beforeResult = await runGit(config.repoPath, ["rev-parse", "HEAD"]);
+  if (beforeResult.exitCode !== 0) {
+    return { advanced: false, changed: [], sha: "unknown" };
+  }
+  const before = beforeResult.stdout.trim();
+
+  // Fetch — ignore errors (offline / no remote)
+  await runGit(config.repoPath, ["fetch", "origin"]);
+
+  // Only rebase if FETCH_HEAD exists
+  const fetchHead = await runGit(config.repoPath, ["rev-parse", "FETCH_HEAD"]);
+  if (fetchHead.exitCode === 0) {
+    const rebase = await runGit(config.repoPath, ["rebase", "FETCH_HEAD"]);
+    if (rebase.exitCode !== 0) {
+      await runGit(config.repoPath, ["rebase", "--abort"]);
+      return { advanced: false, changed: [], sha: before.slice(0, 7) };
+    }
+  }
+
+  const afterResult = await runGit(config.repoPath, ["rev-parse", "HEAD"]);
+  const after = afterResult.exitCode === 0 ? afterResult.stdout.trim() : before;
+
+  const advanced = before !== after;
+  const sha = after.slice(0, 7);
+  const changed: string[] = [];
+
+  if (advanced) {
+    const diff = await runGit(config.repoPath, ["diff", "--name-only", before, after]);
+    if (diff.exitCode === 0) {
+      changed.push(...diff.stdout.trim().split("\n").filter(Boolean));
+    }
+  }
+
+  return { advanced, changed, sha };
+}
+
+export {
+  getHeadShaNative,
+  gitBlobAtNative,
+  gitFetchAndRebaseNative,
+  gitFileLogNative,
+  gitMoveAndCommitNative,
+  gitPullNative,
+  gitRemoveAndCommitNative,
+  gitStageAndCommitNative,
+};

@@ -16,6 +16,7 @@ interface Config {
   port: number;
   authHeader: string;
   autoSaveDelay: number;
+  gitImpl: "native" | "builtin";
   instanceName: string;
   pullInterval: number;
 }
@@ -60,6 +61,13 @@ const coerceMs = (flag: string, raw: string): number => {
     fatal(`${flag} expects a non-negative integer (ms), got: ${JSON.stringify(raw)}`);
   }
   return parsed;
+};
+
+const coerceGitImpl = (raw: string): "native" | "builtin" => {
+  if (raw !== "native" && raw !== "builtin") {
+    fatal(`--git-impl expects 'native' or 'builtin', got: ${JSON.stringify(raw)}`);
+  }
+  return raw as "native" | "builtin";
 };
 
 // ── Options table ─────────────────────────────────────────────────────────────
@@ -112,6 +120,14 @@ const OPTIONS: OptionDef[] = [
     env: "KUMIDOCS_PULL_INTERVAL",
     flags: ["--pull-interval"],
     key: "pullInterval",
+  },
+  {
+    coerce: coerceGitImpl,
+    default: "native" as const,
+    description: "Git backend: 'native' (system git binary) or 'builtin' (pure-JS isomorphic-git)",
+    env: "KUMIDOCS_GIT_IMPL",
+    flags: ["--git-impl"],
+    key: "gitImpl",
   },
 ];
 

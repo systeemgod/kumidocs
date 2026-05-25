@@ -47,7 +47,8 @@ export default function AppShell(): JSX.Element {
   // Keep a ref so the stable mousemove closure always reads the live drag-start values
   const dragStartRef = useRef(undefined as { startX: number; width: number } | undefined);
 
-  const treeReloadTimer = useRef<ReturnType<typeof setTimeout>>();
+  // oxlint-disable-next-line unicorn/no-useless-undefined
+  const treeReloadTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Reload full file tree for sidebar.
   // Returns void so it's safe to pass as event handler or onCreated callback.

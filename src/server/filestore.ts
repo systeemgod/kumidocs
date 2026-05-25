@@ -3,6 +3,7 @@ import type { FileEntry, TreeNode } from "@/lib/types";
 import { dirname, extname, join, relative } from "node:path";
 import { mkdir, readdir, unlink } from "node:fs/promises";
 import type { Config } from "./config";
+import type { IgnoreChecker } from "./git-ignore";
 import { extractHeadingTitle } from "@/lib/frontmatter";
 import matter from "gray-matter";
 
@@ -37,7 +38,7 @@ const IGNORED_NAMES = new Set([
 
 const IGNORED_EXT = new Set([".lock", ".log", ".map"]);
 
-async function scanDir(basePath: string, dirPath: string): Promise<void> {
+async function scanDir(basePath: string, dirPath: string, ig: IgnoreChecker): Promise<void> {
   let entries;
   try {
     entries = await readdir(dirPath, { withFileTypes: true });
@@ -53,8 +54,12 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
       const fullPath = join(dirPath, entry.name);
       const relPath = relative(basePath, fullPath);
 
+      if (ig(relPath)) {
+        return;
+      }
+
       if (entry.isDirectory()) {
-        await scanDir(basePath, fullPath);
+        await scanDir(basePath, fullPath, ig);
       } else if (entry.isFile()) {
         const ext = extname(entry.name).toLowerCase();
         if (IGNORED_EXT.has(ext)) {
@@ -77,9 +82,9 @@ async function scanDir(basePath: string, dirPath: string): Promise<void> {
   );
 }
 
-async function loadFilestore(config: Config): Promise<void> {
+async function loadFilestore(config: Config, ig: IgnoreChecker): Promise<void> {
   fileCache.clear();
-  await scanDir(config.repoPath, config.repoPath);
+  await scanDir(config.repoPath, config.repoPath, ig);
   console.log(`Filestore: loaded ${String(fileCache.size)} files`);
 }
 
@@ -240,6 +245,7 @@ export {
   extractHeadingTitle,
   getAllPaths,
   getFile,
+  IGNORED_NAMES,
   loadFilestore,
   markWritten,
   moveInCache,

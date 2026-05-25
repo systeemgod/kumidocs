@@ -1,4 +1,11 @@
 import {
+  IGNORED_NAMES,
+  consumeWritten,
+  loadFilestore,
+  reloadFile,
+  removeFromCache,
+} from "./server/filestore";
+import {
   broadcastPageChanged,
   broadcastPageDeleted,
   pruneDeadSessions,
@@ -6,16 +13,17 @@ import {
   wsMessage,
   wsOpen,
 } from "./server/websocket";
-import { consumeWritten, loadFilestore, reloadFile, removeFromCache } from "./server/filestore";
 import { existsSync, watch } from "node:fs";
 import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
 import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
+import { join, relative } from "node:path";
 import { parseUser, setPermissions } from "./server/auth";
+import { readdir, stat } from "node:fs/promises";
 import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
+import { buildIgnoreChecker } from "./server/git-ignore";
 import buildRoutes from "./server/router";
-import { join } from "node:path";
 import { loadConfig } from "./server/config";
 import { serve } from "bun";
 
@@ -60,48 +68,112 @@ async function loadPermissions(): Promise<void> {
 
 await loadPermissions();
 
-// Watch entire repo folder for on-disk changes and reload immediately
+// ── File watcher ──────────────────────────────────────────────────────────────
+// Build gitignore checker once; used to skip both watching and indexing.
+const ig = buildIgnoreChecker(config.repoPath);
+
+// Hard-skip these directory names regardless of .gitignore
+const WATCHER_SKIP = new Set([".git", ...IGNORED_NAMES]);
+
+function isWatcherIgnored(relPath: string): boolean {
+  if (!relPath) {
+    return false;
+  }
+  const firstSeg = relPath.split("/")[0] ?? "";
+  if (WATCHER_SKIP.has(firstSeg)) {
+    return true;
+  }
+  return ig(relPath);
+}
+
 const debounceMap = new Map<string, ReturnType<typeof setTimeout>>();
-watch(config.repoPath, { recursive: true }, (_event, filename) => {
-  if (!filename) {
+const watchedDirs = new Set<string>();
+
+async function processFileChange(relPath: string): Promise<void> {
+  if (relPath === ".kumidocs.json") {
+    await loadPermissions();
+    console.log("Reloaded .kumidocs.json");
     return;
   }
-  const relPath = filename.replaceAll("\\", "/");
-  if (relPath.startsWith(".git/") || relPath === ".git") {
+  const fullPath = join(config.repoPath, relPath);
+  if (existsSync(fullPath)) {
+    await reloadFile(relPath, config);
+    updateInIndex(relPath);
+    // Skip broadcast for writes originated by this server process
+    if (!consumeWritten(relPath)) {
+      broadcastPageChanged(relPath, undefined, "disk", "Local");
+    }
+  } else {
+    removeFromCache(relPath);
+    removeFromIndex(relPath);
+    broadcastPageDeleted(relPath);
+  }
+}
+
+async function watchDir(absDir: string): Promise<void> {
+  if (watchedDirs.has(absDir)) {
     return;
   }
-  const prev = debounceMap.get(relPath);
-  if (prev) {
-    clearTimeout(prev);
+  const relDir = relative(config.repoPath, absDir).replaceAll("\\", "/");
+  if (relDir && isWatcherIgnored(relDir)) {
+    return;
   }
-  debounceMap.set(
-    relPath,
-    setTimeout(async () => {
-      debounceMap.delete(relPath);
-      if (relPath === ".kumidocs.json") {
-        await loadPermissions();
-        console.log("Reloaded .kumidocs.json");
+  watchedDirs.add(absDir);
+
+  // Watch this single directory (non-recursive) — avoids creating inotify
+  // watches for every subdirectory in the tree (which exhausts the OS limit
+  // when node_modules or similar large directories are present).
+  watch(absDir, {}, async (_event, filename) => {
+    if (!filename) {
+      return;
+    }
+    const absFile = join(absDir, filename);
+    const relFile = relative(config.repoPath, absFile).replaceAll("\\", "/");
+    if (isWatcherIgnored(relFile)) {
+      return;
+    }
+
+    // If a new directory appeared, set up a watcher for it
+    try {
+      const fileStats = await stat(absFile);
+      if (fileStats.isDirectory()) {
+        await watchDir(absFile);
         return;
       }
-      const fullPath = join(config.repoPath, relPath);
-      if (existsSync(fullPath)) {
-        await reloadFile(relPath, config);
-        updateInIndex(relPath);
-        // Skip broadcast for writes originated by this server process
-        if (!consumeWritten(relPath)) {
-          broadcastPageChanged(relPath, undefined, "disk", "Local");
-        }
-      } else {
-        removeFromCache(relPath);
-        removeFromIndex(relPath);
-        broadcastPageDeleted(relPath);
-      }
-    }, 100),
-  );
-});
+    } catch {
+      // Deleted or inaccessible — treat as file change
+    }
+
+    const prev = debounceMap.get(relFile);
+    if (prev) {
+      clearTimeout(prev);
+    }
+    debounceMap.set(
+      relFile,
+      setTimeout(() => {
+        debounceMap.delete(relFile);
+        void processFileChange(relFile);
+      }, 100),
+    );
+  });
+
+  // Recurse into non-ignored subdirectories
+  try {
+    const entries = await readdir(absDir, { withFileTypes: true });
+    await Promise.all(
+      entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => watchDir(join(absDir, entry.name))),
+    );
+  } catch {
+    // Directory removed during scan — ignore
+  }
+}
+
+await watchDir(config.repoPath);
 
 await gitPull(config);
-await loadFilestore(config);
+await loadFilestore(config, ig);
 initSearch();
 
 // Auth helper used in route handlers
