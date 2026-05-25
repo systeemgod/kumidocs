@@ -29,6 +29,7 @@ const REHYPE_PLUGINS: PluggableList = [
 ];
 
 const KumiEmojiComponent = (allProps: Record<string, unknown>): JSX.Element => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const nodeData = allProps.node as { properties: { dataEmoji?: unknown } } | undefined;
   let emoji = "";
   if (nodeData && typeof nodeData.properties.dataEmoji === "string") {
@@ -43,7 +44,7 @@ const KumiEmojiComponent = (allProps: Record<string, unknown>): JSX.Element => {
 const AnchorComponent = (allProps: { href?: string; children?: ReactNode }): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
-  if (href && href.startsWith("#")) {
+  if (href?.startsWith("#") === true) {
     target = "_self";
   }
   return (

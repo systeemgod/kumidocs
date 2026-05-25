@@ -125,6 +125,7 @@ const isBgDark = (color: string): boolean => {
     const hexValue = hexMatch.at(1) ?? "";
     let full = hexValue;
     if (hexValue.length === SHORT_HEX_LENGTH) {
+      // oxlint-disable-next-line typescript/no-misused-spread
       full = [...hexValue].map((hexChar) => hexChar + hexChar).join("");
     }
     const redChannel = Number.parseInt(full.slice(0, 2), 16);
@@ -181,7 +182,7 @@ const resolveCustomTheme = (
 ): Omit<SlideThemeDef, "layouts"> | undefined => {
   const base = map[themeName];
   if (!base) {
-    return;
+    return undefined;
   }
   const layoutKey = layoutClass || "default";
   const baseDef: Omit<SlideThemeDef, "layouts"> = {

@@ -54,7 +54,11 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
   const openParentDropdown = useCallback(() => {
     closeParentDropdown(); // remove any previously registered handler before adding a new one
     const handler = (ev: MouseEvent): void => {
-      if (comboboxRef.current && !comboboxRef.current.contains(ev.target as Node)) {
+      if (
+        comboboxRef.current &&
+        ev.target instanceof Node &&
+        !comboboxRef.current.contains(ev.target)
+      ) {
         closeParentDropdown();
       }
     };
@@ -104,7 +108,7 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
       await renameFile(moveFrom, toPath);
       toast.success("Page moved");
       reloadTree();
-      navigate(`/p/${toPath}`);
+      void navigate(`/p/${toPath}`);
     } catch {
       toast.error("Move failed");
     }
@@ -127,7 +131,7 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
       await deleteFile(deleteTarget);
       toast.success("Page deleted");
       reloadTree();
-      navigate("/p/README.md");
+      void navigate("/p/README.md");
     } catch {
       toast.error("Delete failed");
     }

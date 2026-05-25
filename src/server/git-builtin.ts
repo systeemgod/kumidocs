@@ -65,7 +65,9 @@ async function stageAndCommitBuiltin(
   authorEmail: string,
 ): Promise<{ sha: string; error?: string; committed?: boolean }> {
   try {
-    await Promise.all(filePaths.map((fp) => git.add({ dir: config.repoPath, filepath: fp, fs })));
+    await Promise.all(
+      filePaths.map(async (fp) => git.add({ dir: config.repoPath, filepath: fp, fs })),
+    );
 
     // Scope the status check to the paths we staged so we don't accidentally
     // commit unrelated workdir noise or pick up changes staged concurrently.

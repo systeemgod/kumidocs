@@ -86,7 +86,7 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
   useLayoutEffect(() => {
     if (!query.trim()) {
       setResults([]);
-      return;
+      return undefined;
     }
     const timer = setTimeout(() => {
       void (async (): Promise<void> => {
@@ -113,7 +113,7 @@ const SearchPalette = (allProps: SearchPaletteProps): JSX.Element => {
     if (ext === "md") {
       navPath = `/p/${path}`;
     }
-    navigate(navPath);
+    void navigate(navPath);
   };
 
   return (

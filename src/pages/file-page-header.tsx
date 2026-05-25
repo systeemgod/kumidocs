@@ -76,7 +76,7 @@ function FilePageHeader({
       </div>
 
       {/* Center: Read/Edit segmented switch */}
-      {user?.canEdit && (
+      {user?.canEdit === true && (
         <div
           className="flex items-center rounded-md border border-border bg-muted h-7 p-0.5 gap-0.5 shrink-0"
           title={
@@ -163,7 +163,7 @@ function FilePageHeader({
         )}
 
         {/* Advanced / dangerous actions only */}
-        {user?.canEdit && (
+        {user?.canEdit === true && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="icon" variant="ghost" className="h-7 w-7">

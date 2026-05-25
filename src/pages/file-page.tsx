@@ -77,7 +77,7 @@ export default function FilePage(): JSX.Element {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Remote change banner */}
-      {remoteBanner && (
+      {remoteBanner !== undefined && remoteBanner !== "" && (
         <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
           <span className="flex-1">{remoteBanner} while you have unsaved changes.</span>
           <Button
@@ -161,7 +161,7 @@ export default function FilePage(): JSX.Element {
       </div>
 
       {/* Footer */}
-      {lastSha && (
+      {lastSha !== undefined && lastSha !== "" && (
         <div className="px-4 py-1 border-t border-border text-xs text-muted-foreground shrink-0 flex items-center gap-2">
           <SaveRegular className="w-3 h-3" />
           <span>

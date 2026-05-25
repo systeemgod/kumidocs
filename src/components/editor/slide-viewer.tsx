@@ -201,13 +201,9 @@ function SlideViewer({
           prev={prev}
           next={next}
           setScrollMode={setScrollMode}
-          toggleFullscreen={() => {
-            void toggleFullscreen();
-          }}
+          toggleFullscreen={toggleFullscreen}
           enterSpotlight={enterSpotlight}
-          exportPdf={() => {
-            void exportPdf();
-          }}
+          exportPdf={exportPdf}
         />
       </div>
     </>

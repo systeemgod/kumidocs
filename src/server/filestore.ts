@@ -161,11 +161,11 @@ function parseFileEntry(path: string): FileEntry {
     try {
       const parsed = matter(content);
       const headingTitle = extractHeadingTitle(parsed.content);
-      if (headingTitle) {
+      if (headingTitle !== undefined && headingTitle !== "") {
         title = headingTitle;
       }
-      if (parsed.data.emoji) {
-        emoji = parsed.data.emoji as string;
+      if (typeof parsed.data.emoji === "string" && parsed.data.emoji !== "") {
+        emoji = parsed.data.emoji;
       }
       if (parsed.data.slides === true) {
         type = "slide";
@@ -203,7 +203,7 @@ function buildFileTree(): TreeNode[] {
 
     for (let idx = 0; idx < parts.length; idx++) {
       const part = parts[idx];
-      if (!part) {
+      if (part === undefined || part === "") {
         continue;
       }
       cumPath = cumPath ? `${cumPath}/${part}` : part;

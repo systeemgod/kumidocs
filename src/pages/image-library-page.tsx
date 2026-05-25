@@ -50,6 +50,7 @@ function ImageDetailPanel({
       void navigate("/i", { replace: true });
     } catch (error: unknown) {
       if (error instanceof ApiError) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         const body = error.body as { error?: string; usedIn?: string[] } | undefined;
         if (body?.usedIn && body.usedIn.length > 0) {
           toast.error(`In use by: ${body.usedIn.join(", ")}`);
@@ -117,7 +118,7 @@ function ImageDetailPanel({
       </div>
 
       {/* Actions */}
-      {user?.canEdit && (
+      {user?.canEdit === true && (
         <div className="px-4 py-3 border-t border-border">
           {image.usedIn.length > 0 && (
             <p className="text-xs text-destructive mb-2">
@@ -191,10 +192,13 @@ export default function ImageLibraryPage(): JSX.Element {
   }, []);
 
   useMountEffect(() => {
-    fetchImages();
+    void fetchImages();
   });
 
-  const selectedImage = filename ? images.find((img) => img.filename === filename) : undefined;
+  const selectedImage =
+    filename !== undefined && filename !== ""
+      ? images.find((img) => img.filename === filename)
+      : undefined;
 
   let imageGridContent: ReactNode;
   if (loading) {

@@ -1,4 +1,4 @@
-import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { ParsedSlide, SlideThemeMap } from "@/lib/slide";
 import { SLIDE_H, SLIDE_W, overlaySelectableLayer, splitSlides } from "./slide-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -38,7 +38,7 @@ interface UseSlideViewerReturn {
   setPointerVisible: Dispatch<SetStateAction<boolean>>;
   setScrollMode: Dispatch<SetStateAction<boolean>>;
   setSpotlightMenu: Dispatch<SetStateAction<{ xPos: number; yPos: number } | undefined>>;
-  slideElemsRef: MutableRefObject<(HTMLDivElement | null)[]>;
+  slideElemsRef: RefObject<(HTMLDivElement | null)[]>;
   spotlightCallbackRef: (el: HTMLDivElement | null) => void;
   spotlightMenu: { xPos: number; yPos: number } | undefined;
   spotlightScale: number;
@@ -109,6 +109,7 @@ function useSlideViewer({
 
   useMountEffect(() => {
     const handler = (ev: KeyboardEvent): void => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       const tag = (ev.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") {
         return;
@@ -131,7 +132,7 @@ function useSlideViewer({
   useMountEffect(() => {
     const el = stageRef.current;
     if (!el) {
-      return;
+      return undefined;
     }
     const obs = new ResizeObserver(([entry]) => {
       if (!entry) {
@@ -201,7 +202,7 @@ function useSlideViewer({
   const spotlightCallbackRef = useCallback(
     (el: HTMLDivElement | null) => {
       if (el) {
-        spotlightSetScale(el);
+        void spotlightSetScale(el);
       } else {
         spotlightCleanupRef.current?.();
         spotlightCleanupRef.current = undefined;
@@ -232,9 +233,10 @@ function useSlideViewer({
         orientation: "landscape",
         unit: "px",
       });
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       const slideEls = ([...container.children] as HTMLElement[]).filter(Boolean);
       const canvases = await Promise.all(
-        slideEls.map((el) =>
+        slideEls.map(async (el) =>
           html2canvas(el, {
             height: SLIDE_H,
             logging: false,

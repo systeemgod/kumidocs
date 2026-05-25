@@ -22,10 +22,12 @@ interface HotData {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Bun types import.meta.hot as always-truthy but it is undefined after production bundling
-if (import.meta.hot) {
+// oxlint-disable-next-line typescript/no-unnecessary-condition
+if (import.meta.hot === undefined) {
+  createRoot(elem).render(app);
+} else {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const data = import.meta.hot.data as HotData;
   const root = (data.root ??= createRoot(elem));
   root.render(app);
-} else {
-  createRoot(elem).render(app);
 }

@@ -58,7 +58,7 @@ const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
     if (kv) {
       const key = kv.at(1);
       const val = kv.at(2) ?? "";
-      if (key) {
+      if (key !== undefined && key !== "") {
         applyKv(data, key, val);
       }
     }
@@ -69,16 +69,16 @@ const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
 /** Serialise only the whitelisted KumiDocs frontmatter fields back to a YAML block. */
 const buildFrontmatter = (meta: PageMeta): string => {
   const lines: string[] = [];
-  if (meta.emoji) {
+  if (meta.emoji !== undefined && meta.emoji !== "") {
     lines.push(`emoji: ${meta.emoji}`);
   }
-  if (meta.slides) {
+  if (meta.slides === true) {
     lines.push("slides: true");
   }
-  if (meta.theme && meta.theme !== "default") {
+  if (meta.theme !== undefined && meta.theme !== "" && meta.theme !== "default") {
     lines.push(`theme: ${meta.theme}`);
   }
-  if (meta.paginate) {
+  if (meta.paginate === true) {
     lines.push("paginate: true");
   }
   if (meta.themeVars) {
@@ -100,6 +100,7 @@ const extractHeadingTitle = (body: string): string | undefined => {
       return line.slice(HEADING_PREFIX.length).trim();
     }
   }
+  return undefined;
 };
 
 export type { PageMeta };

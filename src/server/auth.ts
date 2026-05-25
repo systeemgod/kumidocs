@@ -18,18 +18,19 @@ const getPermissions = (): KumiDocsPermissions => perms;
 
 /** Parse the `kumidocs_email` cookie value from a Cookie header string. */
 const cookieEmail = (cookieHeader: string | null): string | undefined => {
-  if (!cookieHeader) {
-    return;
+  if (cookieHeader === null || cookieHeader === "") {
+    return undefined;
   }
   for (const part of cookieHeader.split(";")) {
     const [cookieName, ...cookieValueParts] = part.trim().split("=");
-    if (cookieName && cookieName.trim() === "kumidocs_email") {
+    if (cookieName?.trim() === "kumidocs_email") {
       const raw = decodeURIComponent(cookieValueParts.join("=").trim());
-      if (raw) {
+      if (raw !== "") {
         return raw;
       }
     }
   }
+  return undefined;
 };
 
 interface JWTPayload {
@@ -45,11 +46,12 @@ const resolveEmail = (value: string): string | undefined => {
   if (parts.length === JWT_SEGMENT_COUNT) {
     try {
       const paddedPart = (parts.at(1) ?? "").replaceAll("-", "+").replaceAll("_", "/");
-      const payload = JSON.parse(atob(paddedPart)) as JWTPayload;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      const payload = JSON.parse(atob(paddedPart)) as unknown as JWTPayload;
       const raw = payload.email ?? payload.preferred_username;
       // JWT present but no usable email claim
-      if (!raw) {
-        return;
+      if (raw === undefined || raw === "") {
+        return undefined;
       }
       return raw.trim().toLowerCase();
     } catch {
@@ -61,13 +63,13 @@ const resolveEmail = (value: string): string | undefined => {
 
 const parseUser = (headers: Headers, authHeader: string): User | undefined => {
   const value = headers.get(authHeader) ?? cookieEmail(headers.get("cookie"));
-  if (!value) {
-    return;
+  if (value === undefined || value === "") {
+    return undefined;
   }
 
   const email = resolveEmail(value);
-  if (!email) {
-    return;
+  if (email === undefined || email === "") {
+    return undefined;
   }
 
   const displayName = emailToDisplayName(email);

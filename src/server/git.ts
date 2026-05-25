@@ -42,34 +42,34 @@ async function withGitLock<TResult>(fn: () => Promise<TResult>): Promise<TResult
   return fnResult;
 }
 
-function gitPull(config: Config): Promise<void> {
-  return withGitLock(() =>
+async function gitPull(config: Config): Promise<void> {
+  return withGitLock(async () =>
     config.gitImpl === "native" ? gitPullNative(config) : gitPullBuiltin(config),
   );
 }
 
-function gitStageAndCommit(
+async function gitStageAndCommit(
   config: Config,
   filePaths: string[],
   message: string,
   authorName: string,
   authorEmail: string,
 ): Promise<{ sha: string; error?: string; committed?: boolean }> {
-  return withGitLock(() =>
+  return withGitLock(async () =>
     config.gitImpl === "native"
       ? gitStageAndCommitNative(config, filePaths, message, authorName, authorEmail)
       : stageAndCommitBuiltin(config, filePaths, message, authorName, authorEmail),
   );
 }
 
-function gitRemoveAndCommit(
+async function gitRemoveAndCommit(
   config: Config,
   filePath: string,
   message: string,
   authorName: string,
   authorEmail: string,
 ): Promise<{ sha: string; error?: string }> {
-  return withGitLock(() =>
+  return withGitLock(async () =>
     config.gitImpl === "native"
       ? gitRemoveAndCommitNative(config, filePath, message, authorName, authorEmail)
       : (async (): Promise<{ sha: string; error?: string }> => {
@@ -79,7 +79,7 @@ function gitRemoveAndCommit(
   );
 }
 
-function gitMoveAndCommit(
+async function gitMoveAndCommit(
   config: Config,
   from: string,
   to: string,
@@ -88,7 +88,7 @@ function gitMoveAndCommit(
   authorEmail: string,
   extraMoves?: { from: string; to: string }[],
 ): Promise<{ sha: string; error?: string }> {
-  return withGitLock(() =>
+  return withGitLock(async () =>
     config.gitImpl === "native"
       ? gitMoveAndCommitNative(config, from, to, message, authorName, authorEmail, extraMoves)
       : (async (): Promise<{ sha: string; error?: string }> => {
@@ -106,10 +106,10 @@ function gitMoveAndCommit(
   );
 }
 
-function gitFetchAndRebase(
+async function gitFetchAndRebase(
   config: Config,
 ): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
-  return withGitLock(() =>
+  return withGitLock(async () =>
     config.gitImpl === "native" ? gitFetchAndRebaseNative(config) : fetchAndRebaseBuiltin(config),
   );
 }

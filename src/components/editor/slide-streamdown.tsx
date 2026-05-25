@@ -28,8 +28,9 @@ interface KumiEmojiProps {
 }
 
 const KumiEmojiComponent = (allProps: KumiEmojiProps): JSX.Element => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const typedNode = allProps.node as { properties?: { dataEmoji?: unknown } } | undefined;
-  const raw = typedNode && typedNode.properties && typedNode.properties.dataEmoji;
+  const raw = typedNode?.properties?.dataEmoji;
   let emoji = "";
   if (typeof raw === "string") {
     emoji = raw;
@@ -48,7 +49,7 @@ interface SlideAnchorProps {
 const SlideAnchorComponent = (allProps: SlideAnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
-  if (href && href.startsWith("#")) {
+  if (href?.startsWith("#") === true) {
     target = "_self";
   }
   return (

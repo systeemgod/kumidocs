@@ -42,7 +42,7 @@ const generateDemoMarkdown = (name: string, customDef?: SlideThemeDef): string =
     `<!-- class: section -->\n## Getting Started`,
     `<!-- class: split -->\n## What We Do\n\nLeft column content.\n\n## How We Do It\n\nRight column content.`,
   ];
-  if (customDef && customDef.layouts) {
+  if (customDef?.layouts !== undefined) {
     for (const layoutKey of Object.keys(customDef.layouts)) {
       if (!STANDARD_LAYOUTS.has(layoutKey)) {
         slides.push(`<!-- class: ${layoutKey} -->\n# ${layoutKey}\n\nCustom layout variant.`);

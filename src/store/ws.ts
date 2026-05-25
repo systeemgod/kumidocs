@@ -9,7 +9,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 
 class WsClient {
   private ws?: WebSocket;
-  private listeners = new Set<WsListener>();
+  private readonly listeners = new Set<WsListener>();
   private reconnectTimer?: ReturnType<typeof setTimeout>;
   private heartbeatTimer?: ReturnType<typeof setInterval>;
   private currentPageId?: string;
@@ -31,7 +31,12 @@ class WsClient {
     this.ws = new WebSocket(`${proto}//${location.host}/ws`);
 
     this.ws.addEventListener("open", (): void => {
-      if (this.currentPageId && this.userId) {
+      if (
+        this.currentPageId !== undefined &&
+        this.currentPageId !== "" &&
+        this.userId !== undefined &&
+        this.userId !== ""
+      ) {
         this.send({
           pageId: this.currentPageId,
           type: "hello",
@@ -43,7 +48,10 @@ class WsClient {
 
     this.ws.addEventListener("message", (event: MessageEvent): void => {
       try {
-        const msg = JSON.parse(event.data as string) as WsServerMessage;
+        const raw: unknown = event.data;
+        const parsed: unknown = JSON.parse(typeof raw === "string" ? raw : "");
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        const msg = parsed as WsServerMessage;
         for (const listener of this.listeners) {
           listener(msg);
         }
@@ -77,17 +85,15 @@ class WsClient {
       return;
     }
     this.currentPageId = pageId;
-    if (this.userId) {
+    if (this.userId !== undefined && this.userId !== "") {
       this.send({ pageId, type: "hello", userId: this.userId });
     }
   }
 
   public leavePage(): void {
-    if (!this.currentPageId) {
-      return;
+    if (this.currentPageId !== undefined && this.currentPageId !== "") {
+      this.send({ type: "bye" });
     }
-    delete this.currentPageId;
-    this.send({ type: "bye" });
   }
 
   public startEditing(pageId: string): void {

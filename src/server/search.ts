@@ -71,6 +71,7 @@ function updateInIndex(path: string): void {
     return;
   }
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     index.remove({ id: path } as DocEntry);
   } catch {
     // Document was not in the index yet (e.g. brand-new file) — nothing to remove
@@ -91,6 +92,7 @@ function removeFromIndex(path: string): void {
     return;
   }
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     index.remove({ id: path } as DocEntry);
   } catch (error: unknown) {
     console.warn("Failed to remove from index:", error);
@@ -102,10 +104,9 @@ function buildSnippet(path: string, query: string): string {
   const body = content.replace(/^---[\s\S]*?---\r?\n/u, "");
   const lowerBody = body.toLowerCase();
   const lowerQuery = query.toLowerCase();
-  const idx =
-    lowerBody.indexOf(lowerQuery) !== -1
-      ? lowerBody.indexOf(lowerQuery)
-      : lowerBody.indexOf(query.split(" ")[0]?.toLowerCase() ?? "");
+  const idx = lowerBody.includes(lowerQuery)
+    ? lowerBody.indexOf(lowerQuery)
+    : lowerBody.indexOf(query.split(" ")[0]?.toLowerCase() ?? "");
   if (idx === -1) {
     return `${body.replaceAll("\n", " ").slice(0, 140)}…`;
   }
@@ -122,15 +123,22 @@ function searchDocs(query: string, limit = 20): SearchResult[] {
   if (!index || !query.trim()) {
     return [];
   }
-  const results = (
-    index.search(query) as unknown as (Record<string, unknown> & { score: number })[]
-  ).slice(0, limit);
+  const results = // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  (index.search(query) as unknown as (Record<string, unknown> & { score: number })[]).slice(
+    0,
+    limit,
+  );
   return results.map((result) => ({
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     emoji: result.emoji as string | undefined,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     path: result.path as string,
     score: result.score,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     snippet: buildSnippet(result.path as string, query),
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     title: result.title as string,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     type: (result.type as FileType | undefined) ?? "doc",
   }));
 }

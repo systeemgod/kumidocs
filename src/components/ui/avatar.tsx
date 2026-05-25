@@ -46,11 +46,11 @@ const UserAvatar = (allProps: UserAvatarProps): JSX.Element => {
   const displayInitials = avatarInitials(name);
   const color = avatarColor(name);
   const gravatarHash = useMemo((): string | undefined => {
-    if (!email) {
-      return;
+    if (email === undefined || email === "") {
+      return undefined;
     }
     if (!email.includes("@")) {
-      return;
+      return undefined;
     }
     return sha256hex(email);
   }, [email]);
@@ -65,7 +65,7 @@ const UserAvatar = (allProps: UserAvatarProps): JSX.Element => {
       )}
       style={{ outline: `2px solid ${color}`, outlineOffset: "1px" }}
     >
-      {gravatarHash && (
+      {gravatarHash !== undefined && gravatarHash !== "" && (
         <AvatarPrimitive.Image
           className="aspect-square size-full"
           src={`/api/avatar/${gravatarHash}`}

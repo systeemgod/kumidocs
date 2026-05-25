@@ -67,6 +67,7 @@ const coerceGitImpl = (raw: string): "native" | "builtin" => {
   if (raw !== "native" && raw !== "builtin") {
     fatal(`--git-impl expects 'native' or 'builtin', got: ${JSON.stringify(raw)}`);
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return raw as "native" | "builtin";
 };
 
@@ -171,11 +172,12 @@ const printHelp = (): void => {
 // Key K at the call-site because it reasons over the union of all keys. The runtime
 // Is always correct; this cast confines the unsoundness to one place.
 const setConfigKey = (config: Config, key: keyof Config, value: Config[keyof Config]): void => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   (config as Record<keyof Config, Config[keyof Config]>)[key] = value;
 };
 
 const applyEnv = (opt: OptionDef, envValue: string | undefined): Config[keyof Config] => {
-  if (envValue) {
+  if (envValue !== undefined && envValue !== "") {
     return opt.coerce(envValue);
   }
   return defaultValue(opt);
@@ -200,18 +202,25 @@ const loadConfig = (): Config => {
     const opt = OPTIONS.find((option) => option.flags.includes(arg ?? ""));
     if (opt) {
       const raw = args.at(argIdx + 1) ?? "";
-      if (!raw) {
+      if (raw === "") {
         fatal(`${String(opt.flags.at(0))} requires a value.`);
       }
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = opt.coerce(raw);
       argIdx += 1;
-    } else if (arg && !arg.startsWith("-") && !cliOverrides.repoPath) {
+    } else if (
+      arg !== undefined &&
+      arg !== "" &&
+      !arg.startsWith("-") &&
+      (cliOverrides.repoPath === undefined || cliOverrides.repoPath === "")
+    ) {
       // Bare positional argument - treat as --repo
       cliOverrides.repoPath = resolve(arg);
     }
   }
 
   // Merge: CLI > ENV > default
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const config = {} as Config;
   for (const opt of OPTIONS) {
     const cli = cliOverrides[opt.key];

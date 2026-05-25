@@ -35,7 +35,7 @@ export default function AppShell(): JSX.Element {
   const [newPageParentDir, setNewPageParentDir] = useState<string | undefined>();
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-    if (!stored) {
+    if (stored === null || stored === "") {
       return SIDEBAR_DEFAULT;
     }
     const num = Number(stored);
@@ -75,17 +75,17 @@ export default function AppShell(): JSX.Element {
     void (async (): Promise<void> => {
       try {
         const data = await getMe();
-        if (data.instanceName) {
+        if (data.instanceName !== undefined && data.instanceName !== "") {
           setInstanceName(data.instanceName);
         }
-        if (data.autoSaveDelay) {
+        if (data.autoSaveDelay !== undefined && data.autoSaveDelay !== 0) {
           setAutoSaveDelay(data.autoSaveDelay);
         }
       } catch (error: unknown) {
         console.error("Failed to load instance info:", error);
       }
     })();
-    loadTree();
+    void loadTree();
   });
 
   // Update per-page presence map from WS presence updates

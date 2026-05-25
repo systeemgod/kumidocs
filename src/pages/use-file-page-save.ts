@@ -1,5 +1,5 @@
 import { ApiError, getFile, putFile } from "@/lib/api";
-import type { Dispatch, MutableRefObject, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useRef, useState } from "react";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
@@ -18,21 +18,21 @@ interface UseFilePageSaveProps {
 
 interface UseFilePageSaveReturn {
   content: string;
-  contentRef: MutableRefObject<string>;
+  contentRef: RefObject<string>;
   doSave: (currentContent: string, isRaw?: boolean) => Promise<void>;
   handleChange: (val: string) => void;
   handleSave: () => Promise<void>;
-  isDirtyRef: MutableRefObject<boolean>;
+  isDirtyRef: RefObject<boolean>;
   lastSha: string | undefined;
   loadDoc: (path: string) => Promise<void>;
   loading: boolean;
   meta: DocMeta;
-  metaRef: MutableRefObject<DocMeta>;
+  metaRef: RefObject<DocMeta>;
   notFound: boolean;
   rawContent: string;
-  rawContentRef: MutableRefObject<string>;
+  rawContentRef: RefObject<string>;
   savedContent: string;
-  savePromiseRef: MutableRefObject<Promise<void>>;
+  savePromiseRef: RefObject<Promise<void>>;
   saveStatus: SaveStatus;
   setContent: Dispatch<SetStateAction<string>>;
   setMeta: Dispatch<SetStateAction<DocMeta>>;
@@ -131,7 +131,7 @@ function useFilePageSave({
   });
 
   const doSave = useCallback(
-    (currentContent: string, isRaw = false): Promise<void> => {
+    async (currentContent: string, isRaw = false): Promise<void> => {
       if (autoSaveTimer.current) {
         clearTimeout(autoSaveTimer.current);
         autoSaveTimer.current = undefined;
@@ -166,7 +166,7 @@ function useFilePageSave({
           setSaveStatus("saved");
           setLastSha(data.sha);
           reloadTree();
-          if (data.pushWarning) {
+          if (data.pushWarning === true) {
             toast.warning("Saved locally. Remote push failed — check git remote config.");
           }
         } catch (error: unknown) {

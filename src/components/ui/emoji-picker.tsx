@@ -34,6 +34,7 @@ interface MartData {
   emojis: Record<string, EmojiEntry>;
 }
 
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 const emojiData = data as unknown as MartData;
 
 // ── Category display config ───────────────────────────────────────────────────

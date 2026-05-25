@@ -36,6 +36,7 @@ const walk = (node: Root | RootContent): void => {
   if (!("children" in node)) {
     return;
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const children = node.children as ElementContent[];
   let index = 0;
   while (index < children.length) {

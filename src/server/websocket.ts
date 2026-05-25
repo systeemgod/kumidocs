@@ -73,7 +73,7 @@ function presenceUpdate(pageId: string): WsServerMessage {
 function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
   const sid = ws.data.sessionId;
   const pageId = ws.data.pageId;
-  if (!pageId) {
+  if (pageId === undefined || pageId === "") {
     return;
   }
 
@@ -98,6 +98,7 @@ function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
   ws.data.lastHeartbeat = Date.now();
   let msg: WsClientMessage;
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     msg = JSON.parse(String(raw)) as WsClientMessage;
   } catch {
     return;
@@ -133,7 +134,12 @@ function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
 
     case "editing_start": {
       const existingSid = pageEditors.get(msg.pageId);
-      if (existingSid && existingSid !== sid && sessions.has(existingSid)) {
+      if (
+        existingSid !== undefined &&
+        existingSid !== "" &&
+        existingSid !== sid &&
+        sessions.has(existingSid)
+      ) {
         // Already locked by another active session — reject, send back current state
         send(ws, presenceUpdate(msg.pageId));
         return;
@@ -222,7 +228,7 @@ function sendSaveConflict(userId: string, pageId: string): void {
 
 function getEditorForPage(pageId: string): User | undefined {
   const sid = pageEditors.get(pageId);
-  if (!sid) {
+  if (sid === undefined || sid === "") {
     return undefined;
   }
   const ws = sessions.get(sid);

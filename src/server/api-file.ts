@@ -64,7 +64,9 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
 
   let body: { content?: string };
   try {
-    body = (await req.json()) as { content?: string };
+    const json: unknown = await req.json();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    body = json as { content?: string };
   } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
@@ -103,7 +105,9 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
 
   let body: { path?: string; content?: string };
   try {
-    body = (await req.json()) as {
+    const json: unknown = await req.json();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    body = json as {
       path?: string;
       content?: string;
     };
@@ -180,13 +184,15 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
 
   let body: { from?: string; to?: string };
   try {
-    body = (await req.json()) as { from?: string; to?: string };
+    const json: unknown = await req.json();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    body = json as { from?: string; to?: string };
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
   const { from, to } = body;
-  if (!from || !to) {
+  if (from === undefined || from === "" || to === undefined || to === "") {
     return Response.json({ error: "from and to required" }, { status: 400 });
   }
   if (!isSafePath(config.repoPath, from) || !isSafePath(config.repoPath, to)) {
@@ -230,15 +236,13 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
       return op;
     }),
   );
-  const firstFailure = renameResults.find((res) => res.status === "rejected") as
-    | PromiseRejectedResult
-    | undefined;
+  const firstFailure = renameResults.find((res) => res.status === "rejected");
   if (firstFailure !== undefined) {
     const completed = renameResults
       .filter((res): res is PromiseFulfilledResult<RenameOp> => res.status === "fulfilled")
       .map((res) => res.value);
     await Promise.all(
-      completed.toReversed().map((op) =>
+      completed.toReversed().map(async (op) =>
         rename(join(config.repoPath, op.relTo), join(config.repoPath, op.relFrom)).catch(
           (_err: unknown) => {
             /* rollback best-effort, ignore failure */

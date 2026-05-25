@@ -109,7 +109,7 @@ export default function MarkdownEditor({
               />
               <Label htmlFor="props-slides">Presentation mode</Label>
             </div>
-            {dlgMeta.slides && (
+            {dlgMeta.slides === true && (
               <>
                 <div className="border-t border-border" />
                 {/* Theme */}

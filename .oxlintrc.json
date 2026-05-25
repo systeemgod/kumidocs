@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "node"],
+  "options": {
+    "typeAware": true
+  },
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -20,7 +23,12 @@
     "eslint/new-cap": "off",
     "eslint/no-console": "off",
     "eslint/no-continue": "off",
-    "eslint/no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
+    "eslint/no-duplicate-imports": [
+      "error",
+      {
+        "allowSeparateTypeImports": true
+      }
+    ],
     "eslint/no-inline-comments": "off",
     "eslint/no-magic-numbers": "off",
     "eslint/no-plusplus": "off",
@@ -33,17 +41,31 @@
     "import/no-named-export": "off",
     "import/no-default-export": "off",
     "import/no-nodejs-modules": "off",
-    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/*.css"]
+      }
+    ],
     "oxc/no-async-await": "off",
     "oxc/no-optional-chaining": "off",
     "oxc/no-rest-spread-properties": "off",
-    "unicorn/prefer-global-this": "off"
+    "unicorn/prefer-global-this": "off",
+    "typescript/prefer-readonly-parameter-types": "off",
+    "typescript/no-misused-promises": "off",
+    "typescript/strict-void-return": "off",
+    "eslint/require-await": "off",
+    "typescript/require-await": "off",
+    "unicorn/no-useless-undefined": "off",
+    "eslint/max-lines": "off"
   },
   "env": {
     "browser": true,
     "builtin": true,
     "node": true
   },
-  "globals": { "Bun": "readonly" },
+  "globals": {
+    "Bun": "readonly"
+  },
   "ignorePatterns": ["**/*.d.ts", "src/components/ui/emoji/emojis.ts"]
 }

@@ -1,4 +1,4 @@
-import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from "react";
+import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import CodeEditor from "@/components/editor/code-editor";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
@@ -30,10 +30,10 @@ function addTextOverlayToPage(
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
-    if (!text || !(node as Text).parentElement) {
+    if (!text || !(node instanceof Text) || node.parentElement === null) {
       continue;
     }
-    let ancestor: Element | null = (node as Text).parentElement;
+    let ancestor: Element | null = node.parentElement;
     let inSvg = false;
     while (ancestor) {
       if (ancestor.tagName.toLowerCase() === "svg") {
@@ -54,9 +54,7 @@ function addTextOverlayToPage(
     const yLocal = br.top - rootRect.top;
     const pageIdx = Math.floor(yLocal / pageHPx);
     const yOnPage = yLocal - pageIdx * pageHPx;
-    const fsPx = Number.parseFloat(
-      window.getComputedStyle((node as Text).parentElement ?? document.body).fontSize,
-    );
+    const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
     pdf.setPage(pageIdx + 1);
     pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
     const pdfWidth = pdf.getTextWidth(text);
@@ -97,7 +95,7 @@ function addLinkOverlayToPage(
 
 function resolveFileType(rawExt: string, slides: boolean | undefined): FileType {
   const base = extensionToType(rawExt);
-  return base === "doc" && slides ? "slide" : base;
+  return base === "doc" && slides === true ? "slide" : base;
 }
 
 function computeTitle(fileType: FileType, content: string, filePath: string): string {
@@ -149,7 +147,7 @@ interface EditorContentProps {
   meta: DocMeta;
   slideThemes: SlideThemeMap;
   setMeta: Dispatch<SetStateAction<DocMeta>>;
-  metaRef: MutableRefObject<DocMeta>;
+  metaRef: RefObject<DocMeta>;
   title: string;
 }
 

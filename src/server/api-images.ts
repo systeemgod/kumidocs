@@ -20,8 +20,9 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
     return Response.json({ error: "Invalid form data" }, { status: 400 });
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const file = formData.get("file") as File | null;
-  if (!file) {
+  if (file === null) {
     return Response.json({ error: "No file provided" }, { status: 400 });
   }
   if (file.size > MAX) {
@@ -56,33 +57,31 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
 }
 
 // GET /api/images
-async function apiImagesList(config: Config): Promise<Response> {
+function apiImagesList(config: Config): Response {
   const all = getAllPaths();
   const imagePaths = all.filter((filePath) => filePath.startsWith("images/"));
   const mdPaths = all.filter((filePath) => filePath.endsWith(".md"));
 
-  const results = await Promise.all(
-    imagePaths.map((repoPath) => {
-      const filename = repoPath.slice("images/".length);
-      // The sha256 portion is the part before the extension
-      const dotIdx = filename.lastIndexOf(".");
-      const sha256 = dotIdx === -1 ? filename : filename.slice(0, dotIdx);
+  const results = imagePaths.map((repoPath) => {
+    const filename = repoPath.slice("images/".length);
+    // The sha256 portion is the part before the extension
+    const dotIdx = filename.lastIndexOf(".");
+    const sha256 = dotIdx === -1 ? filename : filename.slice(0, dotIdx);
 
-      let size = 0;
-      try {
-        size = Bun.file(join(config.repoPath, repoPath)).size;
-      } catch {
-        // file may be transiently unavailable
-      }
+    let size = 0;
+    try {
+      size = Bun.file(join(config.repoPath, repoPath)).size;
+    } catch {
+      // file may be transiently unavailable
+    }
 
-      const usedIn = mdPaths.filter((mdPath) => {
-        const content = getFile(mdPath) ?? "";
-        return content.includes(sha256);
-      });
+    const usedIn = mdPaths.filter((mdPath) => {
+      const content = getFile(mdPath) ?? "";
+      return content.includes(sha256);
+    });
 
-      return { filename, path: repoPath, size, url: `/images/${filename}`, usedIn };
-    }),
-  );
+    return { filename, path: repoPath, size, url: `/images/${filename}`, usedIn };
+  });
 
   return Response.json(results);
 }

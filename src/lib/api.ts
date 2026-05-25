@@ -68,29 +68,31 @@ async function request<TResponse>(url: string, init?: RequestInit): Promise<TRes
     }
     throw new ApiError(res.status, body);
   }
-  return res.json() as Promise<TResponse>;
+  const data: unknown = await res.json();
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  return data as TResponse;
 }
 
 // ── API functions ─────────────────────────────────────────────────────────────
 
-const getMe = (): Promise<MeResponse> => request<MeResponse>("/api/me");
+const getMe = async (): Promise<MeResponse> => request<MeResponse>("/api/me");
 
-const getTree = (): Promise<TreeNode[]> => request<TreeNode[]>("/api/tree");
+const getTree = async (): Promise<TreeNode[]> => request<TreeNode[]>("/api/tree");
 
-const searchPages = (query: string): Promise<SearchResult[]> =>
+const searchPages = async (query: string): Promise<SearchResult[]> =>
   request<SearchResult[]>(`/api/search?q=${encodeURIComponent(query)}`);
 
-const getFile = (path: string): Promise<FileGetResponse> =>
+const getFile = async (path: string): Promise<FileGetResponse> =>
   request<FileGetResponse>(`/api/file?path=${encodeURIComponent(path)}`);
 
-const putFile = (path: string, content: string): Promise<FileSaveResponse> =>
+const putFile = async (path: string, content: string): Promise<FileSaveResponse> =>
   request<FileSaveResponse>(`/api/file?path=${encodeURIComponent(path)}`, {
     body: JSON.stringify({ content }),
     headers: { "Content-Type": "application/json" },
     method: "PUT",
   });
 
-const createFile = (path: string, content: string): Promise<FileSaveResponse> =>
+const createFile = async (path: string, content: string): Promise<FileSaveResponse> =>
   request<FileSaveResponse>("/api/file", {
     body: JSON.stringify({ content, path }),
     headers: { "Content-Type": "application/json" },
@@ -109,21 +111,21 @@ const renameFile = async (from: string, to: string): Promise<void> => {
   });
 };
 
-const getFileHistory = (path: string): Promise<CommitEntry[]> =>
+const getFileHistory = async (path: string): Promise<CommitEntry[]> =>
   request<CommitEntry[]>(`/api/file/history?path=${encodeURIComponent(path)}`);
 
-const getFileDiff = (path: string, sha: string): Promise<DiffData> =>
+const getFileDiff = async (path: string, sha: string): Promise<DiffData> =>
   request<DiffData>(
     `/api/file/diff?path=${encodeURIComponent(path)}&sha=${encodeURIComponent(sha)}`,
   );
 
-const getImages = (): Promise<ImageEntry[]> => request<ImageEntry[]>("/api/images");
+const getImages = async (): Promise<ImageEntry[]> => request<ImageEntry[]>("/api/images");
 
 const deleteImage = async (filename: string): Promise<void> => {
   await request<unknown>(`/api/images/${encodeURIComponent(filename)}`, { method: "DELETE" });
 };
 
-const uploadImage = (file: File): Promise<{ url: string }> => {
+const uploadImage = async (file: File): Promise<{ url: string }> => {
   const form = new FormData();
   form.append("file", file);
   return request<{ url: string }>("/api/upload/image", { body: form, method: "POST" });

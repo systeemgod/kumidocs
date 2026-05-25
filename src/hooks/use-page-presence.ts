@@ -1,4 +1,4 @@
-import type { Dispatch, MutableRefObject, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useWsListener, wsClient } from "@/store/ws";
 import type { PresenceUser } from "@/lib/types";
 import { toast } from "@/components/ui/toaster";
@@ -16,8 +16,8 @@ interface UsePagePresenceReturn {
 export default function usePagePresence(
   filePath: string,
   userId: string | undefined,
-  editModeRef: MutableRefObject<boolean>,
-  isDirtyRef: MutableRefObject<boolean>,
+  editModeRef: RefObject<boolean>,
+  isDirtyRef: RefObject<boolean>,
   loadDoc: (path: string) => Promise<void>,
 ): UsePagePresenceReturn {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function usePagePresence(
   const [remoteBanner, setRemoteBanner] = useState<string | undefined>();
 
   useMountEffect(() => {
-    if (userId) {
+    if (userId !== undefined && userId !== "") {
       wsClient.joinPage(filePath);
     }
     return (): void => {
@@ -61,7 +61,7 @@ export default function usePagePresence(
     }
     if (msg.type === "page_deleted" && msg.pageId === filePath) {
       toast.warning("This page was deleted");
-      navigate("/p/README.md");
+      void navigate("/p/README.md");
     }
     if (msg.type === "save_conflict_lost" && msg.pageId === filePath) {
       toast.error("Your changes were lost due to a remote conflict.");

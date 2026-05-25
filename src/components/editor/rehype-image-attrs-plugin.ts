@@ -87,12 +87,13 @@ function applyAttrs(img: Element, attrs: Record<string, string>): string {
 }
 
 function walk(node: Root | Element): void {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const children = node.children as ElementContent[];
   let idx = 0;
   while (idx < children.length) {
     const child = children[idx];
 
-    if (child === undefined || child.type !== "element" || child.tagName !== "img") {
+    if (child?.type !== "element" || child.tagName !== "img") {
       if (child !== undefined && "children" in child) {
         walk(child);
       }
@@ -120,6 +121,7 @@ function walk(node: Root | Element): void {
     if (node.type === "element") {
       applyHashToNode(node, hash);
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const remaining = (sibling as { value: string }).value.slice(match[0].length);
     if (remaining.trim()) {
       children.splice(idx + 1, 1, { type: "text", value: remaining });

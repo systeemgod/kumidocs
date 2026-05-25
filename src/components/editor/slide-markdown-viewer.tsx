@@ -18,7 +18,8 @@ const buildOuterStyle = (
   padding: SlideMarkdownViewerProps["contentPadding"],
 ): CSSProperties => {
   const style: CSSProperties = {};
-  if (directives.color) {
+  if (directives.color !== undefined && directives.color !== "") {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     (style as Record<string, unknown>)["--slide-fg"] = directives.color;
   }
   if (padding) {

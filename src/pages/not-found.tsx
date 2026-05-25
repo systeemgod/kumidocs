@@ -17,7 +17,7 @@ const NotFound = (): JSX.Element => {
       <Button
         variant="outline"
         onClick={() => {
-          navigate("/p/README.md");
+          void navigate("/p/README.md");
         }}
       >
         <ArrowLeftRegular className="mr-2 w-4 h-4" />

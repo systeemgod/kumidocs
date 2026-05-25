@@ -11,6 +11,7 @@ export default function useInfoPanel(
 
   useMountEffect(() => {
     const handler = (ev: Event): void => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       const detail = (ev as CustomEvent<string>).detail;
       if (detail === filePath) {
         setInfoOpen((prev) => {

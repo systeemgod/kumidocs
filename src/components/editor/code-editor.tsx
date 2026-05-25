@@ -30,6 +30,7 @@ const EXT_TO_LANG: Record<string, string> = {
 };
 
 const resolveLanguage = (ext: string): NonNullable<ReturnType<typeof loadLanguage>>[] => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const name = (EXT_TO_LANG[ext] ?? ext) as LanguageName;
   try {
     const lang = loadLanguage(name);

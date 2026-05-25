@@ -17,6 +17,7 @@ const Toaster = (allProps: ToasterProps): JSX.Element => {
 
   return (
     <Sonner
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
@@ -27,6 +28,7 @@ const Toaster = (allProps: ToasterProps): JSX.Element => {
         warning: <TriangleAlertIcon className="size-4" />,
       }}
       style={
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         {
           "--border-radius": "var(--radius)",
           "--normal-bg": "var(--popover)",

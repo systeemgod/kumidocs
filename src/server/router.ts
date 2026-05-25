@@ -50,35 +50,35 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     "/*": isBundled ? serveSPA : devIndex,
 
     "/api/avatar/:hash": {
-      GET(req: Request) {
+      async GET(req: Request) {
         const hash = new URL(req.url).pathname.slice("/api/avatar/".length);
         return apiAvatarProxy(hash);
       },
     },
 
     "/api/file": {
-      DELETE(req: Request) {
+      async DELETE(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         return apiFileDelete(new URL(req.url), user, config);
       },
-      GET(req: Request) {
+      async GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         return apiFileGet(new URL(req.url), config);
       },
-      POST(req: Request) {
+      async POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
         return apiFileCreate(req, user, config);
       },
-      PUT(req: Request) {
+      async PUT(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -88,7 +88,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/file/diff": {
-      GET(req: Request) {
+      async GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -98,7 +98,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/file/history": {
-      GET(req: Request) {
+      async GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -108,7 +108,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/file/rename": {
-      POST(req: Request) {
+      async POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -118,7 +118,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/images": {
-      GET(req: Request) {
+      async GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -128,7 +128,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/images/:filename": {
-      DELETE(req: Request) {
+      async DELETE(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -179,7 +179,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/upload/image": {
-      POST(req: Request) {
+      async POST(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
@@ -195,7 +195,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
           return new Response("Unauthorized", { status: 401 });
         }
         const filename = decodeURIComponent(new URL(req.url).pathname.slice("/images/".length));
-        return await serveRepoAsset(`images/${filename}`, config);
+        return serveRepoAsset(`images/${filename}`, config);
       },
     },
   };

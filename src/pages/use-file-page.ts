@@ -1,5 +1,5 @@
 import { ApiError, createFile, getFile } from "@/lib/api";
-import type { Dispatch, MutableRefObject, ReactNode, RefObject, SetStateAction } from "react";
+import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { computeTitle, resolveFileType } from "./file-page-utils";
@@ -41,7 +41,7 @@ interface UseFilePageReturn {
   loadDoc: (path: string) => Promise<void>;
   loading: boolean;
   meta: DocMeta;
-  metaRef: MutableRefObject<DocMeta>;
+  metaRef: RefObject<DocMeta>;
   notFound: boolean;
   openDelete: (filePath: string, title?: string) => void;
   openMove: (filePath: string) => Promise<void>;
@@ -106,7 +106,7 @@ function useFilePage(): UseFilePageReturn {
   const { exportPagePdf, pdfContentRef } = usePagePdfExport(title);
 
   const enterEdit = useCallback(() => {
-    if (!user?.canEdit) {
+    if (user?.canEdit !== true) {
       return;
     }
     if (editLocked && editLocked.id !== user.id) {
@@ -161,7 +161,7 @@ function useFilePage(): UseFilePageReturn {
       await createFile(newPath, data.content);
       reloadTree();
       toast.success("Page duplicated");
-      navigate(`/p/${newPath}`);
+      void navigate(`/p/${newPath}`);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 409) {
         toast.error("A copy already exists at that path");

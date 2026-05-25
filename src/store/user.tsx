@@ -1,8 +1,8 @@
+import { ApiError, getMe } from "@/lib/api";
 import { createContext, useCallback, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import type { SlideThemeMap } from "@/lib/slide";
 import type { User } from "@/lib/types";
-import { getMe } from "@/lib/api";
 import useMountEffect from "@/hooks/use-mount-effect";
 
 const HTTP_UNAUTHORIZED = 401;
@@ -37,7 +37,7 @@ const fetchMe = async (): Promise<FetchMeResult> => {
     const user: User = { canEdit, displayName, email, id, name };
     return { needs401: false, slideThemes: themeData ?? {}, user };
   } catch (error: unknown) {
-    const needs401 = (error as { status?: number }).status === HTTP_UNAUTHORIZED;
+    const needs401 = error instanceof ApiError && error.status === HTTP_UNAUTHORIZED;
     return { needs401, slideThemes: {} };
   }
 };

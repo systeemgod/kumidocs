@@ -37,7 +37,7 @@ function applyRectStyle(el: RectElement, styles: React.CSSProperties): void {
 }
 
 function applyXPositioning(el: AlignableElement, styles: React.CSSProperties): void {
-  if (el.centerX) {
+  if (el.centerX === true) {
     styles.left = "50%";
     styles.transform = "translateX(-50%)";
   } else {
@@ -51,9 +51,9 @@ function applyXPositioning(el: AlignableElement, styles: React.CSSProperties): v
 }
 
 function applyYPositioning(el: AlignableElement, styles: React.CSSProperties): void {
-  if (el.centerY) {
+  if (el.centerY === true) {
     styles.top = "50%";
-    styles.transform = `${styles.transform ? `${styles.transform} ` : ""}translateY(-50%)`;
+    styles.transform = `${styles.transform !== undefined && styles.transform !== "" ? `${styles.transform} ` : ""}translateY(-50%)`;
   } else {
     if (el.top !== undefined) {
       styles.top = el.top;
@@ -67,12 +67,12 @@ function applyYPositioning(el: AlignableElement, styles: React.CSSProperties): v
 function applyImageDimensions(el: ImageElement, styles: React.CSSProperties): void {
   if (el.width !== undefined) {
     styles.width = el.width;
-  } else if (!el.centerX && el.left !== undefined && el.right !== undefined) {
+  } else if (el.centerX !== true && el.left !== undefined && el.right !== undefined) {
     styles.width = CANVAS_W - el.left - el.right;
   }
   if (el.height !== undefined) {
     styles.height = el.height;
-  } else if (!el.centerY && el.top !== undefined && el.bottom !== undefined) {
+  } else if (el.centerY !== true && el.top !== undefined && el.bottom !== undefined) {
     styles.height = CANVAS_H - el.top - el.bottom;
   }
 }
@@ -128,7 +128,11 @@ function interpolate(
 // before rendering tells html2canvas the correct raster dimensions.
 
 function patchSvgDimensions(src: string, width?: number, height?: number): string {
-  if (!src.startsWith("data:image/svg+xml;base64,") || !width || !height) {
+  if (
+    !src.startsWith("data:image/svg+xml;base64,") ||
+    width === undefined ||
+    height === undefined
+  ) {
     return src;
   }
   try {
@@ -181,7 +185,7 @@ export default function SlideOverlay({
               style={{
                 color: el.color,
                 fontSize: el.fontSize,
-                fontWeight: el.bold ? "bold" : undefined,
+                fontWeight: el.bold === true ? "bold" : undefined,
                 lineHeight: 1.2,
                 textAlign: el.align,
                 whiteSpace: "pre",

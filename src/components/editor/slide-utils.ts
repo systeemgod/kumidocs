@@ -109,20 +109,21 @@ function buildCanvasStyle(
   directives: SlideDirectives,
 ): React.CSSProperties {
   const style: React.CSSProperties = {};
-  if (resolvedTheme?.bg) {
+  if (resolvedTheme?.bg !== undefined && resolvedTheme.bg !== "") {
     style.background = resolvedTheme.bg;
     style.backgroundSize = "cover";
     style.backgroundPosition = "center";
     style.backgroundRepeat = "no-repeat";
   }
-  if (resolvedTheme?.fg) {
+  if (resolvedTheme?.fg !== undefined && resolvedTheme.fg !== "") {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     (style as Record<string, unknown>)["--slide-fg"] = resolvedTheme.fg;
   }
-  if (resolvedTheme?.fontFamily) {
+  if (resolvedTheme?.fontFamily !== undefined && resolvedTheme.fontFamily !== "") {
     style.fontFamily = resolvedTheme.fontFamily;
   }
   // Per-slide bg overrides custom theme bg
-  if (directives.bg) {
+  if (directives.bg !== undefined && directives.bg !== "") {
     style.background = directives.bg;
     style.backgroundSize = "cover";
     style.backgroundPosition = "center";

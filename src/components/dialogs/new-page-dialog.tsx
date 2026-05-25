@@ -51,7 +51,9 @@ export default function NewPageDialog({
   // Auto-derive slug from title unless user has manually edited it (derived state, no effect needed)
   const effectiveSlug = slugEdited ? slug : slugify(title);
 
-  const finalPath = effectiveSlug ? `${parentDir ? `${parentDir}/` : ""}${effectiveSlug}.md` : "";
+  const finalPath = effectiveSlug
+    ? `${parentDir !== undefined && parentDir !== "" ? `${parentDir}/` : ""}${effectiveSlug}.md`
+    : "";
 
   const handleCreate = useCallback(async () => {
     const resolvedSlug = slugEdited ? slug : slugify(title);
@@ -68,7 +70,7 @@ export default function NewPageDialog({
       toast.success("Page created");
       onCreated?.();
       onClose();
-      navigate(`/p/${finalPath}`);
+      void navigate(`/p/${finalPath}`);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 409) {
         toast.error("A page at that path already exists.");
@@ -109,7 +111,7 @@ export default function NewPageDialog({
         <DialogHeader>
           <DialogTitle>New page</DialogTitle>
           <DialogDescription>
-            {parentDir
+            {parentDir !== undefined && parentDir !== ""
               ? `Create a sub-page under "${parentDir}"`
               : "Create a new page at the root of the repository"}
           </DialogDescription>

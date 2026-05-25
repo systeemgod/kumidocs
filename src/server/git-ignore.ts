@@ -53,7 +53,7 @@ function buildIgnoreChecker(repoPath: string): IgnoreChecker {
   const ig = ignore();
 
   const globalContent = loadGlobalGitignore();
-  if (globalContent) {
+  if (globalContent !== undefined && globalContent !== "") {
     ig.add(globalContent);
   }
 

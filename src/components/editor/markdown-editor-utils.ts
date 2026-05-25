@@ -122,6 +122,7 @@ async function uploadImageFile(file: File): Promise<string | undefined> {
     return data.url;
   } catch (error: unknown) {
     const body =
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       error instanceof ApiError ? (error.body as { error?: string } | undefined) : undefined;
     toast.error(body?.error ?? "Upload failed");
     return undefined;

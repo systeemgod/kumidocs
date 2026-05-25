@@ -39,7 +39,9 @@ async function loadPermissions(): Promise<void> {
   const configPath = join(config.repoPath, ".kumidocs.json");
   try {
     const raw = await Bun.file(configPath).text();
-    setPermissions(JSON.parse(raw) as KumiDocsPermissions);
+    const parsed: unknown = JSON.parse(raw);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    setPermissions(parsed as KumiDocsPermissions);
   } catch (error: unknown) {
     // If file doesn't exist, create it with default config
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
@@ -124,7 +126,7 @@ async function watchDir(absDir: string): Promise<void> {
   // watches for every subdirectory in the tree (which exhausts the OS limit
   // when node_modules or similar large directories are present).
   watch(absDir, {}, async (_event, filename) => {
-    if (!filename) {
+    if (filename === null) {
       return;
     }
     const absFile = join(absDir, filename);
@@ -163,7 +165,7 @@ async function watchDir(absDir: string): Promise<void> {
     await Promise.all(
       entries
         .filter((entry) => entry.isDirectory())
-        .map((entry) => watchDir(join(absDir, entry.name))),
+        .map(async (entry) => watchDir(join(absDir, entry.name))),
     );
   } catch {
     // Directory removed during scan — ignore
@@ -236,6 +238,7 @@ const server = serve<WsData>({
       });
       return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
     }
+    return undefined;
   },
 
   port: config.port,

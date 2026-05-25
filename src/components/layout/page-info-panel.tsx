@@ -128,7 +128,7 @@ export default function PageInfoPanel({
                       key={commit.sha}
                       className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
                       onClick={() => {
-                        openDiff(commit.sha);
+                        void openDiff(commit.sha);
                       }}
                     >
                       <UserAvatar

@@ -31,7 +31,7 @@ function useMarkdownImageHandler(
         void (async (): Promise<void> => {
           const url = await uploadImageFile(file);
           toast.dismiss(toastId);
-          if (url && ta) {
+          if (url !== undefined && url !== "" && ta) {
             insertImage(ta, url);
             syncChange();
             toast.success("Image uploaded");

@@ -1,3 +1,4 @@
+// oxlint-disable typescript/no-deprecated
 /**
  * EmojiIcon — unified icon/emoji renderer.
  *
@@ -60,12 +61,14 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
   const innerStyle: CSSProperties = { height: "100%", width: "100%" };
 
   // Emoji path — check for overrides first
-  if (emoji) {
+  if (emoji !== undefined && emoji !== "") {
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
     const svgDataUri = EMOJI_SVGS[emoji];
-    if (svgDataUri) {
+    if (svgDataUri !== undefined && svgDataUri !== "") {
       return (
         <span style={wrapStyle} className={className}>
           <img
+            // oxlint-disable-next-line typescript/no-unsafe-assignment
             src={svgDataUri}
             alt={emoji}
             style={{
