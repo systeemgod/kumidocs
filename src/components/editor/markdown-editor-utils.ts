@@ -1,5 +1,5 @@
 import { ApiError, uploadImage } from "@/lib/api";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 
 function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): void {
   const start = ta.selectionStart;

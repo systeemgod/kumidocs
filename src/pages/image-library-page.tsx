@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ImageEntry } from "@/lib/api";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import useMountEffect from "@/hooks/use-mount-effect";
 import { useUser } from "@/store/user";
 

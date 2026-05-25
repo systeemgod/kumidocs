@@ -3,7 +3,8 @@ import { deleteFile, getTree, renameFile } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
 import type { PageOption } from "@/components/dialogs/page-action-dialogs";
 import type { TreeNode } from "@/lib/types";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
+import useMountEffect from "@/hooks/use-mount-effect";
 import { useNavigate } from "react-router-dom";
 
 function flattenTree(nodes: TreeNode[]): TreeNode[] {
@@ -46,8 +47,12 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     setParentOpen(false);
   }, []);
 
+  // Remove any stale listener on unmount (e.g. route navigation while dropdown is open)
+  useMountEffect(() => closeParentDropdown);
+
   // Close the parent combobox dropdown when clicking outside
   const openParentDropdown = useCallback(() => {
+    closeParentDropdown(); // remove any previously registered handler before adding a new one
     const handler = (ev: MouseEvent): void => {
       if (comboboxRef.current && !comboboxRef.current.contains(ev.target as Node)) {
         closeParentDropdown();

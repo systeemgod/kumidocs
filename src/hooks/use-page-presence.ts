@@ -1,7 +1,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { useWsListener, wsClient } from "@/store/ws";
 import type { PresenceUser } from "@/lib/types";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import useMountEffect from "./use-mount-effect";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";

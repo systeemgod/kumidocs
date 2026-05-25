@@ -13,7 +13,7 @@ import { EmojiIcon } from "@/components/ui/emoji-icon";
 import Input from "@/components/ui/input";
 import Label from "@/components/ui/label";
 import type { MarkdownType } from "@/lib/types";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import { useNavigate } from "react-router-dom";
 
 interface NewPageDialogProps {

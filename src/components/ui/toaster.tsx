@@ -7,8 +7,8 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import { Toaster as Sonner, toast } from "sonner";
 import type { CSSProperties } from "react";
-import { Toaster as Sonner } from "sonner";
 import type { ToasterProps } from "sonner";
 import { useTheme } from "next-themes";
 
@@ -39,4 +39,5 @@ const Toaster = (allProps: ToasterProps): JSX.Element => {
   );
 };
 
+export { toast };
 export default Toaster;

@@ -9,7 +9,7 @@ import { ContextMenuItem, ContextMenuSeparator } from "./context-menu";
 import { DropdownMenuItem, DropdownMenuSeparator } from "./dropdown-menu";
 import { Link } from "react-router-dom";
 import { Square } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 
 interface PageMenuItemsProps {
   variant: "dropdown" | "context";

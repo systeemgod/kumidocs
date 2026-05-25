@@ -9,7 +9,7 @@ import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import type { SaveStatus } from "./use-file-page-save";
 import type { SlideThemeMap } from "@/lib/slide";
 import { pathExtension } from "@/lib/filetypes";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import { useFilePageSave } from "./use-file-page-save";
 import useInfoPanel from "@/hooks/use-info-panel";
 import usePageActions from "@/hooks/use-page-actions";

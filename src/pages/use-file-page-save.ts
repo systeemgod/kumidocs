@@ -3,7 +3,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useRef, useState } from "react";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import useMountEffect from "@/hooks/use-mount-effect";
 
 type SaveStatus = "saved" | "saving" | "unsaved" | "error";

@@ -17,7 +17,7 @@ import type { PageNode, PresenceUser, User } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PageMenuItems } from "@/components/ui/page-menu-items";
 import { UserAvatar } from "@/components/ui/avatar";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import { useState } from "react";
 
 function PageNodeRow({

@@ -1,6 +1,6 @@
 import { insertImage, uploadImageFile } from "./markdown-editor-utils";
 import type { RefObject } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toaster";
 import { useCallback } from "react";
 
 interface UseMarkdownImageHandlerReturn {
