@@ -18,17 +18,13 @@
     "eslint/func-style": "off",
     "eslint/init-declarations": "off",
     "eslint/max-lines-per-function": "off",
+    "eslint/max-lines": "off",
     "eslint/max-params": "off",
     "eslint/max-statements": "off",
     "eslint/new-cap": "off",
     "eslint/no-console": "off",
     "eslint/no-continue": "off",
-    "eslint/no-duplicate-imports": [
-      "error",
-      {
-        "allowSeparateTypeImports": true
-      }
-    ],
+    "eslint/no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
     "eslint/no-inline-comments": "off",
     "eslint/no-magic-numbers": "off",
     "eslint/no-plusplus": "off",
@@ -36,28 +32,22 @@
     "eslint/no-undefined": "off",
     "eslint/no-void": "off",
     "eslint/prefer-destructuring": "off",
+    "eslint/require-await": "off",
     "import/max-dependencies": "off",
+    "import/no-default-export": "off",
     "import/no-named-as-default-member": "off",
     "import/no-named-export": "off",
-    "import/no-default-export": "off",
     "import/no-nodejs-modules": "off",
-    "import/no-unassigned-import": [
-      "error",
-      {
-        "allow": ["**/*.css"]
-      }
-    ],
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
     "oxc/no-async-await": "off",
     "oxc/no-optional-chaining": "off",
     "oxc/no-rest-spread-properties": "off",
-    "unicorn/prefer-global-this": "off",
-    "typescript/prefer-readonly-parameter-types": "off",
     "typescript/no-misused-promises": "off",
-    "typescript/strict-void-return": "off",
-    "eslint/require-await": "off",
+    "typescript/prefer-readonly-parameter-types": "off",
     "typescript/require-await": "off",
+    "typescript/strict-void-return": "off",
     "unicorn/no-useless-undefined": "off",
-    "eslint/max-lines": "off"
+    "unicorn/prefer-global-this": "off"
   },
   "env": {
     "browser": true,
