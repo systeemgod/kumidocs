@@ -1,4 +1,4 @@
-# KumiDocs — Agent Roles & Responsibilities
+# AGENTS.md
 
 ## Project Structure
 

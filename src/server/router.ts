@@ -23,7 +23,8 @@ import devIndex from "@/index.html";
 
 // oxlint-disable-next-line no-underscore-dangle
 declare const __BUNDLED__: boolean | undefined;
-const isBundled = __BUNDLED__ !== undefined;
+// oxlint-disable-next-line unicorn/no-typeof-undefined
+const isBundled = typeof __BUNDLED__ !== "undefined";
 const publicDir = join(import.meta.dir, "..", "public");
 
 async function serveSPA(req: Request): Promise<Response> {

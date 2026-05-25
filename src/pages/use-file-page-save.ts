@@ -10,6 +10,7 @@ type SaveStatus = "saved" | "saving" | "unsaved" | "error";
 
 interface UseFilePageSaveProps {
   filePath: string;
+  setFilePath: (path: string) => void;
   reloadTree: () => void;
   autoSaveDelay: number;
   setEditMode: (mode: boolean) => void;
@@ -40,6 +41,7 @@ interface UseFilePageSaveReturn {
 
 function useFilePageSave({
   filePath,
+  setFilePath,
   reloadTree,
   autoSaveDelay,
   setEditMode,
@@ -76,7 +78,26 @@ function useFilePageSave({
       setLoading(true);
       setNotFound(false);
       try {
-        const data = await getFile(path);
+        // Extensionless files (e.g. LICENSE, Makefile) get ".md" appended by the
+        // routing heuristic. If that 404s and the bare name has no extension,
+        // retry with the original path and correct filePath for the whole page.
+        let data;
+        let resolvedPath = path;
+        try {
+          data = await getFile(path);
+        } catch (error: unknown) {
+          const isMissing = error instanceof ApiError && error.status === 404;
+          const wasAppended = path.endsWith(".md") && !path.slice(0, -3).includes(".");
+          if (isMissing && wasAppended) {
+            resolvedPath = path.slice(0, -3);
+            data = await getFile(resolvedPath);
+          } else {
+            throw error;
+          }
+        }
+        if (resolvedPath !== path) {
+          setFilePath(resolvedPath);
+        }
         const parsed = parseFrontmatter(data.content);
         setContent(parsed.content);
         setRawContent(data.content);
@@ -96,7 +117,7 @@ function useFilePageSave({
         setLoading(false);
       }
     },
-    [setEditMode],
+    [setEditMode, setFilePath],
   );
 
   useMountEffect(() => {

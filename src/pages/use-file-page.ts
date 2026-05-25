@@ -63,7 +63,7 @@ interface UseFilePageReturn {
 
 function useFilePage(): UseFilePageReturn {
   const { "*": rawPath = "" } = useParams();
-  const filePath = rawPath.includes(".") ? rawPath : `${rawPath}.md`;
+  const [filePath, setFilePath] = useState(rawPath.includes(".") ? rawPath : `${rawPath}.md`);
   const navigate = useNavigate();
   const { reloadTree, autoSaveDelay } = useOutletContext<OutletCtx>();
   const { user, slideThemes } = useUser();
@@ -86,7 +86,7 @@ function useFilePage(): UseFilePageReturn {
     savePromiseRef,
     saveStatus,
     setMeta,
-  } = useFilePageSave({ autoSaveDelay, filePath, reloadTree, setEditMode });
+  } = useFilePageSave({ autoSaveDelay, filePath, reloadTree, setEditMode, setFilePath });
 
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
   const [infoOpen, setInfoOpen] = useInfoPanel(filePath);

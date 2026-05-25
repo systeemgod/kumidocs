@@ -55,6 +55,8 @@ SSO_PROXY_CLIENT_ID=your_client_id
 SSO_PROXY_CLIENT_SECRET=your_client_secret
 SSO_PROXY_PROVIDER=github            # github | google | oidc | ...
 SSO_PROXY_REDIRECT_URL=https://docs.example.com/oauth2/callback
+SSO_PROXY_COOKIE_DOMAIN=example.com
+SSO_PROXY_COOKIE_SECURE=true
 ```
 
 Mount your content repo at `/repo`:
