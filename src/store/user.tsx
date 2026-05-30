@@ -74,7 +74,8 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
     }
     // cookieStore is Chromium-only (Chrome 87+, Edge 87+).
     // Fall back to document.cookie for Firefox/Safari.
-    if (globalThis.cookieStore !== undefined) {
+    // Use 'in' check instead of typeof/!== to avoid TS type overlap warnings.
+    if ("cookieStore" in globalThis) {
       try {
         await globalThis.cookieStore.set({
           name: "kumidocs_email",
@@ -86,6 +87,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
         // ignore — reload regardless
       }
     } else {
+      // oxlint-disable-next-line unicorn/no-document-cookie
       document.cookie = `kumidocs_email=${encodeURIComponent(trimmed)}; path=/; SameSite=Lax`;
     }
     globalThis.location.reload();

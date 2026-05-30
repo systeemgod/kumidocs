@@ -41,7 +41,7 @@ interface JWTPayload {
 /** Regex matching a valid JWT (three base64url segments separated by dots).
  * Base64url uses [A-Za-z0-9_-] — notably NOT containing '@', so dotted
  * email local-parts (e.g. "some.name@example.com") won't be mistaken for JWTs. */
-const JWT_REGEX = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+const JWT_REGEX = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
 
 /** Decode an email string from a raw auth header value (JWT or plain string). Returns undefined if JWT has no email claim. */
 const resolveEmail = (value: string): string | undefined => {
@@ -57,7 +57,7 @@ const resolveEmail = (value: string): string | undefined => {
       // Prefer email, fall back to preferred_username if email is null/undefined/empty.
       // (?? alone won't skip empty strings, and || is banned by project lint rules.)
       const raw =
-        payload.email !== undefined && payload.email !== null && payload.email !== ""
+        payload.email !== undefined && payload.email !== ""
           ? payload.email
           : payload.preferred_username;
       // JWT present but no usable email claim
