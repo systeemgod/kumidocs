@@ -124,10 +124,10 @@ function searchDocs(query: string, limit = 20): SearchResult[] {
     return [];
   }
   const results = // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  (index.search(query) as unknown as (Record<string, unknown> & { score: number })[]).slice(
-    0,
-    limit,
-  );
+    (index.search(query) as unknown as (Record<string, unknown> & { score: number })[]).slice(
+      0,
+      limit,
+    );
   return results.map((result) => ({
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     emoji: result.emoji as string | undefined,
