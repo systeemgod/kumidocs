@@ -104,8 +104,9 @@ async function stageAndCommitBuiltin(
 
 async function fetchAndRebaseBuiltin(
   config: Config,
-): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
+): Promise<{ changed: string[]; sha: string; advanced: boolean; pullFailed: boolean }> {
   const before = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" }).catch(() => "");
+  let pullFailed = false;
 
   try {
     await git.fetch({ dir: config.repoPath, fs, http, remote: "origin", singleBranch: true });
@@ -118,6 +119,7 @@ async function fetchAndRebaseBuiltin(
     });
   } catch (error: unknown) {
     console.warn("Git: fetch/merge failed (offline or conflict?) —", String(error));
+    pullFailed = true;
   }
 
   const after = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" }).catch(() => "");
@@ -147,7 +149,7 @@ async function fetchAndRebaseBuiltin(
     }
   }
 
-  return { advanced, changed, sha };
+  return { advanced, changed, pullFailed, sha };
 }
 
 export { fetchAndRebaseBuiltin, gitPullBuiltin, stageAndCommitBuiltin };

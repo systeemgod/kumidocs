@@ -3,7 +3,9 @@ import {
   broadcastPageChanged,
   broadcastPageCreated,
   broadcastPageDeleted,
+  broadcastSyncStatus,
   getEditorForPage,
+  getSyncStatus,
 } from "./websocket";
 import {
   deleteFileFromRepo,
@@ -91,7 +93,13 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
   if (result.error === "push_failed") {
     // Commit is local — content is safe, but could not sync to remote.
     // Return 200 so the client marks the page as saved.
+    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
     return Response.json({ pushWarning: true, sha: result.sha });
+  }
+  // Push succeeded — if we were in a failing state, recover
+  const prev = getSyncStatus();
+  if (prev.push === "failing") {
+    broadcastSyncStatus({ ...prev, push: "ok" });
   }
   return Response.json({ sha: result.sha });
 }

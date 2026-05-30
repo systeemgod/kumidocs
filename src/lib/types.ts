@@ -64,7 +64,13 @@ type WsServerMessage =
   | { type: "page_deleted"; pageId: string }
   | { type: "page_created"; pageId: string; path: string }
   | { type: "save_conflict_lost"; pageId: string; message: string }
-  | { type: "heartbeat_ack" };
+  | { type: "heartbeat_ack" }
+  | {
+      type: "sync_status";
+      /** "ok" = all good, "degraded" = pushes failing, "unreachable" = remote unreachable */
+      pull: "ok" | "failing";
+      push: "ok" | "failing";
+    };
 
 interface PageNode {
   path: string; // always a .md path (may not exist on disk for virtual nodes)
@@ -103,6 +109,11 @@ interface FileDiff {
   after: string;
 }
 
+interface SyncStatus {
+  pull: "ok" | "failing";
+  push: "ok" | "failing";
+}
+
 export type {
   User,
   MarkdownType,
@@ -112,6 +123,7 @@ export type {
   PageNode,
   SearchResult,
   PresenceUser,
+  SyncStatus,
   WsClientMessage,
   WsServerMessage,
   SidebarItem,

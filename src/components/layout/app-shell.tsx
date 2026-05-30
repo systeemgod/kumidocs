@@ -1,4 +1,4 @@
-import type { PresenceUser, TreeNode } from "@/lib/types";
+import type { PresenceUser, SyncStatus, TreeNode } from "@/lib/types";
 import { getMe, getTree } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
 import { useWsListener, wsClient } from "@/store/ws";
@@ -33,6 +33,7 @@ export default function AppShell(): JSX.Element {
   const [presenceByPage, setPresenceByPage] = useState<Map<string, PresenceUser[]>>(new Map());
   const [newPageOpen, setNewPageOpen] = useState(false);
   const [newPageParentDir, setNewPageParentDir] = useState<string | undefined>();
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | undefined>();
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     if (stored === null || stored === "") {
@@ -113,6 +114,9 @@ export default function AppShell(): JSX.Element {
         return next;
       });
     }
+    if (msg.type === "sync_status") {
+      setSyncStatus(msg);
+    }
     if (msg.type === "page_created" || msg.type === "page_changed" || msg.type === "page_deleted") {
       scheduleTreeReload();
     }
@@ -175,9 +179,29 @@ export default function AppShell(): JSX.Element {
     [sidebarWidth],
   );
 
+  const syncBanner = ((): JSX.Element | undefined => {
+    if (!syncStatus || (syncStatus.pull === "ok" && syncStatus.push === "ok")) {
+      return undefined;
+    }
+    let message: string;
+    if (syncStatus.push === "failing" && syncStatus.pull === "failing") {
+      message = "Remote sync is unreachable. Changes are saved locally.";
+    } else if (syncStatus.push === "failing") {
+      message = "Remote sync is degraded — saves are local-only. Changes will be pushed when the remote is reachable again.";
+    } else {
+      message = "Remote sync is degraded — pull from remote failed.";
+    }
+    return (
+      <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-1.5 flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200 shrink-0">
+        <span className="flex-1">{message}</span>
+      </div>
+    );
+  })();
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background text-foreground">
       {user && <WsConnector userId={user.id} />}
+      {syncBanner}
       <TopBar
         instanceName={instanceName}
         onSearchOpen={() => {

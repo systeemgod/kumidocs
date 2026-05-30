@@ -106,9 +106,17 @@ async function gitMoveAndCommit(
   );
 }
 
+interface FetchResult {
+  changed: string[];
+  sha: string;
+  advanced: boolean;
+  /** true when the fetch/merge/rebase step hit an error (offline, conflict, etc.) */
+  pullFailed: boolean;
+}
+
 async function gitFetchAndRebase(
   config: Config,
-): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
+): Promise<FetchResult> {
   return withGitLock(async () =>
     config.gitImpl === "native" ? gitFetchAndRebaseNative(config) : fetchAndRebaseBuiltin(config),
   );
@@ -172,6 +180,7 @@ export {
   gitFetchAndRebase,
   getHeadSha,
   type CommitEntry,
+  type FetchResult,
   gitFileLog,
   gitBlobAt,
 };

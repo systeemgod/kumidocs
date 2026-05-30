@@ -22,6 +22,37 @@ function send(ws: ServerWebSocket<WsData>, msg: WsServerMessage): void {
   }
 }
 
+// ── Sync status tracking ──────────────────────────────────────────────────────
+// Tracks whether the server can reach and sync with the remote git origin.
+// Broadcasts to all connected clients on state changes so the UI can show
+// a persistent banner when remote sync is degraded.
+
+type SyncState = "ok" | "failing";
+interface SyncStatus {
+  pull: SyncState;
+  push: SyncState;
+}
+
+let currentSyncStatus: SyncStatus = { pull: "ok", push: "ok" };
+
+function broadcastSyncStatus(status: SyncStatus): void {
+  const prev = currentSyncStatus;
+  // Avoid spamming clients with no-op updates
+  if (prev.pull === status.pull && prev.push === status.push) {
+    return;
+  }
+  currentSyncStatus = status;
+  const msg: WsServerMessage = { ...status, type: "sync_status" };
+  for (const ws of sessions.values()) {
+    send(ws, msg);
+  }
+}
+
+/** Fetch the current sync status (for sending to newly connected clients). */
+function getSyncStatus(): SyncStatus {
+  return currentSyncStatus;
+}
+
 function broadcastToAll(msg: WsServerMessage): void {
   for (const ws of sessions.values()) {
     send(ws, msg);
@@ -129,6 +160,9 @@ function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
           send(ws, presenceUpdate(pageId));
         }
       }
+      // Send the current remote sync status so the client can show a banner
+      // immediately without waiting for the next sync event.
+      send(ws, { ...getSyncStatus(), type: "sync_status" });
       break;
     }
 
@@ -255,6 +289,8 @@ export {
   broadcastPageChanged,
   broadcastPageDeleted,
   broadcastPageCreated,
+  broadcastSyncStatus,
+  getSyncStatus,
   sendSaveConflict,
   getEditorForPage,
   pruneDeadSessions,

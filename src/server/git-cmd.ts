@@ -183,10 +183,10 @@ async function gitMoveAndCommitNative(
 
 async function gitFetchAndRebaseNative(
   config: Config,
-): Promise<{ changed: string[]; sha: string; advanced: boolean }> {
+): Promise<{ changed: string[]; sha: string; advanced: boolean; pullFailed: boolean }> {
   const beforeResult = await runGit(config.repoPath, ["rev-parse", "HEAD"]);
   if (beforeResult.exitCode !== 0) {
-    return { advanced: false, changed: [], sha: "unknown" };
+    return { advanced: false, changed: [], pullFailed: false, sha: "unknown" };
   }
   const before = beforeResult.stdout.trim();
 
@@ -200,7 +200,7 @@ async function gitFetchAndRebaseNative(
     if (rebase.exitCode !== 0) {
       console.warn("Git: rebase failed, aborting —", rebase.stderr.trim());
       await runGit(config.repoPath, ["rebase", "--abort"]);
-      return { advanced: false, changed: [], sha: before.slice(0, 7) };
+      return { advanced: false, changed: [], pullFailed: true, sha: before.slice(0, 7) };
     }
   }
 
@@ -218,7 +218,7 @@ async function gitFetchAndRebaseNative(
     }
   }
 
-  return { advanced, changed, sha };
+  return { advanced, changed, pullFailed: false, sha };
 }
 
 export {

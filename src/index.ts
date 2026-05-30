@@ -8,6 +8,7 @@ import {
 import {
   broadcastPageChanged,
   broadcastPageDeleted,
+  broadcastSyncStatus,
   pruneDeadSessions,
   wsClose,
   wsMessage,
@@ -196,6 +197,7 @@ function requireUser(req: Request): User | undefined {
 setInterval(() => {
   void (async (): Promise<void> => {
     const result = await gitFetchAndRebase(config);
+    broadcastSyncStatus({ pull: result.pullFailed ? "failing" : "ok", push: "ok" });
     if (result.advanced) {
       await loadPermissions();
       await Promise.all(
