@@ -201,6 +201,8 @@ function buildEditorContent({
         filename={title}
         theme={meta.theme}
         paginate={meta.paginate}
+        header={meta.header}
+        footer={meta.footer}
         slideThemes={slideThemes}
         themeVars={meta.themeVars}
       />

@@ -215,3 +215,5 @@ export default function SlideOverlay({
     </>
   );
 }
+
+export { interpolate };

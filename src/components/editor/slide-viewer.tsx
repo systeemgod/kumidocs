@@ -20,6 +20,10 @@ interface SlideViewerProps {
   theme?: string;
   /** When true, each slide canvas shows a "N / total" badge in the bottom-right. */
   paginate?: boolean;
+  /** Deck-level header text (may be overridden per-slide by <!-- header: --> directive) */
+  header?: string;
+  /** Deck-level footer text (may be overridden per-slide by <!-- footer: --> directive) */
+  footer?: string;
   /** Custom theme definitions loaded from .kumidocs.json via /api/me. */
   slideThemes?: SlideThemeMap;
   /** User-defined variables from frontmatter (theme-var-* fields) substituted into theme element content */
@@ -32,6 +36,8 @@ function SlideViewer({
   standalone = false,
   theme = "default",
   paginate = false,
+  header,
+  footer,
   slideThemes,
   themeVars,
 }: SlideViewerProps): JSX.Element {
@@ -96,6 +102,8 @@ function SlideViewer({
               scale={1}
               theme={theme}
               paginate={paginate}
+              header={header}
+              footer={footer}
               slideNum={idx + 1}
               total={total}
               slideThemes={slideThemes}
@@ -130,6 +138,8 @@ function SlideViewer({
             setIndex={setIndex}
             theme={theme}
             paginate={paginate}
+            header={header}
+            footer={footer}
             total={total}
             slideNum={index + 1}
             slideThemes={slideThemes}
@@ -162,6 +172,8 @@ function SlideViewer({
                   scale={scale}
                   theme={theme}
                   paginate={paginate}
+                  header={header}
+                  footer={footer}
                   slideNum={idx + 1}
                   total={total}
                   slideThemes={slideThemes}
@@ -179,6 +191,8 @@ function SlideViewer({
               scale={scale}
               theme={theme}
               paginate={paginate}
+              header={header}
+              footer={footer}
               slideNum={index + 1}
               total={total}
               slideThemes={slideThemes}

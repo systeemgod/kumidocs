@@ -18,6 +18,8 @@ interface SlideSpotlightOverlayProps {
   setIndex: (index: number) => void;
   theme: string;
   paginate: boolean;
+  header?: string;
+  footer?: string;
   total: number;
   slideNum: number;
   slideThemes?: SlideThemeMap;
@@ -39,6 +41,8 @@ function SlideSpotlightOverlay({
   setIndex,
   theme,
   paginate,
+  header,
+  footer,
   total,
   slideNum,
   slideThemes,
@@ -71,6 +75,8 @@ function SlideSpotlightOverlay({
         scale={spotlightScale}
         theme={theme}
         paginate={paginate}
+        header={header}
+        footer={footer}
         slideNum={slideNum}
         total={total}
         slideThemes={slideThemes}

@@ -15,6 +15,10 @@ interface PageMeta {
   theme?: string;
   /** When true, slide numbers are shown on each slide canvas */
   paginate?: boolean;
+  /** Deck-level header text applied to every slide (may be overridden per-slide via directive) */
+  header?: string;
+  /** Deck-level footer text applied to every slide (may be overridden per-slide via directive) */
+  footer?: string;
   /** Custom variables substituted into theme element content strings via {{key}} */
   themeVars?: Record<string, string>;
 }
@@ -33,6 +37,12 @@ const applyKv = (data: PageMeta, key: string, val: string): void => {
   }
   if (key === "paginate" && trimmedVal === "true") {
     data.paginate = true;
+  }
+  if (key === "header") {
+    data.header = trimmedVal;
+  }
+  if (key === "footer") {
+    data.footer = trimmedVal;
   }
   if (key.startsWith("theme-var-")) {
     const THEME_VAR_PREFIX = "theme-var-";
@@ -80,6 +90,12 @@ const buildFrontmatter = (meta: PageMeta): string => {
   }
   if (meta.paginate === true) {
     lines.push("paginate: true");
+  }
+  if (meta.header !== undefined && meta.header !== "") {
+    lines.push(`header: ${meta.header}`);
+  }
+  if (meta.footer !== undefined && meta.footer !== "") {
+    lines.push(`footer: ${meta.footer}`);
   }
   if (meta.themeVars) {
     for (const [varKey, varValue] of Object.entries(meta.themeVars)) {

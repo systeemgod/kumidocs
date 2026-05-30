@@ -42,6 +42,10 @@ interface SlideDirectives {
   backgroundSize?: string;
   /** CSS filter applied to the background layer (KumiDocs extension, not in Marp) */
   backgroundFilter?: string;
+  /** Per-slide header text — overrides the deck-level frontmatter header for this slide */
+  header?: string;
+  /** Per-slide footer text — overrides the deck-level frontmatter footer for this slide */
+  footer?: string;
   /** CSS color override for all text on this slide */
   color?: string;
 }
@@ -64,6 +68,8 @@ interface ParsedSlide {
  *   backgroundRepeat         — individual background-repeat
  *   backgroundSize           — individual background-size
  *   backgroundFilter         — CSS filter for the background (KumiDocs extension)
+ *   header                   — per-slide header text (overrides deck-level frontmatter)
+ *   footer                   — per-slide footer text (overrides deck-level frontmatter)
  *   color                    — text colour override
  *
  * URL values in `background*` directives are validated against the allowed prefix
@@ -116,6 +122,14 @@ const parseSlideDirectives = (raw: string): ParsedSlide => {
         }
         case "backgroundfilter": {
           directives.backgroundFilter = directiveValue;
+          break;
+        }
+        case "header": {
+          directives.header = directiveValue;
+          break;
+        }
+        case "footer": {
+          directives.footer = directiveValue;
           break;
         }
         case "color": {
