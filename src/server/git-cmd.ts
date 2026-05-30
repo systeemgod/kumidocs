@@ -56,6 +56,81 @@ async function gitFileLogNative(
     });
 }
 
+/**
+ * Like `gitFileLogNative` but uses `--numstat` to get added/removed line
+ * counts directly from git — avoids reading the full blob at every revision.
+ */
+async function gitFileLogNativeWithStats(
+  config: Config,
+  filepath: string,
+  limit = 50,
+): Promise<CommitEntry[]> {
+  const result = await runGit(config.repoPath, [
+    "log",
+    `-${limit}`,
+    "--format=%H%s%an%ae%aI",
+    "--numstat",
+    "--",
+    filepath,
+  ]);
+  if (result.exitCode !== 0 || !result.stdout.trim()) {
+    return [];
+  }
+
+  const entries: CommitEntry[] = [];
+  let currentSha = "";
+  let currentMsg = "";
+  let currentAuthor = "";
+  let currentEmail = "";
+  let currentDate = "";
+  let currentAdded = 0;
+  let currentRemoved = 0;
+
+  const flushEntry = (): void => {
+    if (!currentSha) {
+      return;
+    }
+    entries.push({
+      added: currentAdded || undefined,
+      author: currentAuthor,
+      authorEmail: currentEmail,
+      date: currentDate,
+      fullSha: currentSha,
+      message: currentMsg,
+      removed: currentRemoved || undefined,
+      sha: currentSha.slice(0, 7),
+    });
+    currentAdded = 0;
+    currentRemoved = 0;
+  };
+
+  for (const line of result.stdout.trim().split("\n")) {
+    if (line.includes("\u001F")) {
+      // Commit header line — flush previous entry
+      flushEntry();
+      const [fullSha = "", message = "", author = "", authorEmail = "", date = ""] =
+        line.split("\u001F");
+      currentSha = fullSha;
+      currentMsg = message;
+      currentAuthor = author;
+      currentEmail = authorEmail;
+      currentDate = date;
+    } else if (currentSha && /^\d+\t\d+\t/u.test(line)) {
+      // Numstat line: <added>\t<removed>\t<path>
+      const tabIdx = line.indexOf("\t");
+      const rest = line.slice(tabIdx + 1);
+      const secondTabIdx = rest.indexOf("\t");
+      if (tabIdx !== -1 && secondTabIdx !== -1) {
+        currentAdded += Number(line.slice(0, tabIdx));
+        currentRemoved += Number(rest.slice(0, secondTabIdx));
+      }
+    }
+  }
+  // Flush last entry
+  flushEntry();
+  return entries;
+}
+
 async function gitBlobAtNative(
   config: Config,
   commitSha: string,
@@ -226,6 +301,7 @@ export {
   gitBlobAtNative,
   gitFetchAndRebaseNative,
   gitFileLogNative,
+  gitFileLogNativeWithStats,
   gitMoveAndCommitNative,
   gitPullNative,
   gitRemoveAndCommitNative,

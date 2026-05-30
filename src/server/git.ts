@@ -4,6 +4,7 @@ import {
   gitBlobAtNative,
   gitFetchAndRebaseNative,
   gitFileLogNative,
+  gitFileLogNativeWithStats,
   gitMoveAndCommitNative,
   gitPullNative,
   gitRemoveAndCommitNative,
@@ -170,6 +171,48 @@ async function gitBlobAt(config: Config, commitSha: string, filepath: string): P
   }
 }
 
+/**
+ * Return commits for `filepath` enriched with added/removed line counts.
+ *
+ * Native backend: uses `git log --numstat` (fast, no blob reads).
+ * Builtin backend: reads blobs and computes diffs (slower, but avoids the
+ * subprocess overhead — isomorphic-git reads objects directly from .git/objects).
+ */
+async function gitFileLogWithStats(
+  config: Config,
+  filepath: string,
+  limit = 50,
+): Promise<CommitEntry[]> {
+  if (config.gitImpl === "native") {
+    return gitFileLogNativeWithStats(config, filepath, limit);
+  }
+  // Builtin: use blob reads to compute added/removed
+  const commits = await gitFileLog(config, filepath, limit);
+  return Promise.all(
+    commits.map(async (commit, idx) => {
+      const parentCommit = commits[idx + 1];
+      const [after, before] = await Promise.all([
+        gitBlobAt(config, commit.fullSha, filepath),
+        parentCommit ? gitBlobAt(config, parentCommit.fullSha, filepath) : Promise.resolve(""),
+      ]);
+      const { createTwoFilesPatch } = await import("diff");
+      const patch = createTwoFilesPatch("", "", before, after, "", "", { context: 0 });
+      let added = 0;
+      let removed = 0;
+      for (const line of patch.split("\n")) {
+        if (line.startsWith("+") && !line.startsWith("+++")) {
+          added++;
+        } else if (line.startsWith("-") && !line.startsWith("---")) {
+          removed++;
+        }
+      }
+      commit.added = added || undefined;
+      commit.removed = removed || undefined;
+      return commit;
+    }),
+  );
+}
+
 export {
   gitPull,
   gitStageAndCommit,
@@ -180,5 +223,6 @@ export {
   type CommitEntry,
   type FetchResult,
   gitFileLog,
+  gitFileLogWithStats,
   gitBlobAt,
 };

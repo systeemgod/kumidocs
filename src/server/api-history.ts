@@ -1,4 +1,4 @@
-import { gitBlobAt, gitFileLog } from "./git";
+import { gitBlobAt, gitFileLog, gitFileLogWithStats } from "./git";
 import type { Config } from "./config";
 import { createTwoFilesPatch } from "diff";
 import isSafePath from "./api-utils";
@@ -12,37 +12,8 @@ async function apiFileHistory(url: URL, config: Config): Promise<Response> {
   if (!isSafePath(config.repoPath, path)) {
     return new Response("Forbidden", { status: 403 });
   }
-  const commits = await gitFileLog(config, path);
-  const enriched = await Promise.all(
-    commits.map(async (commit, idx) => {
-      const parentCommit = commits[idx + 1];
-      const [after, before] = await Promise.all([
-        gitBlobAt(config, commit.fullSha, path),
-        parentCommit ? gitBlobAt(config, parentCommit.fullSha, path) : Promise.resolve(""),
-      ]);
-      const patch = createTwoFilesPatch("", "", before, after, "", "", { context: 0 });
-      let added = 0;
-      let removed = 0;
-      for (const line of patch.split("\n")) {
-        if (line.startsWith("+") && !line.startsWith("+++")) {
-          added++;
-        } else if (line.startsWith("-") && !line.startsWith("---")) {
-          removed++;
-        }
-      }
-      return {
-        added,
-        author: commit.author,
-        authorEmail: commit.authorEmail,
-        date: commit.date,
-        fullSha: commit.fullSha,
-        message: commit.message,
-        removed,
-        sha: commit.sha,
-      };
-    }),
-  );
-  return Response.json(enriched);
+  const commits = await gitFileLogWithStats(config, path);
+  return Response.json(commits);
 }
 
 // GET /api/file/diff?path=<path>&sha=<sha>
