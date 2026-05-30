@@ -143,6 +143,16 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
   );
 
   broadcastPageCreated(path, path);
+
+  if (result.error === "push_failed") {
+    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    return Response.json({ path, pushWarning: true, sha: result.sha });
+  }
+
+  const prevSync = getSyncStatus();
+  if (prevSync.push === "failing") {
+    broadcastSyncStatus({ ...prevSync, push: "ok" });
+  }
   return Response.json({ path, sha: result.sha });
 }
 
@@ -176,6 +186,16 @@ async function apiFileDelete(url: URL, user: User, config: Config): Promise<Resp
   );
 
   broadcastPageDeleted(path);
+
+  if (result.error === "push_failed") {
+    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    return Response.json({ pushWarning: true, sha: result.sha });
+  }
+
+  const prevSync = getSyncStatus();
+  if (prevSync.push === "failing") {
+    broadcastSyncStatus({ ...prevSync, push: "ok" });
+  }
   return Response.json({ sha: result.sha });
 }
 
@@ -272,7 +292,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
     from: subFile,
     to: toDir + subFile.slice(fromDir.length),
   }));
-  await gitMoveAndCommit(
+  const moveResult = await gitMoveAndCommit(
     config,
     from,
     to,
@@ -282,13 +302,26 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
     extraMoves,
   );
 
+  // Broadcast regardless of push status — files are safely on disk and in cache.
   for (const old of movedPaths) {
     broadcastPageDeleted(old);
   }
   for (const newPath of newPaths) {
     broadcastPageCreated(newPath, newPath);
   }
-  return Response.json({ from, sha: undefined, to });
+
+  if (moveResult.error === "push_failed") {
+    // Commit is local — content is safe, but could not sync to remote.
+    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    return Response.json({ from, pushWarning: true, sha: moveResult.sha, to });
+  }
+
+  // Push succeeded — recover sync status if we were in a failing state
+  const prevSync = getSyncStatus();
+  if (prevSync.push === "failing") {
+    broadcastSyncStatus({ ...prevSync, push: "ok" });
+  }
+  return Response.json({ from, sha: moveResult.sha, to });
 }
 
 export { apiFileGet, apiFilePut, apiFileCreate, apiFileDelete, apiFileRename };
