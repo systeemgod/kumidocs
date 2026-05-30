@@ -72,15 +72,21 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
       globalThis.location.reload();
       return;
     }
-    try {
-      await globalThis.cookieStore.set({
-        name: "kumidocs_email",
-        path: "/",
-        sameSite: "lax",
-        value: encodeURIComponent(trimmed),
-      });
-    } catch {
-      // ignore — reload regardless
+    // cookieStore is Chromium-only (Chrome 87+, Edge 87+).
+    // Fall back to document.cookie for Firefox/Safari.
+    if (globalThis.cookieStore !== undefined) {
+      try {
+        await globalThis.cookieStore.set({
+          name: "kumidocs_email",
+          path: "/",
+          sameSite: "lax",
+          value: encodeURIComponent(trimmed),
+        });
+      } catch {
+        // ignore — reload regardless
+      }
+    } else {
+      document.cookie = `kumidocs_email=${encodeURIComponent(trimmed)}; path=/; SameSite=Lax`;
     }
     globalThis.location.reload();
   }, []);
