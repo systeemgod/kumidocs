@@ -62,7 +62,13 @@ const resolveEmail = (value: string): string | undefined => {
 };
 
 const parseUser = (headers: Headers, authHeader: string): User | undefined => {
-  const value = headers.get(authHeader) ?? cookieEmail(headers.get("cookie"));
+  // Check the configured auth header first. If absent or empty, fall through
+  // to the kumidocs_email cookie (used when no SSO proxy is present).
+  const headerVal = headers.get(authHeader);
+  const value =
+    headerVal !== null && headerVal !== "" && headerVal.trim() !== ""
+      ? headerVal
+      : cookieEmail(headers.get("cookie"));
   if (value === undefined || value === "") {
     return undefined;
   }
