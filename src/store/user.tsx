@@ -64,12 +64,20 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   });
 
   const setEmailAndRefetch = useCallback(async (email: string): Promise<void> => {
+    const trimmed = email.trim().toLowerCase();
+    // Basic validation: must look like an email address.
+    // The UI dialog also validates, but this guard prevents storing
+    // garbage if called programmatically.
+    if (!trimmed.includes("@") || trimmed.startsWith("@") || trimmed.endsWith("@")) {
+      globalThis.location.reload();
+      return;
+    }
     try {
       await globalThis.cookieStore.set({
         name: "kumidocs_email",
         path: "/",
         sameSite: "lax",
-        value: encodeURIComponent(email.trim().toLowerCase()),
+        value: encodeURIComponent(trimmed),
       });
     } catch {
       // ignore — reload regardless
