@@ -27,7 +27,16 @@ import buildRoutes from "./server/router";
 import { loadConfig } from "./server/config";
 import { serve } from "bun";
 
-const config = loadConfig();
+let config: ReturnType<typeof loadConfig>;
+try {
+  config = loadConfig();
+} catch (error: unknown) {
+  if (error instanceof Error && error.name === "ExitRequestError" && "exitCode" in error) {
+    // oxlint-disable-next-line unicorn/no-process-exit, typescript/no-unsafe-type-assertion
+    process.exit((error as { exitCode: number }).exitCode);
+  }
+  throw error;
+}
 
 // Validate repo
 if (!existsSync(join(config.repoPath, ".git"))) {
