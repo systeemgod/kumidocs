@@ -38,14 +38,17 @@ interface JWTPayload {
   preferred_username?: string;
 }
 
-const JWT_SEGMENT_COUNT = 3;
+/** Regex matching a valid JWT (three base64url segments separated by dots).
+ * Base64url uses [A-Za-z0-9_-] — notably NOT containing '@', so dotted
+ * email local-parts (e.g. "some.name@example.com") won't be mistaken for JWTs. */
+const JWT_REGEX = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 
 /** Decode an email string from a raw auth header value (JWT or plain string). Returns undefined if JWT has no email claim. */
 const resolveEmail = (value: string): string | undefined => {
-  const parts = value.split(".");
-  if (parts.length === JWT_SEGMENT_COUNT) {
+  if (JWT_REGEX.test(value)) {
+    const [, payloadB64] = value.split(".");
     try {
-      const base64 = (parts.at(1) ?? "").replaceAll("-", "+").replaceAll("_", "/");
+      const base64 = (payloadB64 ?? "").replaceAll("-", "+").replaceAll("_", "/");
       // Base64url omits padding, but atob() requires length % 4 === 0.
       // Pad to a multiple of 4 so short payloads don't throw.
       const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
@@ -58,7 +61,7 @@ const resolveEmail = (value: string): string | undefined => {
       }
       return raw.trim().toLowerCase();
     } catch {
-      // Fall through to plain string handling
+      // Malformed JWT payload — not a valid JSON. Treat as plain string.
     }
   }
   return value.trim().toLowerCase();
