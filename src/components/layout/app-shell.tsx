@@ -187,7 +187,8 @@ export default function AppShell(): JSX.Element {
     if (syncStatus.push === "failing" && syncStatus.pull === "failing") {
       message = "Remote sync is unreachable. Changes are saved locally.";
     } else if (syncStatus.push === "failing") {
-      message = "Remote sync is degraded — saves are local-only. Changes will be pushed when the remote is reachable again.";
+      message =
+        "Remote sync is degraded — saves are local-only. Changes will be pushed when the remote is reachable again.";
     } else {
       message = "Remote sync is degraded — pull from remote failed.";
     }

@@ -114,9 +114,7 @@ interface FetchResult {
   pullFailed: boolean;
 }
 
-async function gitFetchAndRebase(
-  config: Config,
-): Promise<FetchResult> {
+async function gitFetchAndRebase(config: Config): Promise<FetchResult> {
   return withGitLock(async () =>
     config.gitImpl === "native" ? gitFetchAndRebaseNative(config) : fetchAndRebaseBuiltin(config),
   );
