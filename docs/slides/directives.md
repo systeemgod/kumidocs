@@ -21,13 +21,21 @@ _This deck uses the **minimal** theme — directives override individual slides.
 Add `<!-- key: value -->` comments anywhere in a slide.
 The parser strips them before rendering — they never appear in output.
 
-Three directives are supported:
+| Directive            | Aliases | Effect                                                                 |
+| -------------------- | ------- | ---------------------------------------------------------------------- |
+| `class`              | —       | Layout class: `title`, `section`, `split`, `center`, `blank`, `invert` |
+| `background`         | `bg`    | CSS background shorthand — colour, gradient, or image URL              |
+| `backgroundColor`    | —       | Individual `background-color`                                          |
+| `backgroundImage`    | —       | Individual `background-image`                                          |
+| `backgroundPosition` | —       | Individual `background-position`                                       |
+| `backgroundRepeat`   | —       | Individual `background-repeat`                                         |
+| `backgroundSize`     | —       | Individual `background-size`                                           |
+| `backgroundFilter`   | —       | CSS filter applied to the background (e.g. `brightness(0.5)`)          |
+| `color`              | —       | Override text colour                                                   |
 
-| Directive | Effect |
-| --- | --- |
-| `class` | Layout class: `title`, `section`, `split`, `center`, `blank`, `invert` |
-| `bg` | Override background — colour, gradient, or image URL |
-| `color` | Override text colour |
+All directives accept the Marp-style `_` prefix (e.g. `_class`, `_background`)
+to limit the effect to a single slide — though in KumiDocs everything is
+already per-slide, so the prefix is optional.
 
 ---
 
@@ -60,39 +68,41 @@ This slide uses `<!-- class: section -->` while the deck theme stays `minimal`.
 
 ---
 
-<!-- bg: #1a2744 -->
+<!-- background: #1a2744 -->
 <!-- color: #e8edf8 -->
 
-## bg + color
+## background + color
 
 This slide has a **navy background** and **soft blue-white text**
 set via directives — the deck theme is still `minimal`.
 
 ```markdown
-<!-- bg: #1a2744 -->
+<!-- background: #1a2744 -->
 <!-- color: #e8edf8 -->
 
 ## Your heading
 ```
 
+The shorthand `bg` also works — it's an alias for `background`.
+
 ---
 
-<!-- bg: linear-gradient(135deg, #f97316, #ec4899) -->
+<!-- background: linear-gradient(135deg, #f97316, #ec4899) -->
 <!-- color: white -->
 
 ## Gradient background
 
-`bg` accepts any valid CSS `background` value:
+`background` (or `bg`) accepts any valid CSS `background` value:
 solid colours, `linear-gradient()`, `radial-gradient()`, and image URLs.
 
 ```markdown
-<!-- bg: linear-gradient(135deg, #f97316, #ec4899) -->
+<!-- background: linear-gradient(135deg, #f97316, #ec4899) -->
 <!-- color: white -->
 ```
 
 ---
 
-<!-- bg: oklch(0.96 0.15 145) -->
+<!-- background: oklch(0.96 0.15 145) -->
 <!-- color: oklch(0.15 0.08 145) -->
 
 ## oklch colours
@@ -101,13 +111,13 @@ Modern `oklch()` colours work too —
 perceptually uniform and great for accessible contrast.
 
 ```markdown
-<!-- bg: oklch(0.96 0.15 145) -->
+<!-- background: oklch(0.96 0.15 145) -->
 <!-- color: oklch(0.15 0.08 145) -->
 ```
 
 ---
 
-<!-- bg: #18181b -->
+<!-- background: #18181b -->
 <!-- color: #a1a1aa -->
 
 ## Dark slide in a light deck
@@ -119,6 +129,41 @@ One dark "interlude" slide while the rest stays `minimal`.
 
 ---
 
+## Individual background-\* directives
+
+For fine-grained control, use the individual directives:
+
+```markdown
+<!-- backgroundImage: url(/images/photo.jpg) -->
+<!-- backgroundSize: contain -->
+<!-- backgroundPosition: left top -->
+<!-- backgroundRepeat: no-repeat -->
+```
+
+These override only their specific CSS property on top of the theme's
+background. Use `background` (or `bg`) when you want to replace everything.
+
+---
+
+<!-- backgroundFilter: brightness(0.6) sepia(0.3) -->
+
+## Background filter
+
+`backgroundFilter` applies a CSS filter to the background layer
+— useful for toning down a photo behind text:
+
+```markdown
+<!-- backgroundImage: url(/images/hero.jpg) -->
+<!-- backgroundSize: cover -->
+<!-- backgroundFilter: brightness(0.6) sepia(0.3) -->
+<!-- color: white -->
+```
+
+Any [CSS filter function](https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function)
+works: `brightness()`, `contrast()`, `blur()`, `sepia()`, `grayscale()`, etc.
+
+---
+
 ## Directive placement
 
 Directives can appear anywhere in a slide — top, bottom, or inline.
@@ -127,7 +172,7 @@ All directives on the slide are applied together.
 ```markdown
 Some content here.
 
-<!-- bg: red -->
+<!-- background: red -->
 
 More content.
 
@@ -136,17 +181,17 @@ More content.
 Final content.
 ```
 
-All three blocks of content are rendered. Both `bg` and `color` are applied.
+All three blocks of content are rendered. Both `background` and `color` are applied.
 
 ---
 
 ## Multiple directives
 
-Combine `class`, `bg`, and `color` on the same slide:
+Combine `class`, `background`, and `color` on the same slide:
 
 ```markdown
 <!-- class: center -->
-<!-- bg: oklch(0.13 0 0) -->
+<!-- background: oklch(0.13 0 0) -->
 <!-- color: oklch(0.93 0 0) -->
 
 ## Dark centred slide
@@ -154,7 +199,7 @@ Combine `class`, `bg`, and `color` on the same slide:
 A quote, a metric, or a call to action.
 ```
 
-`class` controls layout; `bg` and `color` control colours. They compose independently.
+`class` controls layout; `background` and `color` control colours. They compose independently.
 
 ---
 
@@ -162,13 +207,14 @@ A quote, a metric, or a call to action.
 
 # Summary
 
-`<!-- class: X -->`
-Override layout on this slide.
-
-`<!-- bg: … -->`
-Override background — any CSS value.
-
-`<!-- color: … -->`
-Override text colour.
-
-**Three directives, endless combinations.**
+| Directive            | Aliases | Purpose                                        |
+| -------------------- | ------- | ---------------------------------------------- |
+| `class`              | —       | Layout override                                |
+| `background`         | `bg`    | Shorthand — replaces all background properties |
+| `backgroundColor`    | —       | Individual colour override                     |
+| `backgroundImage`    | —       | Individual image override                      |
+| `backgroundPosition` | —       | Position override                              |
+| `backgroundRepeat`   | —       | Repeat override                                |
+| `backgroundSize`     | —       | Size override                                  |
+| `backgroundFilter`   | —       | CSS filter on background                       |
+| `color`              | —       | Text colour override                           |

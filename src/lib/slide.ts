@@ -1,3 +1,26 @@
+/**
+ * Allowed URL prefixes for background images (aligned with rehype-harden in slide-streamdown.tsx).
+ * URLs in `background*` directives that don't match are silently discarded.
+ */
+const ALLOWED_BG_URL_PREFIXES = ["/images/", "https://", "http://", "data:image/", "./", "../"];
+
+/**
+ * Validate that all `url(...)` references in a CSS value point to allowed origins.
+ * Pure colours and gradients without URLs always pass.
+ */
+const cssUrlsAreSafe = (cssValue: string): boolean => {
+  const URL_RE = /url\(\s*['"]?\s*([^)'"]+\s*)['"]?\s*\)/giu;
+  let match: RegExpExecArray | null;
+  while ((match = URL_RE.exec(cssValue)) !== null) {
+    const url = (match[1] ?? "").trim();
+    const allowed = ALLOWED_BG_URL_PREFIXES.some((prefix) => url.startsWith(prefix));
+    if (!allowed) {
+      return false;
+    }
+  }
+  return true;
+};
+
 /** Per-slide directives parsed from <!-- key: value --> HTML comments (Marp-compatible). */
 interface SlideDirectives {
   /**
@@ -5,8 +28,20 @@ interface SlideDirectives {
    * Supported values: 'title' | 'section' | 'split' | 'invert' | 'blank' | 'center'
    */
   classes: string[];
-  /** CSS background value: hex color, named color, hsl(), rgb(), linear-gradient(), url() */
-  bg?: string;
+  /**
+   * CSS background shorthand value — set by `bg` or `background` directive.
+   * Overrides all individual background-* properties when set.
+   * Accepts colours, gradients, and image URLs.
+   */
+  background?: string;
+  /** Individual background properties (set by Marp-compatible directives) */
+  backgroundColor?: string;
+  backgroundImage?: string;
+  backgroundPosition?: string;
+  backgroundRepeat?: string;
+  backgroundSize?: string;
+  /** CSS filter applied to the background layer (KumiDocs extension, not in Marp) */
+  backgroundFilter?: string;
   /** CSS color override for all text on this slide */
   color?: string;
 }
@@ -18,25 +53,69 @@ interface ParsedSlide {
 }
 
 /**
- * Parse Marp-compatible <!-- key: value --> directives from a single slide's markdown.
- * Recognized keys: class / _class (layout), bg (background), color (text color).
- * Returns the cleaned content (directives removed) and the extracted directives.
+ * Parse <!-- key: value --> directives from a single slide's markdown.
+ *
+ * Supported keys (all may be prefixed with `_` for Marp spot-directive compatibility):
+ *   class       — layout class (title, section, split, center, blank, invert)
+ *   bg / background          — CSS background shorthand (colours, gradients, image URLs)
+ *   backgroundColor          — individual background-color
+ *   backgroundImage          — individual background-image
+ *   backgroundPosition       — individual background-position
+ *   backgroundRepeat         — individual background-repeat
+ *   backgroundSize           — individual background-size
+ *   backgroundFilter         — CSS filter for the background (KumiDocs extension)
+ *   color                    — text colour override
+ *
+ * URL values in `background*` directives are validated against the allowed prefix
+ * allowlist. Disallowed URLs are silently discarded.
  */
 const parseSlideDirectives = (raw: string): ParsedSlide => {
   const directives: SlideDirectives = { classes: [] };
   const content = raw.replaceAll(
     /<!--\s*([\w-]+)\s*:\s*([\s\S]*?)\s*-->/giu,
     (_match: string, key: string, value: string) => {
-      const directiveKey = key.trim().toLowerCase();
+      // Strip leading _ (Marp spot-directive prefix) — all our directives are already per-slide
+      const directiveKey = key.trim().toLowerCase().replace(/^_/u, "");
       const directiveValue = value.trim();
+
       switch (directiveKey) {
-        case "class":
-        case "_class": {
+        case "class": {
           directives.classes.push(...directiveValue.split(/\s+/u).filter(Boolean));
           break;
         }
-        case "bg": {
-          directives.bg = directiveValue;
+        case "bg":
+        case "background": {
+          if (cssUrlsAreSafe(directiveValue)) {
+            directives.background = directiveValue;
+          }
+          break;
+        }
+        case "backgroundcolor": {
+          if (cssUrlsAreSafe(directiveValue)) {
+            directives.backgroundColor = directiveValue;
+          }
+          break;
+        }
+        case "backgroundimage": {
+          if (cssUrlsAreSafe(directiveValue)) {
+            directives.backgroundImage = directiveValue;
+          }
+          break;
+        }
+        case "backgroundposition": {
+          directives.backgroundPosition = directiveValue;
+          break;
+        }
+        case "backgroundrepeat": {
+          directives.backgroundRepeat = directiveValue;
+          break;
+        }
+        case "backgroundsize": {
+          directives.backgroundSize = directiveValue;
+          break;
+        }
+        case "backgroundfilter": {
+          directives.backgroundFilter = directiveValue;
           break;
         }
         case "color": {
@@ -250,6 +329,7 @@ const splitAtSecondH2 = (content: string): [string, string] => {
 
 export type { SlideDirectives, ParsedSlide, SlideThemeElement, SlideThemeDef, SlideThemeMap };
 export {
+  cssUrlsAreSafe,
   parseSlideDirectives,
   isBgDark,
   BUILTIN_SLIDE_THEMES,

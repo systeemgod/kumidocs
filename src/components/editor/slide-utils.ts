@@ -109,6 +109,8 @@ function buildCanvasStyle(
   directives: SlideDirectives,
 ): React.CSSProperties {
   const style: React.CSSProperties = {};
+
+  // 1. Theme-level background defaults
   if (resolvedTheme?.bg !== undefined && resolvedTheme.bg !== "") {
     style.background = resolvedTheme.bg;
     style.backgroundSize = "cover";
@@ -122,13 +124,35 @@ function buildCanvasStyle(
   if (resolvedTheme?.fontFamily !== undefined && resolvedTheme.fontFamily !== "") {
     style.fontFamily = resolvedTheme.fontFamily;
   }
-  // Per-slide bg overrides custom theme bg
-  if (directives.bg !== undefined && directives.bg !== "") {
-    style.background = directives.bg;
-    style.backgroundSize = "cover";
-    style.backgroundPosition = "center";
-    style.backgroundRepeat = "no-repeat";
+
+  // 2. Per-slide individual background-* directives override specific properties
+  if (directives.backgroundColor !== undefined) {
+    style.backgroundColor = directives.backgroundColor as React.CSSProperties["backgroundColor"];
   }
+  if (directives.backgroundImage !== undefined) {
+    style.backgroundImage = directives.backgroundImage as React.CSSProperties["backgroundImage"];
+  }
+  if (directives.backgroundPosition !== undefined) {
+    style.backgroundPosition =
+      directives.backgroundPosition as React.CSSProperties["backgroundPosition"];
+  }
+  if (directives.backgroundRepeat !== undefined) {
+    style.backgroundRepeat = directives.backgroundRepeat as React.CSSProperties["backgroundRepeat"];
+  }
+  if (directives.backgroundSize !== undefined) {
+    style.backgroundSize = directives.backgroundSize as React.CSSProperties["backgroundSize"];
+  }
+
+  // 3. Per-slide `background` shorthand overrides ALL background properties
+  if (directives.background !== undefined && directives.background !== "") {
+    style.background = directives.background as React.CSSProperties["background"];
+  }
+
+  // 4. Per-slide background filter
+  if (directives.backgroundFilter !== undefined) {
+    style.filter = directives.backgroundFilter as React.CSSProperties["filter"];
+  }
+
   return style;
 }
 
