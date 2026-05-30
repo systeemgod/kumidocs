@@ -22,7 +22,29 @@ if (!sanitizePlugin) {
 
 const REHYPE_PLUGINS: PluggableList = [
   sanitizePlugin,
-  [harden, { allowedImagePrefixes: ["*"], allowedLinkPrefixes: ["*"] }],
+  [
+    harden,
+    {
+      // Restrict to safe URL prefixes — "*" would allow javascript: URLs.
+      allowedImagePrefixes: [
+        "/images/",
+        "https://",
+        "http://",
+        "data:image/",
+        "./",
+        "../",
+      ],
+      allowedLinkPrefixes: [
+        "https://",
+        "http://",
+        "mailto:",
+        "#",
+        "/",
+        "./",
+        "../",
+      ],
+    },
+  ],
   rehypeHeadingIdsPlugin,
   rehypeImageAttrsPlugin,
   rehypeEmojiPlugin,

@@ -37,10 +37,20 @@ async function serveSPA(req: Request): Promise<Response> {
   if (await file.exists()) {
     return new Response(file, {
       headers:
-        rel === "index.html" ? {} : { "Cache-Control": "public, max-age=31536000, immutable" },
+        rel === "index.html"
+          ? {
+              "Content-Security-Policy":
+                "default-src 'self'; img-src 'self' https: http: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; font-src 'self' data:; connect-src 'self' ws: wss:",
+            }
+          : { "Cache-Control": "public, max-age=31536000, immutable" },
     });
   }
-  return new Response(Bun.file(join(publicDir, "index.html")));
+  return new Response(Bun.file(join(publicDir, "index.html")), {
+    headers: {
+      "Content-Security-Policy":
+        "default-src 'self'; img-src 'self' https: http: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; font-src 'self' data:; connect-src 'self' ws: wss:",
+    },
+  });
 }
 
 type RequireUser = (req: Request) => User | undefined;
