@@ -20,6 +20,11 @@ if (!sanitizePlugin) {
   throw new Error("streamdown sanitize plugin is required");
 }
 
+/** Resolve relative URLs against the current page origin. */
+const LOCAL = "http://localhost:5864";
+// oxlint-disable-next-line typescript/no-unnecessary-condition
+const DEFAULT_ORIGIN = globalThis.location === undefined ? LOCAL : globalThis.location.origin;
+
 const REHYPE_PLUGINS: PluggableList = [
   sanitizePlugin,
   [
@@ -28,6 +33,7 @@ const REHYPE_PLUGINS: PluggableList = [
       // Restrict to safe URL prefixes — "*" would allow javascript: URLs.
       allowedImagePrefixes: ["/images/", "https://", "http://", "data:image/", "./", "../"],
       allowedLinkPrefixes: ["https://", "http://", "mailto:", "#", "/", "./", "../"],
+      defaultOrigin: DEFAULT_ORIGIN,
     },
   ],
   rehypeHeadingIdsPlugin,
