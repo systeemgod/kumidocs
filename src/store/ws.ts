@@ -1,6 +1,6 @@
 import type { WsClientMessage, WsServerMessage } from "@/lib/types";
-import { useLayoutEffect, useRef } from "react";
 import useMountEffect from "@/hooks/use-mount-effect";
+import { useRef } from "react";
 
 type WsListener = (msg: WsServerMessage) => void;
 
@@ -141,11 +141,11 @@ class WsClient {
 const wsClient = new WsClient();
 
 const useWsListener = (handler: WsListener): void => {
+  // Keep a mutable ref so the WS listener always calls the latest handler
+  // without needing to re-register. Assigning in render is safe — refs are
+  // plain mutable containers and don't cause side effects.
   const handlerRef = useRef(handler);
-
-  useLayoutEffect((): void => {
-    handlerRef.current = handler;
-  });
+  handlerRef.current = handler;
 
   useMountEffect((): (() => void) => {
     const listener: WsListener = (msg): void => {
