@@ -1,3 +1,4 @@
+import { assertJsonObject, isSafePath } from "./api-utils";
 import {
   broadcastPageChanged,
   broadcastPageCreated,
@@ -17,7 +18,6 @@ import { mkdir, rename } from "node:fs/promises";
 import { removeFromIndex, updateInIndex } from "./search";
 import type { Config } from "./config";
 import type { User } from "@/lib/types";
-import isSafePath from "./api-utils";
 
 // GET /api/file?path=<path>
 async function apiFileGet(url: URL, config: Config): Promise<Response> {
@@ -62,16 +62,15 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
     );
   }
 
-  let body: { content?: string };
+  let body: Record<string, unknown>;
   try {
     const json: unknown = await req.json();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    body = json as { content?: string };
+    body = assertJsonObject(json);
   } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const content = body.content ?? "";
+  const content = typeof body.content === "string" ? body.content : "";
   await writeFileToRepo(path, content, config);
   updateInIndex(path);
 
@@ -103,20 +102,16 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let body: { path?: string; content?: string };
+  let body: Record<string, unknown>;
   try {
     const json: unknown = await req.json();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    body = json as {
-      path?: string;
-      content?: string;
-    };
+    body = assertJsonObject(json);
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const path = body.path ?? "";
-  const content = body.content ?? "";
+  const path = typeof body.path === "string" ? body.path : "";
+  const content = typeof body.content === "string" ? body.content : "";
   if (!path) {
     return Response.json({ error: "path required" }, { status: 400 });
   }
@@ -182,17 +177,17 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let body: { from?: string; to?: string };
+  let body: Record<string, unknown>;
   try {
     const json: unknown = await req.json();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    body = json as { from?: string; to?: string };
+    body = assertJsonObject(json);
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { from, to } = body;
-  if (from === undefined || from === "" || to === undefined || to === "") {
+  const from = typeof body.from === "string" ? body.from : "";
+  const to = typeof body.to === "string" ? body.to : "";
+  if (from === "" || to === "") {
     return Response.json({ error: "from and to required" }, { status: 400 });
   }
   if (!isSafePath(config.repoPath, from) || !isSafePath(config.repoPath, to)) {
