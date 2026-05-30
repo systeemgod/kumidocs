@@ -161,7 +161,8 @@ async function serveRepoAsset(assetPath: string, config: Config): Promise<Respon
   const fullPath = resolve(config.repoPath, assetPath);
   // Restrict to the images/ subdirectory — isSafePath alone only prevents escaping
   // repoPath, so a crafted path like 'images/../.env' would otherwise be served.
-  if (!fullPath.startsWith(`${imagesDir}/`)) {
+  const imagesDirPrefix = `${imagesDir}/`;
+  if (!fullPath.startsWith(imagesDirPrefix) || fullPath === imagesDir) {
     return new Response("Forbidden", { status: 403 });
   }
   const MIME: Record<string, string> = {
