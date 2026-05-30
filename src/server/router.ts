@@ -18,6 +18,7 @@ import {
 } from "./api";
 import { join, sep } from "node:path";
 import type { Config } from "./config";
+import RateLimiter from "./rate-limit";
 import type { User } from "@/lib/types";
 import devIndex from "@/index.html";
 
@@ -55,6 +56,10 @@ async function serveSPA(req: Request): Promise<Response> {
 
 type RequireUser = (req: Request) => User | undefined;
 
+/** Per-user rate limiter: 30 mutation requests per 10-second window. */
+const mutationLimiter = new RateLimiter(30, 10_000);
+mutationLimiter.startCleanup();
+
 function buildRoutes(config: Config, requireUser: RequireUser): Record<string, unknown> {
   return {
     "/*": isBundled ? serveSPA : devIndex,
@@ -72,6 +77,9 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
+        if (!mutationLimiter.check(user.id)) {
+          return new Response("Too many requests", { status: 429 });
+        }
         return apiFileDelete(new URL(req.url), user, config);
       },
       async GET(req: Request) {
@@ -86,12 +94,18 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
+        if (!mutationLimiter.check(user.id)) {
+          return new Response("Too many requests", { status: 429 });
+        }
         return apiFileCreate(req, user, config);
       },
       async PUT(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
+        }
+        if (!mutationLimiter.check(user.id)) {
+          return new Response("Too many requests", { status: 429 });
         }
         return apiFilePut(new URL(req.url), req, user, config);
       },
@@ -123,6 +137,9 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
         }
+        if (!mutationLimiter.check(user.id)) {
+          return new Response("Too many requests", { status: 429 });
+        }
         return apiFileRename(req, user, config);
       },
     },
@@ -142,6 +159,9 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
+        }
+        if (!mutationLimiter.check(user.id)) {
+          return new Response("Too many requests", { status: 429 });
         }
         const filename = new URL(req.url).pathname.slice("/api/images/".length);
         return apiImageDelete(decodeURIComponent(filename), user, config);
@@ -193,6 +213,9 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });
+        }
+        if (!mutationLimiter.check(user.id)) {
+          return new Response("Too many requests", { status: 429 });
         }
         return apiUploadImage(req, user, config);
       },
