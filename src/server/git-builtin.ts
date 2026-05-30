@@ -18,8 +18,8 @@ async function gitPullBuiltin(config: Config): Promise<void> {
       singleBranch: true,
     });
     console.log("Git: pulled from remote");
-  } catch {
-    // Offline or no remote configured — not fatal
+  } catch (error: unknown) {
+    console.warn("Git: pull failed (offline or no remote?) —", String(error));
   }
 }
 
@@ -29,7 +29,8 @@ async function pushWithRetry(
 ): Promise<{ sha: string; error?: string }> {
   try {
     await git.push({ dir: config.repoPath, fs, http, remote: "origin" });
-  } catch {
+  } catch (error: unknown) {
+    console.warn("Git: push failed, attempting fetch+merge retry —", String(error));
     // Push failed (non-fast-forward) — fetch + merge remote changes, then retry.
     // isomorphic-git does not support rebase, so we merge instead.
     try {
@@ -115,8 +116,8 @@ async function fetchAndRebaseBuiltin(
       ours: "HEAD",
       theirs: "FETCH_HEAD",
     });
-  } catch {
-    // No remote, offline, or merge conflict — skip this cycle
+  } catch (error: unknown) {
+    console.warn("Git: fetch/merge failed (offline or conflict?) —", String(error));
   }
 
   const after = await git.resolveRef({ dir: config.repoPath, fs, ref: "HEAD" }).catch(() => "");

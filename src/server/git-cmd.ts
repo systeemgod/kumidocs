@@ -74,8 +74,9 @@ async function gitPullNative(config: Config): Promise<void> {
   const result = await runGit(config.repoPath, ["pull", "--ff-only", "--quiet"]);
   if (result.exitCode === 0) {
     console.log("Git: pulled from remote");
+  } else if (result.stderr.trim()) {
+    console.warn("Git: pull failed (offline or no remote?) —", result.stderr.trim());
   }
-  // Non-zero: offline or no remote — not fatal
 }
 
 async function pushWithRetryNative(
@@ -197,6 +198,7 @@ async function gitFetchAndRebaseNative(
   if (fetchHead.exitCode === 0) {
     const rebase = await runGit(config.repoPath, ["rebase", "FETCH_HEAD"]);
     if (rebase.exitCode !== 0) {
+      console.warn("Git: rebase failed, aborting —", rebase.stderr.trim());
       await runGit(config.repoPath, ["rebase", "--abort"]);
       return { advanced: false, changed: [], sha: before.slice(0, 7) };
     }
