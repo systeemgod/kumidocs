@@ -75,7 +75,6 @@ function SlideViewer({
         aria-hidden="true"
         style={{
           left: 0,
-          opacity: 0,
           pointerEvents: "none",
           position: "fixed",
           top: 0,
