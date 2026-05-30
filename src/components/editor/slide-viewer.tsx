@@ -43,7 +43,6 @@ function SlideViewer({
     scale,
     isFullscreen,
     isSpotlight,
-    setIsSpotlight: _setIsSpotlight,
     spotlightScale,
     isExporting,
     scrollMode,
