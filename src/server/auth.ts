@@ -54,7 +54,12 @@ const resolveEmail = (value: string): string | undefined => {
       const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       const payload = JSON.parse(atob(padded)) as unknown as JWTPayload;
-      const raw = payload.email ?? payload.preferred_username;
+      // Prefer email, fall back to preferred_username if email is null/undefined/empty.
+      // (?? alone won't skip empty strings, and || is banned by project lint rules.)
+      const raw =
+        payload.email !== undefined && payload.email !== null && payload.email !== ""
+          ? payload.email
+          : payload.preferred_username;
       // JWT present but no usable email claim
       if (raw === undefined || raw === "") {
         return undefined;
