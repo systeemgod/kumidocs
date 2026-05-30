@@ -133,8 +133,14 @@ async function apiImageDelete(filename: string, user: User, config: Config): Pro
 /**
  * Strip executable content from SVG text before serving.
  * Applied at response time so stored files are never modified.
- * Removes: <script> elements, <foreignObject> elements, on* event attributes,
- * and javascript: URI values in href / xlink:href / action / src attributes.
+ *
+ * Removes:
+ *   - <script> elements (including CDATA content)
+ *   - <foreignObject> blocks (can embed arbitrary HTML/JS)
+ *   - <use> elements (can reference external SVGs with scripts)
+ *   - <animate>, <animateTransform>, <animateMotion>, <set> elements (animation-based XSS)
+ *   - on* event handler attributes (onload, onclick, onbegin, onend, etc.)
+ *   - javascript: and data: URI values in href / xlink:href / action / src
  */
 function sanitizeSvg(raw: string): string {
   return (
@@ -145,11 +151,17 @@ function sanitizeSvg(raw: string): string {
       .replaceAll(/<script[^>]*\/>/giu, "")
       // <foreignObject> blocks (can embed arbitrary HTML/JS)
       .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
+      // <use> elements (blocks + self-closing) — can reference external SVGs with scripts
+      .replaceAll(/<use[\s\S]*?<\/use\s*>/giu, "")
+      .replaceAll(/<use[^>]*\/>/giu, "")
+      // <animate>, <animateTransform>, <animateMotion>, <set> elements — animation-based XSS
+      .replaceAll(/<(?:animate(?:Transform|Motion)?|set)[\s\S]*?<\/(?:animate(?:Transform|Motion)?|set)\s*>/giu, "")
+      .replaceAll(/<(?:animate(?:Transform|Motion)?|set)[^>]*\/>/giu, "")
       // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
       .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
-      // javascript: URIs in href, xlink:href, action, src
+      // javascript: and data: URIs in href, xlink:href, action, src
       .replaceAll(
-        /((?:xlink:)?href|action|src)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/giu,
+        /((?:xlink:)?href|action|src)\s*=\s*(?:"(?:javascript|data):[^"]*"|'(?:javascript|data):[^']*')/giu,
         "",
       )
   );
