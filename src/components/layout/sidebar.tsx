@@ -90,10 +90,10 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
 
   // Sort: README first, then alphabetically by display title
   return result.toSorted((nodeA, nodeB) => {
-    if (nodeA.path === "README.md") {
+    if (nodeA.path.endsWith("README.md")) {
       return -1;
     }
-    if (nodeB.path === "README.md") {
+    if (nodeB.path.endsWith("README.md")) {
       return 1;
     }
     return nodeA.displayTitle.localeCompare(nodeB.displayTitle, undefined, { sensitivity: "base" });
