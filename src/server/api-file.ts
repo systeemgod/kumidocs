@@ -73,6 +73,9 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
   }
 
   const content = typeof body.content === "string" ? body.content : "";
+  if (content.length > 10 * 1024 * 1024) {
+    return Response.json({ error: "Content too large (max 10 MB)" }, { status: 413 });
+  }
   await writeFileToRepo(path, content, config);
   updateInIndex(path);
 
@@ -120,6 +123,9 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
 
   const path = typeof body.path === "string" ? body.path : "";
   const content = typeof body.content === "string" ? body.content : "";
+  if (content.length > 10 * 1024 * 1024) {
+    return Response.json({ error: "Content too large (max 10 MB)" }, { status: 413 });
+  }
   if (!path) {
     return Response.json({ error: "path required" }, { status: 400 });
   }
