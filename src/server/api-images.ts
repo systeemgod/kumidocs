@@ -155,7 +155,10 @@ function sanitizeSvg(raw: string): string {
       .replaceAll(/<use[\s\S]*?<\/use\s*>/giu, "")
       .replaceAll(/<use[^>]*\/>/giu, "")
       // <animate>, <animateTransform>, <animateMotion>, <set> elements — animation-based XSS
-      .replaceAll(/<(?:animate(?:Transform|Motion)?|set)[\s\S]*?<\/(?:animate(?:Transform|Motion)?|set)\s*>/giu, "")
+      .replaceAll(
+        /<(?:animate(?:Transform|Motion)?|set)[\s\S]*?<\/(?:animate(?:Transform|Motion)?|set)\s*>/giu,
+        "",
+      )
       .replaceAll(/<(?:animate(?:Transform|Motion)?|set)[^>]*\/>/giu, "")
       // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
       .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
