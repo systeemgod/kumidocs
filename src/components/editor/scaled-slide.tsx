@@ -1,11 +1,12 @@
+/* eslint-disable sort-imports */
 import type { ParsedSlide, SlideThemeDef, SlideThemeMap } from "@/lib/slide";
+import SlideOverlay, { interpolate } from "./slide-overlay";
 import { isBgDark, resolveTheme } from "@/lib/slide";
 import cn from "@/lib/utils";
-// oxlint-disable-next-line eslint(sort-imports)
 import { useTheme } from "@/store/theme";
-import SlideOverlay, { interpolate } from "./slide-overlay";
-import SlideMarkdownViewer from "./slide-markdown-viewer";
 import { SLIDE_H, SLIDE_W, buildCanvasStyle } from "./slide-utils";
+import SlideMarkdownViewer from "./slide-markdown-viewer";
+/* eslint-enable sort-imports */
 
 /** Small overlay for header/footer text, positioned at top or bottom of the slide canvas. */
 function HeaderFooterOverlay({
