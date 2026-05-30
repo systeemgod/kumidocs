@@ -45,9 +45,12 @@ const resolveEmail = (value: string): string | undefined => {
   const parts = value.split(".");
   if (parts.length === JWT_SEGMENT_COUNT) {
     try {
-      const paddedPart = (parts.at(1) ?? "").replaceAll("-", "+").replaceAll("_", "/");
+      const base64 = (parts.at(1) ?? "").replaceAll("-", "+").replaceAll("_", "/");
+      // Base64url omits padding, but atob() requires length % 4 === 0.
+      // Pad to a multiple of 4 so short payloads don't throw.
+      const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      const payload = JSON.parse(atob(paddedPart)) as unknown as JWTPayload;
+      const payload = JSON.parse(atob(padded)) as unknown as JWTPayload;
       const raw = payload.email ?? payload.preferred_username;
       // JWT present but no usable email claim
       if (raw === undefined || raw === "") {
