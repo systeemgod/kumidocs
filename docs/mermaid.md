@@ -301,10 +301,41 @@ flowchart LR
 ```
 ```
 
+## Custom Icon Packs
+
+Architecture diagrams support **icon packs** via the `prefix:icon-name` syntax. KumiDocs ships with **5 embedded icon packs** — no CDN required:
+
+| Prefix | Pack | Example |
+|--------|------|---------|
+| `logos:*` | [Logos](https://github.com/gilbarbara/logos) | `logos:aws-s3`, `logos:github`, `logos:react` |
+| `skill-icons:*` | [Skill Icons](https://github.com/tandpfun/skill-icons) | `skill-icons:typescript`, `skill-icons:rust` |
+| `devicon:*` | [Devicon](https://devicon.dev) | `devicon:docker`, `devicon:postgresql` |
+| `mdi:*` | [Material Design Icons](https://pictogrammers.com/library/mdi/) | `mdi:account`, `mdi:cloud` |
+| `simple-icons:*` | [Simple Icons](https://simpleicons.org) | `simple-icons:discord`, `simple-icons:github` |
+
+**Usage in architecture diagrams:**
+
+```mermaid
+architecture-beta
+    group frontend(logos:react)[Frontend]
+    group backend(logos:nodejs)[Backend]
+
+    service spa(logos:typescript)[TypeScript] in frontend
+    service api(logos:fastify)[API] in backend
+    service db(devicon:postgresql)[PostgreSQL] in backend
+    service cache(simple-icons:redis)[Redis] in backend
+
+    spa:R -- L:api
+    api:B -- T:db
+    api:T -- B:cache
+```
+
+> Icons are bundled at build time — zero external network requests.
+
 ## Tips
 
 - **Keep diagrams focused** — one concept per diagram
 - **Use subgraphs** in flowcharts to group related nodes
 - **Label edges clearly** with meaningful text
-- **Architecture diagrams** benefit from the `logos:*` icon prefix for realistic service icons
+- **Architecture diagrams** benefit from icon prefixes for realistic service icons
 - **Large diagrams** may take a moment to render — Mermaid runs entirely in the browser

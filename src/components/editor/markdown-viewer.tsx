@@ -6,7 +6,10 @@ import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
+import { mermaid } from "@streamdown/mermaid";
 import { memo } from "react";
+import useMountEffect from "@/hooks/use-mount-effect";
+import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
 import rehypeEmojiPlugin from "./rehype-emoji-plugin";
 import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
 import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
@@ -79,11 +82,16 @@ const COMPONENTS = { "a": AnchorComponent, "kumi-emoji": KumiEmojiComponent };
 
 const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
   const { value } = allProps;
+
+  useMountEffect(() => {
+    void registerMermaidIcons();
+  });
+
   return (
     <div className="prose prose-table:my-0 prose-img:my-0 prose-pre:my-0 prose-pre:bg-transparent prose-pre:text-foreground dark:prose-invert max-w-none px-8 py-6">
       <Streamdown
         mode="static"
-        plugins={{ cjk, code, math }}
+        plugins={{ cjk, code, math, mermaid }}
         shikiTheme={["github-light", "github-dark"]}
         linkSafety={{ enabled: false }}
         components={COMPONENTS}

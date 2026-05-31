@@ -6,8 +6,11 @@ import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
+import { mermaid } from "@streamdown/mermaid";
 import rehypeEmojiPlugin from "@/components/editor/rehype-emoji-plugin";
 import rehypeHeadingIdsPlugin from "@/components/editor/rehype-heading-ids-plugin";
+import useMountEffect from "@/hooks/use-mount-effect";
+import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
 import rehypeImageAttrsPlugin from "@/components/editor/rehype-image-attrs-plugin";
 
 const sanitizePlugin = defaultRehypePlugins.sanitize;
@@ -91,10 +94,15 @@ interface SlideStreamdownProps {
 
 const SlideStreamdown = (allProps: SlideStreamdownProps): JSX.Element => {
   const { value } = allProps;
+
+  useMountEffect(() => {
+    void registerMermaidIcons();
+  });
+
   return (
     <Streamdown
       mode="static"
-      plugins={{ cjk, code, math }}
+      plugins={{ cjk, code, math, mermaid }}
       shikiTheme={["github-light", "github-dark"]}
       linkSafety={{ enabled: false }}
       components={COMPONENTS}
