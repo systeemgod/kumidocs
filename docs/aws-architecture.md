@@ -17,13 +17,13 @@ A classic three-tier web application with load balancer, application servers, an
 
 ```mermaid
 architecture-beta
-    group networking(logos:aws-vpc)[VPC — us-east-1]
+    group networking(logos:aws-vpc)[VPC us_east_1]
     group public_subnet[Public Subnet] in networking
     group private_app[Application Subnet] in networking
     group private_data[Data Subnet] in networking
 
-    group az_a[AZ-a] in public_subnet
-    group az_b[AZ-b] in public_subnet
+    group az_a[AZ a] in public_subnet
+    group az_b[AZ b] in public_subnet
 
     service route53(logos:aws-route53)[Route53]
     service cloudfront(logos:aws-cloudfront)[CloudFront]
@@ -65,8 +65,8 @@ architecture-beta
     service lambda1(logos:aws-lambda)[Transform Lambda] in processing
     service lambda2(logos:aws-lambda)[Enrich Lambda] in processing
     service dynamodb(logos:aws-dynamodb)[DynamoDB] in storage
-    service s3_raw(logos:aws-s3)[S3 — Raw] in storage
-    service s3_processed(logos:aws-s3)[S3 — Processed] in storage
+    service s3_raw(logos:aws-s3)[S3 Raw] in storage
+    service s3_processed(logos:aws-s3)[S3 Processed] in storage
     service cloudwatch(logos:aws-cloudwatch)[CloudWatch] in monitoring
     service sns(logos:aws-sns)[SNS Alert] in monitoring
 
@@ -101,7 +101,7 @@ architecture-beta
     service cognito(logos:aws-cognito)[Cognito]
     service ecr(logos:aws-ecr)[ECR Registry]
     service react_svc(logos:aws-ecs)[React SPA] in frontend_svc
-    service node_svc(logos:aws-ecs)[Node.js API] in backend_svc
+    service node_svc(logos:aws-ecs)[NodeJS API] in backend_svc
     service python_svc(logos:aws-ecs)[Python Service] in backend_svc
     service elasti(logos:aws-elasticache)[ElastiCache]
     service rds(logos:aws-aurora)[Aurora]
