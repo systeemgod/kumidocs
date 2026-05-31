@@ -193,31 +193,52 @@ function requireUser(req: Request): User | undefined {
   return parseUser(req.headers, config.authHeader);
 }
 
-// Background tasks
-setInterval(() => {
-  void (async (): Promise<void> => {
-    const result = await gitFetchAndRebase(config);
-    broadcastSyncStatus({ pull: result.pullFailed ? "failing" : "ok", push: "ok" });
-    if (result.advanced) {
-      await loadPermissions();
-      await Promise.all(
-        result.changed
-          .filter((changedPath) => changedPath !== ".kumidocs.json")
-          .map(async (changedPath) => {
-            const fullPath = join(config.repoPath, changedPath);
-            if (existsSync(fullPath)) {
-              await reloadFile(changedPath, config);
-              updateInIndex(changedPath);
-              broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
-            } else {
-              removeFromCache(changedPath);
-              removeFromIndex(changedPath);
-              broadcastPageDeleted(changedPath);
-            }
-          }),
-      );
-    }
-  })();
+// Background tasks — adaptive pull loop with exponential backoff
+let pullBackoff = config.pullInterval;
+
+async function runPullCycle(): Promise<void> {
+  const result = await gitFetchAndRebase(config);
+  broadcastSyncStatus({ pull: result.pullFailed ? "failing" : "ok", push: "ok" });
+
+  if (result.advanced) {
+    await loadPermissions();
+    await Promise.all(
+      result.changed
+        .filter((changedPath) => changedPath !== ".kumidocs.json")
+        .map(async (changedPath) => {
+          const fullPath = join(config.repoPath, changedPath);
+          if (existsSync(fullPath)) {
+            await reloadFile(changedPath, config);
+            updateInIndex(changedPath);
+            broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
+          } else {
+            removeFromCache(changedPath);
+            removeFromIndex(changedPath);
+            broadcastPageDeleted(changedPath);
+          }
+        }),
+    );
+  }
+
+  // Adaptive delay: after failure retry soon (5s → 10s → 20s → … capped at interval);
+  // after success reset to normal interval.
+  if (result.pullFailed) {
+    pullBackoff =
+      pullBackoff === config.pullInterval
+        ? 5_000
+        : Math.min(pullBackoff * 2, config.pullInterval);
+  } else {
+    pullBackoff = config.pullInterval;
+  }
+
+  setTimeout(() => {
+    void runPullCycle();
+  }, pullBackoff);
+}
+
+// Start immediately (first actual pull already happened at startup)
+setTimeout(() => {
+  void runPullCycle();
 }, config.pullInterval);
 
 // Prune dead WS sessions every 30s
