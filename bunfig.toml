@@ -1,0 +1,3 @@
+# Registers bundler plugins for development mode (`bun --hot`).
+# bun-plugin-tailwind processes @import 'tailwindcss' and @apply directives.
+preload = ["./scripts/preload.ts"]
