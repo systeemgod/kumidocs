@@ -6,28 +6,6 @@
 
 ## 🔥 High Impact
 
-### 2. In-Page Table of Contents (TOC)
-
-Long documentation pages need quick navigation. A floating/sticky TOC showing `#` / `##` / `###` headings with smooth-scroll anchors.
-
-**Approach**:
-
-- `rehypeHeadingIdsPlugin` already generates `id` attributes on headings
-- Create a `TocSidebar` component that extracts headings from the rendered MarkdownViewer
-- Options:
-  - **Right-side floating panel** — collapsible, sticky on scroll, highlights active heading via `IntersectionObserver`
-  - **Left-side collapsible** — integrated into the sidebar as a secondary panel
-- Respect heading hierarchy: indent `##` under `#`, `###` under `##`
-- Handle pages with `slides: true` gracefully (no TOC for slide decks)
-
-**Files to touch**:
-
-- `src/pages/file-page.tsx` (conditionally render TOC)
-- `src/components/editor/markdown-viewer.tsx` (expose heading data)
-- New: `src/components/editor/toc-sidebar.tsx`
-
----
-
 ### 3. Wiki-Links / Backlinks (Obsidian-style)
 
 Support `[[Page Name]]` or `[[path/to/page]]` syntax that auto-resolves to existing pages. Display backlinks in a panel so users discover related content organically.
@@ -153,22 +131,6 @@ The rate limiter is hardcoded at 30 mutations per 10 seconds.
 - `src/server/config.ts` (add `rateLimit` option)
 - `src/server/router.ts` (pass config to `RateLimiter` constructor)
 - `src/server/rate-limit.ts` (accept configurable values)
-
----
-
-### 11. Breadcrumb Click to Navigate
-
-Breadcrumbs are currently display-only. Make each segment clickable.
-
-**Approach**:
-
-- Each breadcrumb segment links to `/p/<path-to-segment>.md`
-- The last segment (current page) is plain text, not a link
-- Use `<Link>` from react-router-dom
-
-**Files to touch**:
-
-- `src/pages/file-page.tsx` (wrap breadcrumb segments in `<Link>`)
 
 ---
 
