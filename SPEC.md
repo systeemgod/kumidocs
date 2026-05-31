@@ -81,13 +81,13 @@ paginate: true # show N/total badge on each slide
 
 ```json
 {
-	"instanceName": "KumiDocs",
-	"editors": ["alice@example.com"],
-	"slideThemes": {
-		"my-corp": {
-			/* SlideThemeDef */
-		}
-	}
+  "instanceName": "KumiDocs",
+  "editors": ["alice@example.com"],
+  "slideThemes": {
+    "my-corp": {
+      /* SlideThemeDef */
+    }
+  }
 }
 ```
 
@@ -295,51 +295,51 @@ Controls bar: slide count / prev·counter·next; `Maximize`/`Minimize`, `Spotlig
 
 ```typescript
 interface SlideThemeDef {
-	bg?: string; // CSS background value
-	fg?: string; // sets --slide-fg
-	contentPadding?: { top?: number; right?: number; bottom?: number; left?: number }; // px on 960×540
-	elements?: SlideThemeElement[]; // overlay elements, in z-order
-	layouts?: Record<string, Omit<SlideThemeDef, 'layouts'>>; // per-layout FULL overrides
+  bg?: string; // CSS background value
+  fg?: string; // sets --slide-fg
+  contentPadding?: { top?: number; right?: number; bottom?: number; left?: number }; // px on 960×540
+  elements?: SlideThemeElement[]; // overlay elements, in z-order
+  layouts?: Record<string, Omit<SlideThemeDef, "layouts">>; // per-layout FULL overrides
 }
 
 type SlideThemeElement =
-	| {
-			type: 'rect';
-			fill: string;
-			left?: number;
-			right?: number;
-			width?: number;
-			top?: number;
-			bottom?: number;
-			height?: number;
-	  }
-	| {
-			type: 'text';
-			content: string;
-			color?: string;
-			fontSize?: number;
-			bold?: boolean;
-			align?: 'left' | 'center' | 'right';
-			left?: number;
-			right?: number;
-			centerX?: boolean;
-			top?: number;
-			bottom?: number;
-			centerY?: boolean;
-	  }
-	| {
-			type: 'image';
-			src: string;
-			opacity?: number;
-			left?: number;
-			right?: number;
-			width?: number;
-			centerX?: boolean;
-			top?: number;
-			bottom?: number;
-			height?: number;
-			centerY?: boolean;
-	  };
+  | {
+      type: "rect";
+      fill: string;
+      left?: number;
+      right?: number;
+      width?: number;
+      top?: number;
+      bottom?: number;
+      height?: number;
+    }
+  | {
+      type: "text";
+      content: string;
+      color?: string;
+      fontSize?: number;
+      bold?: boolean;
+      align?: "left" | "center" | "right";
+      left?: number;
+      right?: number;
+      centerX?: boolean;
+      top?: number;
+      bottom?: number;
+      centerY?: boolean;
+    }
+  | {
+      type: "image";
+      src: string;
+      opacity?: number;
+      left?: number;
+      right?: number;
+      width?: number;
+      centerX?: boolean;
+      top?: number;
+      bottom?: number;
+      height?: number;
+      centerY?: boolean;
+    };
 ```
 
 **Positioning:** all px on 960×540. Left/right/top/bottom = distance from edge. `centerX/centerY = true` centres. Setting both edges (e.g. `left:0, right:0`) spans full axis.
@@ -444,30 +444,3 @@ src/
 └── store/theme.tsx / user.tsx / ws.ts
 styles/globals.css
 ```
-
----
-
-## 16. Implementation Phases
-
-### ✅ Phase 1 — Foundation
-
-Bun server, git ops, in-memory filestore, WebSocket presence, REST API, React SPA shell.
-
-### ✅ Phase 2 — Editor Core
-
-Custom split-pane editor, Streamdown view, save flow, edit-lock, dark mode.
-
-### ✅ Phase 3 — UI Polish
-
-Sidebar (auto-gen, Confluence hierarchy, ghost pages, icons, presence dots), search palette, toasts, create/delete/move/duplicate pages, PDF export (markdown), presence avatars, drag-drop images, image library, resizable sidebar.
-
-### ✅ Phase 4 — Slides & Code
-
-Slide viewer (scroll/paginate/spotlight/fullscreen), PDF export (slides), CodeMirror code editor, slide directive/layout/theme system (5 built-in themes + custom via `.kumidocs.json`), overlay element renderer, layout overrides, template variables, `contentPadding`, `.dark`/`.light` canvas isolation, Theme Library page.
-
-### 🔲 Phase 5 — TBD
-
-- Marp/server-side PDF export (Playwright) — deferred to v2
-- LSP / autocomplete in code editor — deferred to v2
-
----
