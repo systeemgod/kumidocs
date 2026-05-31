@@ -92,7 +92,9 @@ function useFilePage(): UseFilePageReturn {
 
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
   const [infoOpen, setInfoOpen] = useInfoPanel(filePath);
-  const [tocOpen, setTocOpen] = useState(false);
+  const [tocOpen, setTocOpen] = useState(
+    () => localStorage.getItem("kumidocs:toc-open") === "true",
+  );
   const editModeRef = useRef(editMode);
   editModeRef.current = editMode;
   const { editLocked, viewers, remoteBanner, setRemoteBanner } = usePagePresence(

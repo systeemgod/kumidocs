@@ -154,7 +154,15 @@ function FilePageHeader({
             variant={tocOpen ? "secondary" : "ghost"}
             className="h-7 gap-1 text-xs px-2"
             onClick={() => {
-              setTocOpen((prev) => !prev);
+              setTocOpen((prev) => {
+                const next = !prev;
+                if (next) {
+                  localStorage.setItem("kumidocs:toc-open", "true");
+                } else {
+                  localStorage.removeItem("kumidocs:toc-open");
+                }
+                return next;
+              });
             }}
           >
             <TextBulletListLtrRegular className="w-4 h-4" />
