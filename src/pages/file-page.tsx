@@ -142,16 +142,17 @@ export default function FilePage(): JSX.Element {
         }}
       />
 
-      {/* Breadcrumb */}
-      {breadcrumb.length > 0 && (
-        <div className="px-4 py-0.5 text-xs text-muted-foreground border-b border-border shrink-0">
-          {breadcrumb.join(" / ")}
-        </div>
-      )}
-
-      {/* Content area */}
+      {/* Content area — breadcrumbs in left column so side panels get full height */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          {/* Breadcrumb (only spans content width, not behind TOC/PageInfo) */}
+          {breadcrumb.length > 0 && (
+            <div className="px-4 py-0.5 text-xs text-muted-foreground border-b border-border shrink-0">
+              {breadcrumb.join(" / ")}
+            </div>
+          )}
+          <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
+        </div>
         {/* TOC sidebar — doc pages only, view mode */}
         {tocOpen && !editMode && fileType === "doc" && (
           <TocSidebar
