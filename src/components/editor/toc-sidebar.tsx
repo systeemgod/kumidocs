@@ -1,9 +1,9 @@
-import { TextBulletListLtrRegular, DismissRegular } from "@fluentui/react-icons";
+import { DismissRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
-import { extractTocItems } from "@/lib/heading";
-import cn from "@/lib/utils";
-import useMountEffect from "@/hooks/use-mount-effect";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { extractTocItems } from "@/lib/heading";
+import useMountEffect from "@/hooks/use-mount-effect";
+import cn from "@/lib/utils";
 
 interface TocSidebarProps {
   /** Raw markdown content to extract headings from. */
@@ -29,16 +29,20 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
   // Only observe h2+ headings (skip h1 = page title).
   const observedItems = useMemo(() => tocItems.filter((item) => item.level >= 2), [tocItems]);
 
+  // oxlint-disable-next-line typescript/consistent-return
+  // oxlint-disable-next-line typescript/consistent-return
   useMountEffect(() => {
     // Collect all heading elements by their slug IDs.
     const elements = new Map<string, Element>();
     for (const item of observedItems) {
-      const el = document.getElementById(item.id);
+      const el = document.querySelector(`#${CSS.escape(item.id)}`);
       if (el) {
         elements.set(item.id, el);
       }
     }
-    if (elements.size === 0) return;
+    if (elements.size === 0) {
+      return;
+    }
 
     const visibleIds = new Set<string>();
 
@@ -73,7 +77,7 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
       observer.observe(el);
     }
 
-    return () => {
+    return (): void => {
       observer.disconnect();
     };
   });
@@ -86,7 +90,7 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
     );
   }
 
-  const minLevel = Math.min(...tocItems.map((i) => i.level));
+  const minLevel = Math.min(...tocItems.map((item) => item.level));
 
   return (
     <nav
@@ -121,7 +125,7 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
                   <button
                     type="button"
                     onClick={() => {
-                      const el = document.getElementById(item.id);
+                      const el = document.querySelector(`#${CSS.escape(item.id)}`);
                       if (el) {
                         el.scrollIntoView({ behavior: "smooth", block: "start" });
                       }

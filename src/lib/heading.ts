@@ -7,7 +7,7 @@
  */
 
 /** A single entry in the page table of contents. */
-export interface TocItem {
+interface TocItem {
   /** DOM `id` attribute on the rendered heading element. */
   id: string;
   /** Raw heading text (not slugified). */
@@ -27,7 +27,7 @@ export interface TocItem {
  *   4. replace whitespace / underscores → hyphens
  *   5. collapse consecutive hyphens
  */
-export function headingToSlug(text: string): string {
+function headingToSlug(text: string): string {
   return text
     .toLowerCase()
     .replaceAll(/[^\w\s-]/gu, "")
@@ -45,7 +45,7 @@ export function headingToSlug(text: string): string {
  * The generated `id` matches what `rehypeHeadingIdsPlugin` will produce at
  * render time.
  */
-export function extractTocItems(markdown: string): TocItem[] {
+function extractTocItems(markdown: string): TocItem[] {
   const items: TocItem[] = [];
   const lines = markdown.split("\n");
   let inCodeBlock = false;
@@ -69,10 +69,13 @@ export function extractTocItems(markdown: string): TocItem[] {
         const level = hashes.length;
         const text = headingText.trim();
         const id = headingToSlug(text);
-        items.push({ id, text, level });
+        items.push({ id, level, text });
       }
     }
   }
 
   return items;
 }
+
+export { headingToSlug, extractTocItems };
+export type { TocItem };

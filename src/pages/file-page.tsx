@@ -1,13 +1,13 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import FilePageHeader from "./file-page-header";
 import MarkdownViewer from "@/components/editor/markdown-viewer";
-import NotFound from "./not-found";
-import PageInfoPanel from "@/components/layout/page-info-panel";
 import TocSidebar from "@/components/editor/toc-sidebar";
+import PageInfoPanel from "@/components/layout/page-info-panel";
 import { SaveRegular } from "@fluentui/react-icons";
+import FilePageHeader from "./file-page-header";
+import NotFound from "./not-found";
 import { buildEditorContent } from "./file-page-utils";
 import { useFilePage } from "./use-file-page";
+import { Link } from "react-router-dom";
 
 export default function FilePage(): JSX.Element {
   const {

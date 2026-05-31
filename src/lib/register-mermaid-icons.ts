@@ -32,6 +32,7 @@ interface IconifyJSON {
  * Safe to call multiple times — Mermaid deduplicates by prefix.
  * Must be called on the client (browser) only.
  */
+// oxlint-disable-next-line import/prefer-default-export
 export async function registerMermaidIcons(): Promise<void> {
   // Mermaid's module only exports `default` — dynamic import gives us
   // { default: mermaid }, so we need `.default.registerIconPacks`.
