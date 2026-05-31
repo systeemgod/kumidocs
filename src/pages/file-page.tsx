@@ -154,7 +154,12 @@ export default function FilePage(): JSX.Element {
         <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
         {/* TOC sidebar — doc pages only, view mode */}
         {tocOpen && !editMode && fileType === "doc" && (
-          <TocSidebar content={content} />
+          <TocSidebar
+            content={content}
+            onClose={() => {
+              setTocOpen(false);
+            }}
+          />
         )}
         {infoOpen && !editMode && (
           <PageInfoPanel

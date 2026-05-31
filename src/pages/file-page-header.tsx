@@ -5,7 +5,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { FileType, PresenceUser, User } from "@/lib/types";
-import { InfoRegular, MoreHorizontalRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
+import {
+  InfoRegular,
+  MoreHorizontalRegular,
+  TextBulletListLtrRegular,
+} from "@fluentui/react-icons";
 import { SAVE_BADGE_TEXT, getEditButtonClass, getSaveBadgeClass } from "./file-page-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";

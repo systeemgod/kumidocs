@@ -1,11 +1,15 @@
+import { TextBulletListLtrRegular, DismissRegular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
 import { extractTocItems } from "@/lib/heading";
 import cn from "@/lib/utils";
 import useMountEffect from "@/hooks/use-mount-effect";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TocSidebarProps {
   /** Raw markdown content to extract headings from. */
   content: string;
+  /** Called when the user clicks the close button. */
+  onClose?: () => void;
 }
 
 /**
@@ -15,16 +19,15 @@ interface TocSidebarProps {
  * - Highlights the heading currently visible via `IntersectionObserver`
  * - Clicking a heading smooth-scrolls to it
  * - Indents `##` under `#`, `###` under `##`, etc.
+ *
+ * Styled to match the "Page info" panel (PageInfoPanel).
  */
-export default function TocSidebar({ content }: TocSidebarProps): JSX.Element {
+export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.Element {
   const tocItems = useMemo(() => extractTocItems(content), [content]);
   const [activeId, setActiveId] = useState<string>("");
 
   // Only observe h2+ headings (skip h1 = page title).
-  const observedItems = useMemo(
-    () => tocItems.filter((item) => item.level >= 2),
-    [tocItems],
-  );
+  const observedItems = useMemo(() => tocItems.filter((item) => item.level >= 2), [tocItems]);
 
   useMountEffect(() => {
     // Collect all heading elements by their slug IDs.
@@ -77,7 +80,7 @@ export default function TocSidebar({ content }: TocSidebarProps): JSX.Element {
 
   if (tocItems.length === 0) {
     return (
-      <div className="w-56 shrink-0 border-l border-border bg-background p-4">
+      <div className="w-72 shrink-0 border-l border-border bg-sidebar p-4">
         <p className="text-xs text-muted-foreground">No headings found</p>
       </div>
     );
@@ -88,41 +91,58 @@ export default function TocSidebar({ content }: TocSidebarProps): JSX.Element {
   return (
     <nav
       aria-label="Table of contents"
-      className="w-56 shrink-0 border-l border-border bg-background overflow-y-auto"
+      className="w-72 shrink-0 border-l border-border bg-sidebar flex flex-col h-full overflow-hidden"
     >
-      <div className="px-3 py-3">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          On this page
-        </h2>
-        <ul className="space-y-0.5">
-          {tocItems.map((item) => {
-            const indent = item.level - minLevel;
-            return (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById(item.id);
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
-                  }}
-                  className={cn(
-                    "block w-full text-left text-xs rounded px-2 py-1 transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    activeId === item.id
-                      ? "bg-accent text-accent-foreground font-medium"
-                      : "text-muted-foreground",
-                  )}
-                  style={{ paddingLeft: `${8 + indent * 12}px` }}
-                >
-                  {item.text}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+      {/* Header bar — matches PageInfoPanel */}
+      <div className="px-3 py-2 border-b border-border shrink-0">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <TextBulletListLtrRegular className="w-4 h-4 shrink-0" />
+          <span className="flex-1">On this page</span>
+          {onClose && (
+            <button
+              className="ml-auto p-0.5 rounded hover:bg-accent/60 text-muted-foreground hover:text-foreground transition-colors"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              <DismissRegular className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Scrollable content */}
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="p-3">
+          <ul className="space-y-0.5">
+            {tocItems.map((item) => {
+              const indent = item.level - minLevel;
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(item.id);
+                      if (el) {
+                        el.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }
+                    }}
+                    className={cn(
+                      "block w-full text-left text-xs rounded px-2 py-1 transition-colors",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      activeId === item.id
+                        ? "bg-accent text-accent-foreground font-medium"
+                        : "text-muted-foreground",
+                    )}
+                    style={{ paddingLeft: `${8 + indent * 12}px` }}
+                  >
+                    {item.text}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </ScrollArea>
     </nav>
   );
 }
