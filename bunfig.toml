@@ -1,3 +1,0 @@
-# Bun configuration.
-# Environment variables prefixed with BUN_PUBLIC_ are automatically
-# exposed to client-side code — no config needed.
