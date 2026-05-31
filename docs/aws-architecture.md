@@ -185,21 +185,21 @@ architecture-beta
 
 ## Icon Reference
 
-| Service | Icon ID | Service | Icon ID |
-|---------|---------|---------|---------|
-| API Gateway | `logos:aws-api-gateway` | Route53 | `logos:aws-route53` |
-| CloudFront | `logos:aws-cloudfront` | S3 | `logos:aws-s3` |
-| EC2 | `logos:aws-ec2` | ECS | `logos:aws-ecs` |
-| ECR | `logos:aws-ecr` | ELB/ALB | `logos:aws-elb` |
-| Lambda | `logos:aws-lambda` | DynamoDB | `logos:aws-dynamodb` |
-| RDS/Aurora | `logos:aws-aurora` | ElastiCache | `logos:aws-elasticache` |
-| SQS | `logos:aws-sqs` | SNS | `logos:aws-sns` |
-| VPC | `logos:aws-vpc` | WAF | `logos:aws-waf` |
-| Cognito | `logos:aws-cognito` | KMS | `logos:aws-kms` |
-| IAM | `logos:aws-iam` | CloudWatch | `logos:aws-cloudwatch` |
-| CloudFormation | `logos:aws-cloudformation` | CodeBuild | `logos:aws-codebuild` |
-| CodeCommit | `logos:aws-codecommit` | CodeDeploy | `logos:aws-codedeploy` |
-| CodePipeline | `logos:aws-codepipeline` | SES | `logos:aws-ses` |
-| EventBridge | `logos:aws-eventbridge` | | |
+| Service        | Icon ID                    | Service     | Icon ID                 |
+| -------------- | -------------------------- | ----------- | ----------------------- |
+| API Gateway    | `logos:aws-api-gateway`    | Route53     | `logos:aws-route53`     |
+| CloudFront     | `logos:aws-cloudfront`     | S3          | `logos:aws-s3`          |
+| EC2            | `logos:aws-ec2`            | ECS         | `logos:aws-ecs`         |
+| ECR            | `logos:aws-ecr`            | ELB/ALB     | `logos:aws-elb`         |
+| Lambda         | `logos:aws-lambda`         | DynamoDB    | `logos:aws-dynamodb`    |
+| RDS/Aurora     | `logos:aws-aurora`         | ElastiCache | `logos:aws-elasticache` |
+| SQS            | `logos:aws-sqs`            | SNS         | `logos:aws-sns`         |
+| VPC            | `logos:aws-vpc`            | WAF         | `logos:aws-waf`         |
+| Cognito        | `logos:aws-cognito`        | KMS         | `logos:aws-kms`         |
+| IAM            | `logos:aws-iam`            | CloudWatch  | `logos:aws-cloudwatch`  |
+| CloudFormation | `logos:aws-cloudformation` | CodeBuild   | `logos:aws-codebuild`   |
+| CodeCommit     | `logos:aws-codecommit`     | CodeDeploy  | `logos:aws-codedeploy`  |
+| CodePipeline   | `logos:aws-codepipeline`   | SES         | `logos:aws-ses`         |
+| EventBridge    | `logos:aws-eventbridge`    |             |                         |
 
 > Browse all available logos at [icon-sets.iconify.design/logos/](https://icon-sets.iconify.design/logos/).

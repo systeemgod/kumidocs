@@ -17,15 +17,15 @@ KumiDocs turns a Git repository into a collaborative wiki. Every page is a Markd
 
 ## Documentation
 
-| Section | What you'll learn |
-| --- | --- |
-| [Getting Started](docs/getting-started) | Install, configure, and run your first instance |
-| [Writing Pages](docs/writing) | Markdown syntax, frontmatter, images, code blocks |
-| [Slide Decks](docs/slides) | Turn any page into a presentation |
-| [Mermaid Diagrams](docs/mermaid) | Diagrams as code (flowcharts, architecture, etc.) |
-| [AWS Architecture](docs/aws-architecture) | Real-world AWS architecture diagram examples |
-| [Configuration](docs/configuration) | Environment variables and `.kumidocs.json` |
-| [Collaboration](docs/collaboration) | Real-time editing, presence, and conflict resolution |
+| Section                                   | What you'll learn                                    |
+| ----------------------------------------- | ---------------------------------------------------- |
+| [Getting Started](docs/getting-started)   | Install, configure, and run your first instance      |
+| [Writing Pages](docs/writing)             | Markdown syntax, frontmatter, images, code blocks    |
+| [Slide Decks](docs/slides)                | Turn any page into a presentation                    |
+| [Mermaid Diagrams](docs/mermaid)          | Diagrams as code (flowcharts, architecture, etc.)    |
+| [AWS Architecture](docs/aws-architecture) | Real-world AWS architecture diagram examples         |
+| [Configuration](docs/configuration)       | Environment variables and `.kumidocs.json`           |
+| [Collaboration](docs/collaboration)       | Real-time editing, presence, and conflict resolution |
 
 ## Quick Example
 
