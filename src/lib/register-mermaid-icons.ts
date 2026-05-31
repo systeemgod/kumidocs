@@ -49,36 +49,42 @@ export async function registerMermaidIcons(): Promise<void> {
       return;
     }
 
-    mermaid.registerIconPacks([
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    interface IconPack {
+      icons: IconifyJSON;
+      name: string;
+    }
+    const iconPacks: IconPack[] = [
       {
+        icons: deviconIcons as IconifyJSON,
         name: "devicon",
-        icons: deviconIcons as unknown as IconifyJSON,
       },
       {
+        icons: flagIcons as IconifyJSON,
         name: "flag",
-        icons: flagIcons as unknown as IconifyJSON,
       },
       {
+        icons: fluentColorIcons as IconifyJSON,
         name: "fluent-color",
-        icons: fluentColorIcons as unknown as IconifyJSON,
       },
       {
+        icons: glyphsPolyIcons as IconifyJSON,
         name: "glyphs-poly",
-        icons: glyphsPolyIcons as unknown as IconifyJSON,
       },
       {
+        icons: logosIcons as IconifyJSON,
         name: "logos",
-        icons: logosIcons as unknown as IconifyJSON,
       },
-    ]);
+    ];
+    mermaid.registerIconPacks(iconPacks);
 
     console.debug(
       `[kumidocs] Mermaid icons registered: ` +
-        `devicon (${Object.keys(deviconIcons.icons ?? {}).length}), ` +
-        `flag (${Object.keys(flagIcons.icons ?? {}).length}), ` +
-        `fluent-color (${Object.keys(fluentColorIcons.icons ?? {}).length}), ` +
-        `glyphs-poly (${Object.keys(glyphsPolyIcons.icons ?? {}).length}), ` +
-        `logos (${Object.keys(logosIcons.icons ?? {}).length})`,
+        `devicon (${Object.keys(deviconIcons.icons).length}), ` +
+        `flag (${Object.keys(flagIcons.icons).length}), ` +
+        `fluent-color (${Object.keys(fluentColorIcons.icons).length}), ` +
+        `glyphs-poly (${Object.keys(glyphsPolyIcons.icons).length}), ` +
+        `logos (${Object.keys(logosIcons.icons).length})`,
     );
   } catch (error: unknown) {
     console.warn("[kumidocs] Failed to register Mermaid icon packs:", error);

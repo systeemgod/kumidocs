@@ -7,11 +7,11 @@ import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
+import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
 import rehypeEmojiPlugin from "@/components/editor/rehype-emoji-plugin";
 import rehypeHeadingIdsPlugin from "@/components/editor/rehype-heading-ids-plugin";
-import useMountEffect from "@/hooks/use-mount-effect";
-import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
 import rehypeImageAttrsPlugin from "@/components/editor/rehype-image-attrs-plugin";
+import useMountEffect from "@/hooks/use-mount-effect";
 
 const sanitizePlugin = defaultRehypePlugins.sanitize;
 if (!sanitizePlugin) {

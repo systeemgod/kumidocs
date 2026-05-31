@@ -224,7 +224,7 @@ async function runPullCycle(): Promise<void> {
   // after success reset to normal interval.
   if (result.pullFailed) {
     pullBackoff =
-      pullBackoff === config.pullInterval ? 5_000 : Math.min(pullBackoff * 2, config.pullInterval);
+      pullBackoff === config.pullInterval ? 5000 : Math.min(pullBackoff * 2, config.pullInterval);
   } else {
     pullBackoff = config.pullInterval;
   }

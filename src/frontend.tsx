@@ -1,17 +1,17 @@
-import "./index.css";
-import App from "./app";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-
 // Force Bun's dev bundler to resolve khroma's ESM re-export chain before
 // mermaid's internal chunks try to import from it. Without this, the dev
 // HMR bundler creates an empty synthetic module for khroma, causing:
 //   TypeError: import_khroma5.adjust is not a function
+// oxlint-disable-next-line import/no-duplicates, import/no-unassigned-import
 import "khroma";
 // Named import variant — some bundler versions need this to trigger proper
 // ESM re-export tracing through khroma's chain (khroma → methods → adjust).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line @typescript-eslint/no-unused-vars, import/no-duplicates
+import "./index.css";
+import App from "./app";
+import { StrictMode } from "react";
 import { adjust as _khromaAdjust } from "khroma";
+import { createRoot } from "react-dom/client";
 
 const elemOrNull = document.querySelector("#root");
 if (!elemOrNull) {

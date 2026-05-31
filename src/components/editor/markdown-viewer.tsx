@@ -6,13 +6,13 @@ import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
-import { mermaid } from "@streamdown/mermaid";
 import { memo } from "react";
-import useMountEffect from "@/hooks/use-mount-effect";
+import { mermaid } from "@streamdown/mermaid";
 import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
 import rehypeEmojiPlugin from "./rehype-emoji-plugin";
 import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
 import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
+import useMountEffect from "@/hooks/use-mount-effect";
 
 interface MarkdownViewerProps {
   value: string;

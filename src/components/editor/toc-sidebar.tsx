@@ -1,9 +1,9 @@
 import { DismissRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import cn from "@/lib/utils";
 import { extractTocItems } from "@/lib/heading";
 import useMountEffect from "@/hooks/use-mount-effect";
-import cn from "@/lib/utils";
 
 interface TocSidebarProps {
   /** Raw markdown content to extract headings from. */
@@ -29,8 +29,6 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
   // Only observe h2+ headings (skip h1 = page title).
   const observedItems = useMemo(() => tocItems.filter((item) => item.level >= 2), [tocItems]);
 
-  // oxlint-disable-next-line typescript/consistent-return
-  // oxlint-disable-next-line typescript/consistent-return
   useMountEffect(() => {
     // Collect all heading elements by their slug IDs.
     const elements = new Map<string, Element>();
@@ -77,6 +75,7 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
       observer.observe(el);
     }
 
+    // oxlint-disable-next-line typescript/consistent-return
     return (): void => {
       observer.disconnect();
     };
