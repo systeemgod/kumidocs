@@ -1,50 +1,10 @@
 # Tasks & Feature Ideas
 
-> **Source**: Independent review of the current codebase (Phases 1-4 complete).
-> These are suggestions **not** following the predefined Phase 5 in `SPEC.md`.
 > Ordered by estimated impact, not priority — pick whatever excites you.
 
 ---
 
 ## 🔥 High Impact
-
-### 1. Mermaid / Diagram Rendering
-
-The #1 missing feature for a developer wiki. Every team needs architecture diagrams, flowcharts, sequence diagrams, Gantt charts, and mind maps inline in their docs.
-
-**Update**: Turns out this is almost zero-effort — the infrastructure is already in place!
-
-- **`mermaid` v11.15.0** is already a transitive dependency (bundled by **streamdown**)
-- **`@streamdown/mermaid@1.0.2`** is the official plugin that plugs mermaid into streamdown's code block rendering — **now installed** ✅
-- **Architecture diagrams** (`architecture-beta` blocks) supported natively by Mermaid v11.1.0+
-
-**Remaining work** (just 2 files, ~4 lines each):
-
-- `src/components/editor/markdown-viewer.tsx` — add `import { mermaid } from "@streamdown/mermaid"` + add `mermaid` to the `plugins` prop
-- `src/components/editor/slide-streamdown.tsx` — same changes
-- Optionally enable mermaid controls via the `controls` prop (`controls={{ mermaid: true }}`)
-- For PDF export: streamdown's built-in mermaid component handles this (SVG renders in DOM, `html2canvas-pro` captures it naturally)
-
-**Architecture diagram syntax** (`architecture-beta`):
-
-```
-architecture-beta
-    group api(cloud)[API]
-    service db(database)[Database] in api
-    service server(server)[Server] in api
-    db:R -- L:server
-```
-
-Uses `group`, `service`, `edge` (`L/R/T/B` sides, `<`/`>` arrows), and `junction` nodes.
-Icons support `logos:*` prefix for 200k+ Iconify icons.
-Config knobs: `nodeSeparation`, `idealEdgeLengthMultiplier`, `edgeElasticity`, `numIter`, `randomize`.
-
-**Files to touch**:
-
-- `src/components/editor/markdown-viewer.tsx` (add plugin import + plugins prop)
-- `src/components/editor/slide-streamdown.tsx` (add plugin import + plugins prop)
-
----
 
 ### 2. In-Page Table of Contents (TOC)
 

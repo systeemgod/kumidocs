@@ -1,7 +1,5 @@
 # SPEC
 
-> Last updated: 2026-03-14 · Status: **Phase 4 complete — Phase 5 pending**
-
 ---
 
 ## 1. Overview
