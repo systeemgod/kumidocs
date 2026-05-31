@@ -30,12 +30,21 @@ interface IconifyJSON {
 /**
  * Register all icon packs with Mermaid.
  * Safe to call multiple times — Mermaid deduplicates by prefix.
- * Must be called on the client (browser) — uses dynamic import of mermaid
- * to avoid pulling it into the server bundle.
+ * Must be called on the client (browser) only.
  */
 export async function registerMermaidIcons(): Promise<void> {
+  // Mermaid's module only exports `default` — dynamic import gives us
+  // { default: mermaid }, so we need `.default.registerIconPacks`.
+  // We also try `registerIconPacks` directly in case the bundler
+  // flattens the module differently (dev vs production).
   try {
-    const mermaid = await import("mermaid");
+    const mod = await import("mermaid");
+    const mermaid = (mod as { default?: { registerIconPacks: (packs: unknown[]) => void }; registerIconPacks?: (packs: unknown[]) => void }).default ?? mod;
+
+    if (typeof mermaid.registerIconPacks !== "function") {
+      console.warn("[kumidocs] Mermaid registerIconPacks not available");
+      return;
+    }
 
     mermaid.registerIconPacks([
       {

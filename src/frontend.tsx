@@ -3,6 +3,12 @@ import App from "./app";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+// Force Bun's dev bundler to resolve khroma's ESM re-export chain before
+// mermaid's internal chunks try to import from it. Without this, the dev
+// HMR bundler creates an empty synthetic module for khroma, causing:
+//   TypeError: import_khroma5.adjust is not a function
+import "khroma";
+
 const elemOrNull = document.querySelector("#root");
 if (!elemOrNull) {
   throw new Error("Root element #root not found in document");
