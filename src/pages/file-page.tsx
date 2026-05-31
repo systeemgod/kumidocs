@@ -158,10 +158,7 @@ export default function FilePage(): JSX.Element {
                     {isLast ? (
                       <span className="text-foreground/60">{segment}</span>
                     ) : (
-                      <Link
-                        to={`/p/${path}`}
-                        className="hover:text-foreground transition-colors"
-                      >
+                      <Link to={`/p/${path}`} className="hover:text-foreground transition-colors">
                         {segment}
                       </Link>
                     )}
@@ -175,6 +172,7 @@ export default function FilePage(): JSX.Element {
         {/* TOC sidebar — doc pages only, view mode */}
         {tocOpen && !editMode && fileType === "doc" && (
           <TocSidebar
+            key={filePath}
             content={content}
             onClose={() => {
               setTocOpen(false);
