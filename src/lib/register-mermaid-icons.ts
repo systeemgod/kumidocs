@@ -2,8 +2,8 @@
  * Mermaid Icon Pack Registration
  *
  * Registers Iconify icon packs with Mermaid so architecture diagrams
- * can use `logos:*`, `skill-icons:*`, `devicon:*`, `mdi:*`, and
- * `simple-icons:*` icon prefixes — all embedded at build time.
+ * can use icon prefixes like `logos:*`, `devicon:*`, `flag:*`,
+ * `fluent-color:*`, and `glyphs-poly:*` — all embedded at build time.
  *
  * Usage: call once at app startup (client-side only):
  *   import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
@@ -15,11 +15,11 @@
 // ── Icon pack imports (bundled at build time) ───────────────────────────
 // Each @iconify-json/* package exports a JSON file with the Iconify schema:
 //   { prefix: string, icons: Record<string, IconifyIcon>, ... }
-import logosIcons from "@iconify-json/logos/icons.json";
-import skillIcons from "@iconify-json/skill-icons/icons.json";
 import deviconIcons from "@iconify-json/devicon/icons.json";
-import mdiIcons from "@iconify-json/mdi/icons.json";
-import simpleIcons from "@iconify-json/simple-icons/icons.json";
+import flagIcons from "@iconify-json/flag/icons.json";
+import fluentColorIcons from "@iconify-json/fluent-color/icons.json";
+import glyphsPolyIcons from "@iconify-json/glyphs-poly/icons.json";
+import logosIcons from "@iconify-json/logos/icons.json";
 
 /** Shape of an Iconify JSON collection. */
 interface IconifyJSON {
@@ -39,33 +39,34 @@ export async function registerMermaidIcons(): Promise<void> {
 
     mermaid.registerIconPacks([
       {
-        name: "logos",
-        icons: logosIcons as unknown as IconifyJSON,
-      },
-      {
-        name: "skill-icons",
-        icons: skillIcons as unknown as IconifyJSON,
-      },
-      {
         name: "devicon",
         icons: deviconIcons as unknown as IconifyJSON,
       },
       {
-        name: "mdi",
-        icons: mdiIcons as unknown as IconifyJSON,
+        name: "flag",
+        icons: flagIcons as unknown as IconifyJSON,
       },
       {
-        name: "simple-icons",
-        icons: simpleIcons as unknown as IconifyJSON,
+        name: "fluent-color",
+        icons: fluentColorIcons as unknown as IconifyJSON,
+      },
+      {
+        name: "glyphs-poly",
+        icons: glyphsPolyIcons as unknown as IconifyJSON,
+      },
+      {
+        name: "logos",
+        icons: logosIcons as unknown as IconifyJSON,
       },
     ]);
 
     console.debug(
-      `[kumidocs] Mermaid icons: logos (${Object.keys(logosIcons.icons ?? {}).length}), ` +
-        `skill-icons (${Object.keys(skillIcons.icons ?? {}).length}), ` +
+      `[kumidocs] Mermaid icons registered: ` +
         `devicon (${Object.keys(deviconIcons.icons ?? {}).length}), ` +
-        `mdi (${Object.keys(mdiIcons.icons ?? {}).length}), ` +
-        `simple-icons (${Object.keys(simpleIcons.icons ?? {}).length})`,
+        `flag (${Object.keys(flagIcons.icons ?? {}).length}), ` +
+        `fluent-color (${Object.keys(fluentColorIcons.icons ?? {}).length}), ` +
+        `glyphs-poly (${Object.keys(glyphsPolyIcons.icons ?? {}).length}), ` +
+        `logos (${Object.keys(logosIcons.icons ?? {}).length})`,
     );
   } catch (error: unknown) {
     console.warn("[kumidocs] Failed to register Mermaid icon packs:", error);

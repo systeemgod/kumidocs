@@ -274,19 +274,19 @@ flowchart LR
 
 ### Available themes
 
-| Theme | Description |
-|-------|-------------|
-| `default` | Light theme |
-| `dark` | Dark theme |
-| `forest` | Green tones |
-| `neutral` | Grey tones |
-| `base` | Fully custom via `themeVariables` |
+| Theme     | Description                       |
+| --------- | --------------------------------- |
+| `default` | Light theme                       |
+| `dark`    | Dark theme                        |
+| `forest`  | Green tones                       |
+| `neutral` | Grey tones                        |
+| `base`    | Fully custom via `themeVariables` |
 
 ## In Slide Decks
 
 Mermaid diagrams work inside slide decks too:
 
-```markdown
+````markdown
 ---
 slides: true
 theme: corporate
@@ -299,7 +299,9 @@ flowchart LR
     A[Client] --> B[API]
     B --> C[Database]
 ```
-```
+````
+
+````
 
 ## Custom Icon Packs
 
@@ -308,10 +310,10 @@ Architecture diagrams support **icon packs** via the `prefix:icon-name` syntax. 
 | Prefix | Pack | Example |
 |--------|------|---------|
 | `logos:*` | [Logos](https://github.com/gilbarbara/logos) | `logos:aws-s3`, `logos:github`, `logos:react` |
-| `skill-icons:*` | [Skill Icons](https://github.com/tandpfun/skill-icons) | `skill-icons:typescript`, `skill-icons:rust` |
 | `devicon:*` | [Devicon](https://devicon.dev) | `devicon:docker`, `devicon:postgresql` |
-| `mdi:*` | [Material Design Icons](https://pictogrammers.com/library/mdi/) | `mdi:account`, `mdi:cloud` |
-| `simple-icons:*` | [Simple Icons](https://simpleicons.org) | `simple-icons:discord`, `simple-icons:github` |
+| `flag:*` | [Flag](https://github.com/iconify/icon-sets/tree/master/flag) | `flag:us`, `flag:gb-eng`, `flag:jp` |
+| `fluent-color:*` | [Fluent Color](https://github.com/iconify/icon-sets/tree/master/fluent-color) | `fluent-color:cloud`, `fluent-color:database` |
+| `glyphs-poly:*` | [Glyphs Poly](https://github.com/iconify/icon-sets/tree/master/glyphs-poly) | `glyphs-poly:server`, `glyphs-poly:shield` |
 
 **Usage in architecture diagrams:**
 
@@ -328,7 +330,7 @@ architecture-beta
     spa:R -- L:api
     api:B -- T:db
     api:T -- B:cache
-```
+````
 
 > Icons are bundled at build time — zero external network requests.
 
