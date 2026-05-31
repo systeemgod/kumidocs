@@ -53,49 +53,7 @@ Support `[[Page Name]]` or `[[path/to/page]]` syntax that auto-resolves to exist
 
 ---
 
-### 4. Production Docker Compose
-
-The current `compose.yaml` uses dev-mode (`bun --hot src/index.ts`) and `network_mode: host`. A production-ready setup.
-
-**Approach**:
-
-- Build step: `docker build` that runs `bun install && bun run build`
-- Use the built `dist/index.js` as the entrypoint
-- Replace `network_mode: host` with proper `ports:` mapping
-- Add health checks (`curl -f http://localhost:5864/api/me || exit 1`)
-- Run as non-root user
-- OAuth2-proxy should talk to kumidocs over an internal network, not host networking
-
-**Files to touch**:
-
-- New: `Dockerfile`
-- `compose.yaml` (production-ready rewrite, keep dev hints in comments)
-
----
-
 ## 👍 Medium Impact
-
-### 5. Branch Selector in Top Bar
-
-Let users switch git branches from the UI without leaving the browser.
-
-**Approach**:
-
-- Server endpoint: `GET /api/git/branches` → list local branches, detect current
-- Server endpoint: `POST /api/git/checkout` → `{ branch, create?: boolean }`
-  - Stash dirty state if needed
-  - `git checkout` + reload filestore + rebuild search index + broadcast
-- UI: Dropdown in the top bar showing current branch, click to switch
-- Handle edge cases: dirty working tree, uncommitted changes in the editor
-
-**Files to touch**:
-
-- `src/server/api-git.ts` (new file)
-- `src/server/router.ts` (register new routes)
-- `src/components/layout/top-bar.tsx` (branch dropdown)
-- `src/lib/api.ts` (new API functions)
-
----
 
 ### 6. Spell Check in the Editor
 
@@ -211,23 +169,6 @@ Breadcrumbs are currently display-only. Make each segment clickable.
 **Files to touch**:
 
 - `src/pages/file-page.tsx` (wrap breadcrumb segments in `<Link>`)
-
----
-
-### 12. Slide Deck: Drag to Reorder Slides
-
-In scroll mode, allow drag-and-drop reordering of slides.
-
-**Approach**:
-
-- Use HTML5 Drag and Drop API (or a lightweight library like `@dnd-kit`)
-- On reorder, rearrange the `---`-separated slide blocks in the editor content
-- Commit on reorder (or mark as dirty)
-
-**Files to touch**:
-
-- `src/components/editor/slide-viewer.tsx` (drag handlers on slide wrappers)
-- `src/pages/use-file-page.ts` (handle reorder + save)
 
 ---
 
