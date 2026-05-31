@@ -21,6 +21,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "bun scripts/build.ts",
+		"postinstall": "bun scripts/postinstall.ts",
 		"prepublishOnly": "bun run build",
 		"dev": "bun --hot src/index.ts",
 		"start": "NODE_ENV=production bun src/index.ts",
