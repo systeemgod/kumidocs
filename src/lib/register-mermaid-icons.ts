@@ -39,7 +39,13 @@ export async function registerMermaidIcons(): Promise<void> {
   // flattens the module differently (dev vs production).
   try {
     const mod = await import("mermaid");
-    const mermaid = (mod as { default?: { registerIconPacks: (packs: unknown[]) => void }; registerIconPacks?: (packs: unknown[]) => void }).default ?? mod;
+    const mermaid =
+      (
+        mod as {
+          default?: { registerIconPacks: (packs: unknown[]) => void };
+          registerIconPacks?: (packs: unknown[]) => void;
+        }
+      ).default ?? mod;
 
     if (typeof mermaid.registerIconPacks !== "function") {
       console.warn("[kumidocs] Mermaid registerIconPacks not available");

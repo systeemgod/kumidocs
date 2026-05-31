@@ -8,6 +8,10 @@ import { createRoot } from "react-dom/client";
 // HMR bundler creates an empty synthetic module for khroma, causing:
 //   TypeError: import_khroma5.adjust is not a function
 import "khroma";
+// Named import variant — some bundler versions need this to trigger proper
+// ESM re-export tracing through khroma's chain (khroma → methods → adjust).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { adjust as _khromaAdjust } from "khroma";
 
 const elemOrNull = document.querySelector("#root");
 if (!elemOrNull) {
