@@ -1,4 +1,5 @@
 import type { Element, ElementContent, Root, RootContent } from "hast";
+import { headingToSlug } from "@/lib/heading";
 
 const nodeText = (node: Element | ElementContent | RootContent): string => {
   if (node.type === "text") {
@@ -12,12 +13,7 @@ const nodeText = (node: Element | ElementContent | RootContent): string => {
 
 const walk = (node: Root | RootContent): void => {
   if (node.type === "element" && /^h[1-6]$/u.test(node.tagName)) {
-    node.properties.id ??= nodeText(node)
-      .toLowerCase()
-      .replaceAll(/[^\w\s-]/gu, "")
-      .trim()
-      .replaceAll(/[\s_]+/gu, "-")
-      .replaceAll(/-+/gu, "-");
+    node.properties.id ??= headingToSlug(nodeText(node));
   }
   if ("children" in node) {
     for (const child of node.children) {

@@ -5,7 +5,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { FileType, PresenceUser, User } from "@/lib/types";
-import { InfoRegular, MoreHorizontalRegular } from "@fluentui/react-icons";
+import { InfoRegular, MoreHorizontalRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import { SAVE_BADGE_TEXT, getEditButtonClass, getSaveBadgeClass } from "./file-page-utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -26,12 +26,14 @@ interface FilePageHeaderProps {
   viewers: PresenceUser[];
   saveStatus: SaveStatus;
   infoOpen: boolean;
+  tocOpen: boolean;
   rawPath: string;
   filePath: string;
   handleEmojiChange: (emoji: string) => void;
   exitEdit: () => Promise<void>;
   enterEdit: () => void;
   setInfoOpen: Dispatch<SetStateAction<boolean>>;
+  setTocOpen: Dispatch<SetStateAction<boolean>>;
   handlePageDuplicate: () => void;
   exportPagePdf: () => void;
   openMove: (path: string) => Promise<void>;
@@ -48,12 +50,14 @@ function FilePageHeader({
   viewers,
   saveStatus,
   infoOpen,
+  tocOpen,
   rawPath,
   filePath,
   handleEmojiChange,
   exitEdit,
   enterEdit,
   setInfoOpen,
+  setTocOpen,
   handlePageDuplicate,
   exportPagePdf,
   openMove,
@@ -138,6 +142,21 @@ function FilePageHeader({
               </Tooltip>
             ))}
         </div>
+
+        {/* TOC toggle — only for doc pages in view mode */}
+        {!editMode && fileType === "doc" && (
+          <Button
+            size="sm"
+            variant={tocOpen ? "secondary" : "ghost"}
+            className="h-7 gap-1 text-xs px-2"
+            onClick={() => {
+              setTocOpen((prev) => !prev);
+            }}
+          >
+            <TextBulletListLtrRegular className="w-4 h-4" />
+            TOC
+          </Button>
+        )}
 
         {/* Dedicated info button */}
         {!editMode && (

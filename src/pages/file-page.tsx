@@ -3,6 +3,7 @@ import FilePageHeader from "./file-page-header";
 import MarkdownViewer from "@/components/editor/markdown-viewer";
 import NotFound from "./not-found";
 import PageInfoPanel from "@/components/layout/page-info-panel";
+import TocSidebar from "@/components/editor/toc-sidebar";
 import { SaveRegular } from "@fluentui/react-icons";
 import { buildEditorContent } from "./file-page-utils";
 import { useFilePage } from "./use-file-page";
@@ -30,6 +31,8 @@ export default function FilePage(): JSX.Element {
     viewers,
     infoOpen,
     setInfoOpen,
+    tocOpen,
+    setTocOpen,
     remoteBanner,
     setRemoteBanner,
     pdfContentRef,
@@ -119,12 +122,14 @@ export default function FilePage(): JSX.Element {
         viewers={viewers}
         saveStatus={saveStatus}
         infoOpen={infoOpen}
+        tocOpen={tocOpen}
         rawPath={rawPath}
         filePath={filePath}
         handleEmojiChange={handleEmojiChange}
         exitEdit={exitEdit}
         enterEdit={enterEdit}
         setInfoOpen={setInfoOpen}
+        setTocOpen={setTocOpen}
         handlePageDuplicate={() => {
           void handlePageDuplicate();
         }}
@@ -147,6 +152,10 @@ export default function FilePage(): JSX.Element {
       {/* Content area */}
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
+        {/* TOC sidebar — doc pages only, view mode */}
+        {tocOpen && !editMode && fileType === "doc" && (
+          <TocSidebar content={content} />
+        )}
         {infoOpen && !editMode && (
           <PageInfoPanel
             key={filePath}

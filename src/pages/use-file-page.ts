@@ -38,6 +38,8 @@ interface UseFilePageReturn {
   handleSave: () => Promise<void>;
   infoOpen: boolean;
   lastSha: string | undefined;
+  setTocOpen: Dispatch<SetStateAction<boolean>>;
+  tocOpen: boolean;
   loadDoc: (path: string) => Promise<void>;
   loading: boolean;
   meta: DocMeta;
@@ -90,6 +92,7 @@ function useFilePage(): UseFilePageReturn {
 
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
   const [infoOpen, setInfoOpen] = useInfoPanel(filePath);
+  const [tocOpen, setTocOpen] = useState(false);
   const editModeRef = useRef(editMode);
   editModeRef.current = editMode;
   const { editLocked, viewers, remoteBanner, setRemoteBanner } = usePagePresence(
@@ -187,6 +190,8 @@ function useFilePage(): UseFilePageReturn {
     handleSave,
     infoOpen,
     lastSha,
+    setTocOpen,
+    tocOpen,
     loadDoc,
     loading,
     meta,
