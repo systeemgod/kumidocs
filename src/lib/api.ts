@@ -1,5 +1,7 @@
+import type { BacklinkEntry } from "@/server/backlinks";
 import type { CommitEntry, SearchResult, TreeNode } from "./types";
 import type { SlideThemeMap } from "./slide";
+import type { WikilinkLookup } from "./wikilinks";
 
 // ── Error ─────────────────────────────────────────────────────────────────────
 
@@ -125,6 +127,12 @@ const deleteImage = async (filename: string): Promise<void> => {
   await request<unknown>(`/api/images/${encodeURIComponent(filename)}`, { method: "DELETE" });
 };
 
+const getPagesLookup = async (): Promise<WikilinkLookup> =>
+  request<WikilinkLookup>("/api/pages/lookup");
+
+const getBacklinks = async (path: string): Promise<BacklinkEntry[]> =>
+  request<BacklinkEntry[]>(`/api/backlinks?path=${encodeURIComponent(path)}`);
+
 const uploadImage = async (file: File): Promise<{ url: string }> => {
   const form = new FormData();
   form.append("file", file);
@@ -137,11 +145,13 @@ export {
   createFile,
   deleteFile,
   deleteImage,
+  getBacklinks,
   getFile,
   getFileDiff,
   getFileHistory,
   getImages,
   getMe,
+  getPagesLookup,
   getTree,
   putFile,
   renameFile,

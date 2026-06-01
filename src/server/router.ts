@@ -1,5 +1,6 @@
 import {
   apiAvatarProxy,
+  apiBacklinks,
   apiFileCreate,
   apiFileDelete,
   apiFileDiff,
@@ -10,6 +11,7 @@ import {
   apiImageDelete,
   apiImagesList,
   apiMe,
+  apiPagesLookup,
   apiSearch,
   apiSidebar,
   apiTree,
@@ -68,6 +70,26 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
       async GET(req: Request) {
         const hash = new URL(req.url).pathname.slice("/api/avatar/".length);
         return apiAvatarProxy(hash);
+      },
+    },
+
+    "/api/backlinks": {
+      async GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiBacklinks(new URL(req.url));
+      },
+    },
+
+    "/api/pages/lookup": {
+      async GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiPagesLookup();
       },
     },
 

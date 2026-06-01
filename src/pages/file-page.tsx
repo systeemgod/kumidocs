@@ -36,6 +36,7 @@ export default function FilePage(): JSX.Element {
     setTocOpen,
     remoteBanner,
     setRemoteBanner,
+    resolvedContent,
     pdfContentRef,
     openMove,
     openDelete,
@@ -65,6 +66,7 @@ export default function FilePage(): JSX.Element {
 
   const editorContent = buildEditorContent({
     content,
+    resolvedContent,
     editMode,
     fileType,
     handleChange,

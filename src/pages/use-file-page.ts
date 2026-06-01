@@ -1,9 +1,11 @@
-import { ApiError, createFile, getFile } from "@/lib/api";
+import { ApiError, createFile, getFile, getPagesLookup } from "@/lib/api";
 import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { computeTitle, resolveFileType } from "./file-page-utils";
-import { useCallback, useRef, useState } from "react";
+import { resolveWikilinks } from "@/lib/wikilinks";
+import type { WikilinkLookup } from "@/lib/wikilinks";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import type { SaveStatus } from "./use-file-page-save";
@@ -12,6 +14,7 @@ import { pathExtension } from "@/lib/filetypes";
 import { toast } from "@/components/ui/toaster";
 import { useFilePageSave } from "./use-file-page-save";
 import useInfoPanel from "@/hooks/use-info-panel";
+import useMountEffect from "@/hooks/use-mount-effect";
 import usePageActions from "@/hooks/use-page-actions";
 import usePagePdfExport from "./use-page-pdf-export";
 import usePagePresence from "@/hooks/use-page-presence";
@@ -53,6 +56,7 @@ interface UseFilePageReturn {
   rawExt: string;
   rawPath: string;
   remoteBanner: string | undefined;
+  resolvedContent: string;
   saveStatus: SaveStatus;
   setInfoOpen: Dispatch<SetStateAction<boolean>>;
   setMeta: Dispatch<SetStateAction<DocMeta>>;
@@ -109,6 +113,26 @@ function useFilePage(): UseFilePageReturn {
   const title = computeTitle(fileType, content, filePath);
   const breadcrumb = filePath.replace(/\.md$/u, "").split("/").slice(0, -1);
   const { exportPagePdf, pdfContentRef } = usePagePdfExport(title);
+
+  // ── Wiki-link lookup ────────────────────────────────────────────────────
+  const [pagesLookup, setPagesLookup] = useState<WikilinkLookup | undefined>();
+  useMountEffect(() => {
+    void (async (): Promise<void> => {
+      try {
+        const lookup = await getPagesLookup();
+        setPagesLookup(lookup);
+      } catch {
+        // lookup unavailable — wikilinks render as dead links
+      }
+    })();
+  });
+  const resolvedContent = useMemo(
+    () =>
+      pagesLookup && (fileType === "doc" || fileType === "slide") && !editMode
+        ? resolveWikilinks(content, pagesLookup)
+        : content,
+    [content, editMode, fileType, pagesLookup],
+  );
 
   const enterEdit = useCallback(() => {
     if (user?.canEdit !== true) {
@@ -205,6 +229,7 @@ function useFilePage(): UseFilePageReturn {
     rawExt,
     rawPath,
     remoteBanner,
+    resolvedContent,
     saveStatus,
     setInfoOpen,
     setMeta,

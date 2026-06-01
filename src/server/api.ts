@@ -1,3 +1,4 @@
+import { apiBacklinks, apiPagesLookup } from "./backlinks";
 import { buildFileTree, getFile } from "./filestore";
 import type { Config } from "./config";
 import type { User } from "@/lib/types";
@@ -31,6 +32,7 @@ function apiSidebar(): Response {
   return Response.json({ content });
 }
 
+export { apiBacklinks, apiPagesLookup };
 export { apiMe, apiSearch, apiSidebar, apiTree };
 export { apiFileGet, apiFilePut, apiFileCreate, apiFileDelete, apiFileRename } from "./api-file";
 export {

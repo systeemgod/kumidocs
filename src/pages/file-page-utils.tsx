@@ -140,6 +140,8 @@ interface EditorContentProps {
   fileType: FileType;
   editMode: boolean;
   content: string;
+  /** Wiki-link-resolved markdown (view mode only). Falls back to `content` if undefined. */
+  resolvedContent?: string;
   rawContent: string;
   rawExt: string;
   handleChange: (val: string) => void;
@@ -155,6 +157,7 @@ function buildEditorContent({
   fileType,
   editMode,
   content,
+  resolvedContent,
   rawContent,
   rawExt,
   handleChange,
@@ -165,6 +168,8 @@ function buildEditorContent({
   metaRef,
   title,
 }: EditorContentProps): ReactNode {
+  // Use wiki-link-resolved content in view mode when available
+  const viewContent = resolvedContent ?? content;
   if (fileType === "code") {
     return (
       <CodeEditor
@@ -197,7 +202,7 @@ function buildEditorContent({
   if (fileType === "slide") {
     return (
       <SlideViewer
-        value={content}
+        value={viewContent}
         filename={title}
         theme={meta.theme}
         paginate={meta.paginate}
@@ -210,7 +215,7 @@ function buildEditorContent({
   }
   return (
     <ScrollArea className="h-full">
-      <MarkdownViewer value={content} />
+      <MarkdownViewer value={viewContent} />
     </ScrollArea>
   );
 }
