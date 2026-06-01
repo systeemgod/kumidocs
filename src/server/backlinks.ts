@@ -1,9 +1,9 @@
-import type { WikilinkLookup } from "@/lib/wikilinks";
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import matter from "gray-matter";
+import type { WikilinkLookup } from "@/lib/wikilinks";
 
 /** A single backlink reference — another page that links to the current page. */
-export interface BacklinkEntry {
+interface BacklinkEntry {
   path: string;
   title: string;
   snippet: string;
@@ -36,7 +36,7 @@ function buildLookup(): WikilinkLookup {
     }
     // Also map the base filename (e.g. "aws-architecture" → path)
     const baseName = filePath.split("/").pop()?.replace(/\.md$/u, "");
-    if (baseName && baseName !== pathKey && !(baseName in byPath)) {
+    if (baseName !== undefined && baseName !== "" && baseName !== pathKey && !(baseName in byPath)) {
       byPath[baseName] = filePath;
     }
   }
@@ -73,7 +73,7 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
     }
 
     const content = getFile(filePath);
-    if (!content) {
+    if (content === undefined || content === "") {
       continue;
     }
 
@@ -91,7 +91,7 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
     let match: RegExpExecArray | null;
     while ((match = wikiLinkRe.exec(body)) !== null) {
       const target = match[1]?.trim();
-      if (!target) {
+      if (target === undefined || target === "") {
         continue;
       }
 
@@ -105,7 +105,7 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
           ([title]) => title.toLowerCase() === target.toLowerCase(),
         )?.[1];
 
-      if (resolved && resolved.replace(/\.md$/u, "") === queryNormalised) {
+      if (resolved !== undefined && resolved.replace(/\.md$/u, "") === queryNormalised) {
         const entry = parseFileEntry(filePath);
         const start = Math.max(0, match.index - 60);
         const end = Math.min(body.length, match.index + match[0].length + 60);
@@ -114,7 +114,7 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
           body.slice(start, end).replaceAll("\n", " ") +
           (end < body.length ? "…" : "");
 
-        results.push({ path: filePath, title: entry.title, snippet });
+        results.push({ path: filePath, snippet, title: entry.title });
         break; // one result per linking page is enough
       }
     }
@@ -126,10 +126,11 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
 /** Handler for `GET /api/backlinks?path=<path>`. */
 function apiBacklinks(url: URL): Response {
   const queryPath = url.searchParams.get("path") ?? "";
-  if (!queryPath) {
+  if (queryPath === "") {
     return Response.json({ error: "Missing 'path' query parameter" }, { status: 400 });
   }
   return Response.json(buildBacklinks(queryPath));
 }
 
 export { apiBacklinks, apiPagesLookup, buildLookup };
+export type { BacklinkEntry };

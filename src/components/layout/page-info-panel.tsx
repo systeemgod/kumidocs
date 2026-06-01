@@ -5,6 +5,7 @@ import {
   DocumentRegular,
 } from "@fluentui/react-icons";
 import { getBacklinks, getFileDiff, getFileHistory } from "@/lib/api";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CommitDiffDialog from "./commit-diff-dialog";
@@ -12,7 +13,6 @@ import type { BacklinkEntry } from "@/server/backlinks";
 import type { CommitEntry } from "@/lib/types";
 import type { DiffData } from "@/lib/api";
 import type { ReactNode } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAvatar } from "@/components/ui/avatar";
 import { emailToDisplayName } from "@/lib/avatar";
 import useMountEffect from "@/hooks/use-mount-effect";
@@ -102,6 +102,35 @@ export default function PageInfoPanel({
       setDiffLoading(false);
     }
   };
+
+  let backlinksContent: ReactNode;
+  if (backlinksLoading) {
+    backlinksContent = <p className="text-xs text-muted-foreground py-2">Loading…</p>;
+  } else if (backlinks.length === 0) {
+    backlinksContent = <p className="text-xs text-muted-foreground py-2">No backlinks yet.</p>;
+  } else {
+    backlinksContent = (
+      <div className="space-y-0.5">
+        {backlinks.map((bl) => (
+          <Link
+            key={bl.path}
+            to={`/p/${bl.path.replace(/\.md$/u, "")}`}
+            className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
+          >
+            <span className="flex-1 min-w-0">
+              <span className="text-foreground line-clamp-2 block">{bl.title}</span>
+              {bl.snippet !== "" && (
+                <span className="text-muted-foreground line-clamp-1 block mt-0.5 text-[0.7rem]">
+                  {bl.snippet}
+                </span>
+              )}
+            </span>
+            <ChevronRightRegular className="w-3 h-3 shrink-0 mt-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
+          </Link>
+        ))}
+      </div>
+    );
+  }
 
   let commitHistoryContent: ReactNode;
   if (loading) {
@@ -215,31 +244,7 @@ export default function PageInfoPanel({
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Backlinks
             </p>
-            {backlinksLoading ? (
-              <p className="text-xs text-muted-foreground py-2">Loading…</p>
-            ) : backlinks.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-2">No backlinks yet.</p>
-            ) : (
-              <div className="space-y-0.5">
-                {backlinks.map((bl) => (
-                  <Link
-                    key={bl.path}
-                    to={`/p/${bl.path.replace(/\.md$/u, "")}`}
-                    className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
-                  >
-                    <span className="flex-1 min-w-0">
-                      <span className="text-foreground line-clamp-2 block">{bl.title}</span>
-                      {bl.snippet && (
-                        <span className="text-muted-foreground line-clamp-1 block mt-0.5 text-[0.7rem]">
-                          {bl.snippet}
-                        </span>
-                      )}
-                    </span>
-                    <ChevronRightRegular className="w-3 h-3 shrink-0 mt-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
-                  </Link>
-                ))}
-              </div>
-            )}
+            {backlinksContent}
           </div>
 
           {/* Commit history */}

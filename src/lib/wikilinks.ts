@@ -36,7 +36,7 @@ export function resolveWikilinks(markdown: string, lookup: WikilinkLookup): stri
       const pathKey = trimmed.replace(/\.md$/u, "");
       const resolvedPath = lookup.byPath[pathKey] ?? lookup.byPath[trimmed];
 
-      if (resolvedPath) {
+      if (resolvedPath !== undefined) {
         return `[${display}](/p/${resolvedPath.replace(/\.md$/u, "")})`;
       }
 
@@ -47,7 +47,7 @@ export function resolveWikilinks(markdown: string, lookup: WikilinkLookup): stri
           ([title]) => title.toLowerCase() === trimmed.toLowerCase(),
         )?.[1];
 
-      if (titleHit) {
+      if (titleHit !== undefined) {
         return `[${display}](/p/${titleHit.replace(/\.md$/u, "")})`;
       }
 
