@@ -141,10 +141,14 @@ const OPTIONS: OptionDef[] = [
       const count = Number(parts[0]);
       const windowMs = Number(parts[1]);
       if (!Number.isInteger(count) || count < 1) {
-        fatal(`KUMIDOCS_RATE_LIMIT count must be a positive integer, got: ${JSON.stringify(parts[0])}`);
+        fatal(
+          `KUMIDOCS_RATE_LIMIT count must be a positive integer, got: ${JSON.stringify(parts[0])}`,
+        );
       }
-      if (!Number.isInteger(windowMs) || windowMs < 1_000) {
-        fatal(`KUMIDOCS_RATE_LIMIT window must be at least 1000ms, got: ${JSON.stringify(parts[1])}`);
+      if (!Number.isInteger(windowMs) || windowMs < 1000) {
+        fatal(
+          `KUMIDOCS_RATE_LIMIT window must be at least 1000ms, got: ${JSON.stringify(parts[1])}`,
+        );
       }
       return { count, windowMs };
     },
@@ -181,8 +185,13 @@ const printHelp = (): void => {
   ];
   for (const opt of OPTIONS) {
     const flagStr = opt.flags.join(", ").padEnd(FLAG_COLUMN_WIDTH);
+    const rawDefault = defaultValue(opt);
+    const defaultStr =
+      typeof rawDefault === "object"
+        ? `${(rawDefault as { count: number }).count}/${(rawDefault as { windowMs: number }).windowMs}`
+        : String(rawDefault);
     lines.push(
-      `  ${flagStr} ${opt.description} (default: ${String(defaultValue(opt))}, env: ${opt.env})`,
+      `  ${flagStr} ${opt.description} (default: ${defaultStr}, env: ${opt.env})`,
     );
   }
   lines.push("  -h, --help               Show this help");
