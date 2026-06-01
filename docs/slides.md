@@ -37,12 +37,14 @@ paginate: true      # show "N / Total" badge
 | Key | Default | Description |
 | --- | --- | --- |
 | `slides` | `false` | Enable slide deck rendering |
-| `theme` | `default` | Deck-wide theme — see [Themes](docs/slides/themes) |
+| `theme` | `default` | Deck-wide theme — see [[Slide Decks#Custom Themes|custom themes]] |
 | `paginate` | `false` | Show slide number badge |
 
 ## Canvas
 
 Each slide renders on a **960 × 540** canvas that scales to fill the viewer. On wide screens it fills the width; on narrow screens it scales down proportionally.
+
+See [[Writing Pages]] for the full Markdown reference, and [[Mermaid Diagrams]] for adding diagrams to your slides.
 
 ## Separators
 

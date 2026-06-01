@@ -6,6 +6,8 @@ emoji: 👥
 
 KumiDocs supports real-time collaboration for up to ~20 concurrent users. All coordination happens over a persistent WebSocket connection — no polling.
 
+See [[Getting Started]] for installation instructions and [[Writing Pages]] for the Markdown editor reference.
+
 ## Edit Locking
 
 Only one user can edit a page at a time. When you click **Edit**:

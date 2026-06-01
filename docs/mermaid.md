@@ -10,6 +10,8 @@ KumiDocs supports [Mermaid](https://mermaid.js.org) diagrams — simply wrap any
 
 Mermaid is a JavaScript-based diagramming tool that lets you create diagrams and visualizations using text and code. KumiDocs bundles Mermaid v11.15.0 with support for **20+ diagram types**.
 
+See [[AWS Architecture Examples]] for real-world architecture diagrams using Mermaid with Iconify icon packs.
+
 Basic usage:
 
 ````markdown

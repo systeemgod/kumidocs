@@ -10,9 +10,9 @@ Welcome to KumiDocs — a Git-backed wiki and presentation platform built for de
 
 KumiDocs turns a Git repository into a collaborative wiki. Every page is a Markdown file. Every save is a Git commit. You get full history, branching, and offline access for free.
 
-- **Write** — Markdown pages with a live split-pane editor
-- **Present** — Any page becomes a slide deck with `slides: true`
-- **Collaborate** — Real-time presence and edit locking
+- **Write** — Markdown pages with a live split-pane editor — see [[Writing Pages]]
+- **Present** — Any page becomes a [[Slide Decks|slide deck]] with `slides: true`
+- **Collaborate** — Real-time presence and edit locking — see [[Collaboration]]
 - **Search** — Full-text fuzzy search across all pages (Ctrl+K)
 
 ## Documentation
@@ -45,6 +45,8 @@ Hello from KumiDocs! This is a **Markdown** page with _live editing_.
 - Real-time preview
 - Auto-save every 5 seconds
 - Full Git history
+- Link to other pages with `[[Page Name]]` — try it: [[Writing Pages]]
+
 ```
 
 Save it — KumiDocs commits and pushes automatically. The page appears in the sidebar immediately.

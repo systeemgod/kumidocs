@@ -41,7 +41,9 @@ services:
       - "5864:5864"
 ```
 
-For SSO (OAuth2 proxy) configuration, see [Configuration](docs/configuration).
+For SSO (OAuth2 proxy) configuration, see [[Configuration]].
+
+See [[Collaboration]] for details on real-time editing and presence.
 
 ## Building from Source
 

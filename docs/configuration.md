@@ -29,6 +29,8 @@ If the header is missing or unparseable, KumiDocs returns HTTP 401.
 
 In production, set this to whatever header your SSO proxy injects (e.g. `X-Auth-Request-User` for oauth2-proxy, `X-Forwarded-Email` for Authelia).
 
+See [[Getting Started]] for the Docker Compose SSO setup example.
+
 ### KUMIDOCS_GIT_IMPL
 
 | Value | Description |

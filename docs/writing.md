@@ -6,6 +6,8 @@ emoji: ✏️
 
 KumiDocs pages are plain Markdown files with optional YAML frontmatter. The editor is a split-pane view: raw Markdown on the left, live preview on the right.
 
+You can link to other pages using [[Getting Started|wiki-link syntax]] — try `[[Page Title]]` or `[[path/to/page|display text]]`.
+
 ## Frontmatter
 
 Add a frontmatter block at the top of any page to set metadata:
@@ -24,7 +26,7 @@ paginate: true      # show slide numbers (slides only)
 | `emoji` | string | Icon shown in sidebar, browser tab, and page header |
 | `description` | string | Shown in search results |
 | `slides` | boolean | Render this page as a slide deck |
-| `theme` | string | Slide deck theme — see [Themes](docs/slides/themes) |
+| `theme` | string | Slide deck theme — see [[Slide Decks]] |
 | `paginate` | boolean | Show `N / Total` badge on each slide |
 
 ## Markdown Syntax

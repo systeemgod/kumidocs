@@ -7,6 +7,8 @@ description: Real-world AWS architecture diagrams using Mermaid with embedded ic
 
 This page demonstrates real-world AWS architecture diagrams using Mermaid's `architecture-beta` syntax with embedded Iconify icon packs — no CDN, no image files.
 
+See [[Mermaid Diagrams]] for the full Mermaid reference and diagram type reference.
+
 > All icons are from the `logos:*` pack (tech company logos) bundled at build time.
 
 ---
