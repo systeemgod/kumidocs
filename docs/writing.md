@@ -15,19 +15,19 @@ Add a frontmatter block at the top of any page to set metadata:
 ```yaml
 ---
 emoji: 🚀
-slides: true        # turn this page into a slide deck
-theme: corporate    # slide deck theme (slides only)
-paginate: true      # show slide numbers (slides only)
+slides: true # turn this page into a slide deck
+theme: corporate # slide deck theme (slides only)
+paginate: true # show slide numbers (slides only)
 ---
 ```
 
-| Key | Type | Purpose |
-| --- | --- | --- |
-| `emoji` | string | Icon shown in sidebar, browser tab, and page header |
-| `description` | string | Shown in search results |
-| `slides` | boolean | Render this page as a slide deck |
-| `theme` | string | Slide deck theme — see [[Slide Decks]] |
-| `paginate` | boolean | Show `N / Total` badge on each slide |
+| Key           | Type    | Purpose                                             |
+| ------------- | ------- | --------------------------------------------------- |
+| `emoji`       | string  | Icon shown in sidebar, browser tab, and page header |
+| `description` | string  | Shown in search results                             |
+| `slides`      | boolean | Render this page as a slide deck                    |
+| `theme`       | string  | Slide deck theme — see [[Slide Decks]]              |
+| `paginate`    | boolean | Show `N / Total` badge on each slide                |
 
 ## Markdown Syntax
 
@@ -37,8 +37,11 @@ KumiDocs renders [GitHub Flavored Markdown](https://github.github.com/gfm/) (GFM
 
 ```markdown
 # Heading 1
+
 ## Heading 2
+
 ### Heading 3
+
 #### Heading 4
 ```
 
@@ -97,15 +100,15 @@ The first `# ` heading in the body is used as the page title.
 
 ```markdown
 | Column A | Column B | Column C |
-| --- | --- | --- |
-| Value 1 | Value 2 | Value 3 |
-| Value 4 | Value 5 | Value 6 |
+| -------- | -------- | -------- |
+| Value 1  | Value 2  | Value 3  |
+| Value 4  | Value 5  | Value 6  |
 ```
 
 | Column A | Column B | Column C |
-| --- | --- | --- |
-| Value 1 | Value 2 | Value 3 |
-| Value 4 | Value 5 | Value 6 |
+| -------- | -------- | -------- |
+| Value 1  | Value 2  | Value 3  |
+| Value 4  | Value 5  | Value 6  |
 
 Column alignment:
 
@@ -201,10 +204,10 @@ Access all uploaded images at `/images` (sidebar **⋯** → **Image library**).
 
 ## Editor Shortcuts
 
-| Shortcut | Action |
-| --- | --- |
+| Shortcut   | Action                             |
+| ---------- | ---------------------------------- |
 | **Ctrl+S** | Save (creates a Git commit + push) |
-| **Ctrl+K** | Open search palette |
+| **Ctrl+K** | Open search palette                |
 
 ## Saving and History
 

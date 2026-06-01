@@ -6,7 +6,6 @@ import type { WikilinkLookup } from "@/lib/wikilinks";
 interface BacklinkEntry {
   path: string;
   title: string;
-  snippet: string;
 }
 
 // ── Lookup ───────────────────────────────────────────────────────────────────
@@ -112,14 +111,7 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
 
       if (resolved !== undefined && resolved.replace(/\.md$/u, "") === queryNormalised) {
         const entry = parseFileEntry(filePath);
-        const start = Math.max(0, match.index - 60);
-        const end = Math.min(body.length, match.index + match[0].length + 60);
-        const snippet =
-          (start > 0 ? "…" : "") +
-          body.slice(start, end).replaceAll("\n", " ") +
-          (end < body.length ? "…" : "");
-
-        results.push({ path: filePath, snippet, title: entry.title });
+        results.push({ path: filePath, title: entry.title });
         break; // one result per linking page is enough
       }
     }

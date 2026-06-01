@@ -6,8 +6,8 @@ import {
 } from "@fluentui/react-icons";
 import { getBacklinks, getFileDiff, getFileHistory } from "@/lib/api";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
 import CommitDiffDialog from "./commit-diff-dialog";
 import type { BacklinkEntry } from "@/server/backlinks";
 import type { CommitEntry } from "@/lib/types";
@@ -110,25 +110,18 @@ export default function PageInfoPanel({
     backlinksContent = <p className="text-xs text-muted-foreground py-2">No backlinks yet.</p>;
   } else {
     backlinksContent = (
-      <div className="space-y-0.5">
+      <ul className="space-y-0.5 list-disc list-inside">
         {backlinks.map((bl) => (
-          <Link
-            key={bl.path}
-            to={`/p/${bl.path.replace(/\.md$/u, "")}`}
-            className="w-full text-left rounded py-1.5 text-xs hover:bg-accent/60 group flex items-start gap-1.5 transition-colors"
-          >
-            <span className="flex-1 min-w-0">
-              <span className="text-foreground line-clamp-2 block">{bl.title}</span>
-              {bl.snippet !== "" && (
-                <span className="text-muted-foreground line-clamp-1 block mt-0.5 text-[0.7rem]">
-                  {bl.snippet}
-                </span>
-              )}
-            </span>
-            <ChevronRightRegular className="w-3 h-3 shrink-0 mt-0.5 opacity-0 group-hover:opacity-50 transition-opacity" />
-          </Link>
+          <li key={bl.path} className="text-xs">
+            <Link
+              to={`/p/${bl.path.replace(/\.md$/u, "")}`}
+              className="hover:text-foreground transition-colors"
+            >
+              {bl.title}
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     );
   }
 

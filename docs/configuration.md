@@ -8,15 +8,15 @@ KumiDocs is configured through environment variables and a `.kumidocs.json` file
 
 ## Environment Variables
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `KUMIDOCS_REPO_PATH` | _(required)_ | Absolute path to the Git repository |
-| `KUMIDOCS_PORT` | `5864` | HTTP port to listen on |
-| `KUMIDOCS_AUTH_HEADER` | `X-Auth-Request-User` | Header name that carries the user identity (email or JWT) |
-| `KUMIDOCS_AUTO_SAVE_DELAY` | `5000` | Debounce delay in milliseconds before auto-save fires |
-| `KUMIDOCS_INSTANCE_NAME` | `KumiDocs` | Name shown in the top bar |
-| `KUMIDOCS_PULL_INTERVAL` | `60000` | Milliseconds between background `git pull --rebase` operations |
-| `KUMIDOCS_GIT_IMPL` | `native` | Git backend: `native` (subprocess) or `builtin` (isomorphic-git) |
+| Variable                   | Default               | Description                                                      |
+| -------------------------- | --------------------- | ---------------------------------------------------------------- |
+| `KUMIDOCS_REPO_PATH`       | _(required)_          | Absolute path to the Git repository                              |
+| `KUMIDOCS_PORT`            | `5864`                | HTTP port to listen on                                           |
+| `KUMIDOCS_AUTH_HEADER`     | `X-Auth-Request-User` | Header name that carries the user identity (email or JWT)        |
+| `KUMIDOCS_AUTO_SAVE_DELAY` | `5000`                | Debounce delay in milliseconds before auto-save fires            |
+| `KUMIDOCS_INSTANCE_NAME`   | `KumiDocs`            | Name shown in the top bar                                        |
+| `KUMIDOCS_PULL_INTERVAL`   | `60000`               | Milliseconds between background `git pull --rebase` operations   |
+| `KUMIDOCS_GIT_IMPL`        | `native`              | Git backend: `native` (subprocess) or `builtin` (isomorphic-git) |
 
 ### KUMIDOCS_AUTH_HEADER
 
@@ -33,9 +33,9 @@ See [[Getting Started]] for the Docker Compose SSO setup example.
 
 ### KUMIDOCS_GIT_IMPL
 
-| Value | Description |
-| --- | --- |
-| `native` | Runs `git` as a subprocess. Requires `git` to be installed. Supports SSH keys and all credential helpers configured on the host. Default. |
+| Value     | Description                                                                                                                                           |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `native`  | Runs `git` as a subprocess. Requires `git` to be installed. Supports SSH keys and all credential helpers configured on the host. Default.             |
 | `builtin` | Uses isomorphic-git (pure JS). No `git` binary needed. Useful in restricted environments. Note: uses merge instead of rebase for conflict resolution. |
 
 ## .kumidocs.json
@@ -45,10 +45,7 @@ Place this file in the root of your repository. KumiDocs re-reads it after every
 ```json
 {
   "instanceName": "My Team Wiki",
-  "editors": [
-    "alice@example.com",
-    "bob@example.com"
-  ],
+  "editors": ["alice@example.com", "bob@example.com"],
   "slideThemes": {
     "my-brand": {
       "bg": "#0f172a",
@@ -58,11 +55,11 @@ Place this file in the root of your repository. KumiDocs re-reads it after every
 }
 ```
 
-| Key | Type | Description |
-| --- | --- | --- |
-| `instanceName` | string | Overrides `KUMIDOCS_INSTANCE_NAME` |
-| `editors` | string[] | Email addresses allowed to edit. All authenticated users can view. |
-| `slideThemes` | object | Custom slide theme definitions — see [Custom Themes](docs/slides/custom-themes) |
+| Key            | Type     | Description                                                                     |
+| -------------- | -------- | ------------------------------------------------------------------------------- |
+| `instanceName` | string   | Overrides `KUMIDOCS_INSTANCE_NAME`                                              |
+| `editors`      | string[] | Email addresses allowed to edit. All authenticated users can view.              |
+| `slideThemes`  | object   | Custom slide theme definitions — see [Custom Themes](docs/slides/custom-themes) |
 
 ### editors
 

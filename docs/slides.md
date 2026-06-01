@@ -29,16 +29,16 @@ More content.
 ```yaml
 ---
 slides: true
-theme: corporate    # built-in or custom theme name
-paginate: true      # show "N / Total" badge
+theme: corporate # built-in or custom theme name
+paginate: true # show "N / Total" badge
 ---
 ```
 
-| Key | Default | Description |
-| --- | --- | --- |
-| `slides` | `false` | Enable slide deck rendering |
-| `theme` | `default` | Deck-wide theme — see [[Slide Decks#Custom Themes|custom themes]] |
-| `paginate` | `false` | Show slide number badge |
+| Key        | Default   | Description                                       |
+| ---------- | --------- | ------------------------------------------------- | --------------- |
+| `slides`   | `false`   | Enable slide deck rendering                       |
+| `theme`    | `default` | Deck-wide theme — see [[Slide Decks#Custom Themes | custom themes]] |
+| `paginate` | `false`   | Show slide number badge                           |
 
 ## Canvas
 
@@ -50,7 +50,7 @@ See [[Writing Pages]] for the full Markdown reference, and [[Mermaid Diagrams]] 
 
 Slides are split on `---` lines. A `---` inside a fenced code block is not treated as a separator.
 
-```markdown
+````markdown
 ---
 slides: true
 ---
@@ -65,13 +65,16 @@ Code blocks with --- inside are safe:
 
 ```markdown
 ---
+
 This is inside a fence, not a slide separator.
 ```
+````
 
 ---
 
 # Slide 3
-```
+
+````
 
 ## Viewing Modes
 
@@ -198,4 +201,4 @@ $180k ARR, 3-year contract.
 # Thank You
 
 Questions?
-```
+````

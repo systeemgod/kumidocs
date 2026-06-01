@@ -46,7 +46,6 @@ Hello from KumiDocs! This is a **Markdown** page with _live editing_.
 - Auto-save every 5 seconds
 - Full Git history
 - Link to other pages with `[[Page Name]]` — try it: [[Writing Pages]]
-
 ```
 
 Save it — KumiDocs commits and pushes automatically. The page appears in the sidebar immediately.

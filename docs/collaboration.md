@@ -33,10 +33,10 @@ Avatars use a colour derived from the user's name (djb2 hash → HSL) with Grava
 
 When another user saves a page you have open:
 
-| Your state | Behaviour |
-| --- | --- |
-| No unsaved changes | Silent reload — content updates automatically |
-| Unsaved changes | Conflict banner appears — your changes are preserved |
+| Your state         | Behaviour                                            |
+| ------------------ | ---------------------------------------------------- |
+| No unsaved changes | Silent reload — content updates automatically        |
+| Unsaved changes    | Conflict banner appears — your changes are preserved |
 
 The conflict banner lets you decide: discard your changes and reload, or continue editing and resolve the conflict manually.
 
@@ -58,11 +58,11 @@ On reconnect, the client re-registers presence automatically.
 
 Every save immediately pushes to the Git remote.
 
-| Trigger | Commit message |
-| --- | --- |
-| Ctrl+S | `docs(path/to/file.md): save by Alice` |
-| Auto-save (5 s debounce) | `docs(path/to/file.md): auto-save by Alice` |
-| WebSocket disconnect | `docs(path/to/file.md): auto-save on disconnect by Alice` |
+| Trigger                  | Commit message                                            |
+| ------------------------ | --------------------------------------------------------- |
+| Ctrl+S                   | `docs(path/to/file.md): save by Alice`                    |
+| Auto-save (5 s debounce) | `docs(path/to/file.md): auto-save by Alice`               |
+| WebSocket disconnect     | `docs(path/to/file.md): auto-save on disconnect by Alice` |
 
 ### Push Conflict Resolution
 
@@ -102,23 +102,23 @@ For reference, the full WebSocket message protocol:
 
 ### Client → Server
 
-| Message | Payload | Description |
-| --- | --- | --- |
-| `hello` | `{ pageId, userId }` | Register presence on page |
-| `editing_start` | `{ pageId }` | Acquire edit lock |
-| `editing_stop` | `{ pageId }` | Release edit lock |
-| `heartbeat` | _(none)_ | Keep-alive |
+| Message         | Payload              | Description               |
+| --------------- | -------------------- | ------------------------- |
+| `hello`         | `{ pageId, userId }` | Register presence on page |
+| `editing_start` | `{ pageId }`         | Acquire edit lock         |
+| `editing_stop`  | `{ pageId }`         | Release edit lock         |
+| `heartbeat`     | _(none)_             | Keep-alive                |
 
 ### Server → Client
 
-| Message | Payload | Description |
-| --- | --- | --- |
-| `presence_update` | `{ pageId, viewers[], editor }` | Presence changed on a page |
-| `page_changed` | `{ pageId, commitSha, changedBy, changedByName }` | Page saved by another user |
-| `page_deleted` | `{ pageId }` | Page deleted |
-| `page_created` | `{ pageId, path }` | New page created |
-| `save_conflict_lost` | `{ pageId, message }` | Rebase failed — local changes lost |
-| `heartbeat_ack` | _(none)_ | Heartbeat acknowledged |
+| Message              | Payload                                           | Description                        |
+| -------------------- | ------------------------------------------------- | ---------------------------------- |
+| `presence_update`    | `{ pageId, viewers[], editor }`                   | Presence changed on a page         |
+| `page_changed`       | `{ pageId, commitSha, changedBy, changedByName }` | Page saved by another user         |
+| `page_deleted`       | `{ pageId }`                                      | Page deleted                       |
+| `page_created`       | `{ pageId, path }`                                | New page created                   |
+| `save_conflict_lost` | `{ pageId, message }`                             | Rebase failed — local changes lost |
+| `heartbeat_ack`      | _(none)_                                          | Heartbeat acknowledged             |
 
 ## Limits
 

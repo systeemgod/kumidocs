@@ -66,7 +66,6 @@ export default function FilePage(): JSX.Element {
 
   const editorContent = buildEditorContent({
     content,
-    resolvedContent,
     editMode,
     fileType,
     handleChange,
@@ -75,6 +74,7 @@ export default function FilePage(): JSX.Element {
     metaRef,
     rawContent,
     rawExt,
+    resolvedContent,
     setMeta,
     slideThemes,
     title,

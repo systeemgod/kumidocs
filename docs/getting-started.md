@@ -74,9 +74,9 @@ The page title is the first `# ` heading in the file body. If there is no `# ` h
 
 ## Next Steps
 
-| What | Where |
-| --- | --- |
-| Markdown syntax reference | [Writing Pages](docs/writing) |
-| Build a slide deck | [Slide Decks](docs/slides) |
+| What                         | Where                               |
+| ---------------------------- | ----------------------------------- |
+| Markdown syntax reference    | [Writing Pages](docs/writing)       |
+| Build a slide deck           | [Slide Decks](docs/slides)          |
 | Configure editors and themes | [Configuration](docs/configuration) |
-| Real-time collaboration | [Collaboration](docs/collaboration) |
+| Real-time collaboration      | [Collaboration](docs/collaboration) |
