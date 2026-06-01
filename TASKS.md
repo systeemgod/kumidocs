@@ -4,26 +4,7 @@
 
 ---
 
-## 🔥 High Impact
-
-## 👍 Medium Impact
-
-### 6. Spell Check in the Editor
-
-Basic spellcheck for the textarea-based Markdown editor.
-
-**Approach**:
-
-- Quick win: enable native `spellcheck` attribute on the textarea (already possible, just not set)
-- Deeper integration: right-click misspelled words → suggestions via a popover
-- Use the browser's native spellcheck API (`SpellCheckRequest`/`SpellCheckCorrection`) or a lightweight dictionary
-
-**Files to touch**:
-
-- `src/components/editor/use-markdown-editor.ts` (add `spellcheck` prop)
-- `src/components/editor/markdown-editor.tsx` (pass through to textarea)
-
----
+## � Medium Impact
 
 ### 7. Keyboard Shortcuts Reference
 
