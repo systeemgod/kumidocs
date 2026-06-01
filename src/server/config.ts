@@ -190,9 +190,7 @@ const printHelp = (): void => {
       typeof rawDefault === "object"
         ? `${(rawDefault as { count: number }).count}/${(rawDefault as { windowMs: number }).windowMs}`
         : String(rawDefault);
-    lines.push(
-      `  ${flagStr} ${opt.description} (default: ${defaultStr}, env: ${opt.env})`,
-    );
+    lines.push(`  ${flagStr} ${opt.description} (default: ${defaultStr}, env: ${opt.env})`);
   }
   lines.push("  -h, --help               Show this help");
   lines.push("  -v, --version            Show version");

@@ -32,14 +32,13 @@ function apiSidebar(): Response {
   return Response.json({ content });
 }
 
-export { apiBacklinks, apiPagesLookup };
-export { apiMe, apiSearch, apiSidebar, apiTree };
-export { apiFileGet, apiFilePut, apiFileCreate, apiFileDelete, apiFileRename } from "./api-file";
+export { apiBacklinks, apiMe, apiPagesLookup, apiSearch, apiSidebar, apiTree };
+export { apiFileCreate, apiFileDelete, apiFileGet, apiFilePut, apiFileRename } from "./api-file";
+export { apiFileDiff, apiFileHistory } from "./api-history";
 export {
-  apiUploadImage,
-  apiImagesList,
-  apiImageDelete,
-  serveRepoAsset,
   apiAvatarProxy,
+  apiImageDelete,
+  apiImagesList,
+  apiUploadImage,
+  serveRepoAsset,
 } from "./api-images";
-export { apiFileHistory, apiFileDiff } from "./api-history";

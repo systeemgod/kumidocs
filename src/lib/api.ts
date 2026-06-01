@@ -1,6 +1,6 @@
-import type { SlideThemeMap } from "./slide";
 import type { CommitEntry, SearchResult, TreeNode } from "./types";
 import type { BacklinkEntry } from "@/server/backlinks";
+import type { SlideThemeMap } from "./slide";
 import type { WikilinkLookup } from "./wikilinks";
 
 // ── Error ─────────────────────────────────────────────────────────────────────

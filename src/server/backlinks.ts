@@ -1,5 +1,5 @@
-import type { WikilinkLookup } from "@/lib/wikilinks";
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
+import type { WikilinkLookup } from "@/lib/wikilinks";
 import matter from "gray-matter";
 
 /** A single backlink reference — another page that links to the current page. */
@@ -109,7 +109,7 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
           ([title]) => title.toLowerCase() === target.toLowerCase(),
         )?.[1];
 
-      if (resolved !== undefined && resolved.replace(/\.md$/u, "") === queryNormalised) {
+      if (resolved?.replace(/\.md$/u, "") === queryNormalised) {
         const entry = parseFileEntry(filePath);
         results.push({ path: filePath, title: entry.title });
         break; // one result per linking page is enough
