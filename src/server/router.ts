@@ -58,11 +58,10 @@ async function serveSPA(req: Request): Promise<Response> {
 
 type RequireUser = (req: Request) => User | undefined;
 
-/** Per-user rate limiter: 30 mutation requests per 10-second window. */
-const mutationLimiter = new RateLimiter(30, 10_000);
-mutationLimiter.startCleanup();
-
 function buildRoutes(config: Config, requireUser: RequireUser): Record<string, unknown> {
+  /** Per-user rate limiter with configurable limits. */
+  const mutationLimiter = new RateLimiter(config.rateLimit.count, config.rateLimit.windowMs);
+  mutationLimiter.startCleanup();
   return {
     "/*": isBundled ? serveSPA : devIndex,
 

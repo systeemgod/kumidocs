@@ -19,6 +19,7 @@ interface Config {
   gitImpl: "native" | "builtin";
   instanceName: string;
   pullInterval: number;
+  rateLimit: { count: number; windowMs: number };
 }
 
 // ── Option definitions ────────────────────────────────────────────────────────
@@ -129,6 +130,29 @@ const OPTIONS: OptionDef[] = [
     env: "KUMIDOCS_GIT_IMPL",
     flags: ["--git-impl"],
     key: "gitImpl",
+  },
+  {
+    coerce: (raw) => {
+      // Format: "count/window_ms" e.g. "30/10000"
+      const parts = raw.split("/");
+      if (parts.length !== 2) {
+        fatal(`KUMIDOCS_RATE_LIMIT expects format "count/window_ms", got: ${JSON.stringify(raw)}`);
+      }
+      const count = Number(parts[0]);
+      const windowMs = Number(parts[1]);
+      if (!Number.isInteger(count) || count < 1) {
+        fatal(`KUMIDOCS_RATE_LIMIT count must be a positive integer, got: ${JSON.stringify(parts[0])}`);
+      }
+      if (!Number.isInteger(windowMs) || windowMs < 1_000) {
+        fatal(`KUMIDOCS_RATE_LIMIT window must be at least 1000ms, got: ${JSON.stringify(parts[1])}`);
+      }
+      return { count, windowMs };
+    },
+    default: { count: 30, windowMs: 10_000 },
+    description: "Rate limit: 'count/window_ms' (e.g. 30/10000)",
+    env: "KUMIDOCS_RATE_LIMIT",
+    flags: ["--rate-limit"],
+    key: "rateLimit",
   },
 ];
 
