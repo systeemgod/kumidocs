@@ -152,4 +152,42 @@ async function fetchAndRebaseBuiltin(
   return { advanced, changed, pullFailed, sha };
 }
 
-export { fetchAndRebaseBuiltin, gitPullBuiltin, stageAndCommitBuiltin };
+async function gitRemoveAndCommitBuiltin(
+  config: Config,
+  filePath: string,
+  message: string,
+  authorName: string,
+  authorEmail: string,
+): Promise<{ sha: string; error?: string }> {
+  await git.remove({ dir: config.repoPath, filepath: filePath, fs });
+  return stageAndCommitBuiltin(config, [], message, authorName, authorEmail);
+}
+
+async function gitMoveAndCommitBuiltin(
+  config: Config,
+  from: string,
+  to: string,
+  message: string,
+  authorName: string,
+  authorEmail: string,
+  extraMoves?: { from: string; to: string }[],
+): Promise<{ sha: string; error?: string }> {
+  // isomorphic-git has no native move: add the new path, remove the old one.
+  await git.add({ dir: config.repoPath, filepath: to, fs });
+  await git.remove({ dir: config.repoPath, filepath: from, fs });
+  await Promise.all(
+    (extraMoves ?? []).map(async (extra) => {
+      await git.add({ dir: config.repoPath, filepath: extra.to, fs });
+      await git.remove({ dir: config.repoPath, filepath: extra.from, fs });
+    }),
+  );
+  return stageAndCommitBuiltin(config, [], message, authorName, authorEmail);
+}
+
+export {
+  fetchAndRebaseBuiltin,
+  gitMoveAndCommitBuiltin,
+  gitPullBuiltin,
+  gitRemoveAndCommitBuiltin,
+  stageAndCommitBuiltin,
+};

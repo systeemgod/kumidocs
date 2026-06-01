@@ -1,4 +1,10 @@
-import { fetchAndRebaseBuiltin, gitPullBuiltin, stageAndCommitBuiltin } from "./git-builtin";
+import {
+  fetchAndRebaseBuiltin,
+  gitMoveAndCommitBuiltin,
+  gitPullBuiltin,
+  gitRemoveAndCommitBuiltin,
+  stageAndCommitBuiltin,
+} from "./git-builtin";
 import {
   getHeadShaNative,
   gitBlobAtNative,
@@ -73,10 +79,7 @@ async function gitRemoveAndCommit(
   return withGitLock(async () =>
     config.gitImpl === "native"
       ? gitRemoveAndCommitNative(config, filePath, message, authorName, authorEmail)
-      : (async (): Promise<{ sha: string; error?: string }> => {
-          await git.remove({ dir: config.repoPath, filepath: filePath, fs });
-          return stageAndCommitBuiltin(config, [], message, authorName, authorEmail);
-        })(),
+      : gitRemoveAndCommitBuiltin(config, filePath, message, authorName, authorEmail),
   );
 }
 
@@ -92,18 +95,7 @@ async function gitMoveAndCommit(
   return withGitLock(async () =>
     config.gitImpl === "native"
       ? gitMoveAndCommitNative(config, from, to, message, authorName, authorEmail, extraMoves)
-      : (async (): Promise<{ sha: string; error?: string }> => {
-          // isomorphic-git has no native move: add the new path, remove the old one.
-          await git.add({ dir: config.repoPath, filepath: to, fs });
-          await git.remove({ dir: config.repoPath, filepath: from, fs });
-          await Promise.all(
-            (extraMoves ?? []).map(async (extra) => {
-              await git.add({ dir: config.repoPath, filepath: extra.to, fs });
-              await git.remove({ dir: config.repoPath, filepath: extra.from, fs });
-            }),
-          );
-          return stageAndCommitBuiltin(config, [], message, authorName, authorEmail);
-        })(),
+      : gitMoveAndCommitBuiltin(config, from, to, message, authorName, authorEmail, extraMoves),
   );
 }
 
