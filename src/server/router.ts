@@ -82,27 +82,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
       },
     },
 
-    "/api/me": {
-      GET(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiMe(user, config);
-      },
-    },
-
-    "/api/pages/lookup": {
-      async GET(req: Request) {
-        const user = requireUser(req);
-        if (!user) {
-          return new Response("Unauthorized", { status: 401 });
-        }
-        return apiPagesLookup();
-      },
-    },
-
-    "/api/search": {
+    "/api/file": {
       async DELETE(req: Request) {
         const user = requireUser(req);
         if (!user) {
@@ -206,6 +186,16 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
           return new Response("Unauthorized", { status: 401 });
         }
         return apiMe(user, config);
+      },
+    },
+
+    "/api/pages/lookup": {
+      async GET(req: Request) {
+        const user = requireUser(req);
+        if (!user) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        return apiPagesLookup();
       },
     },
 

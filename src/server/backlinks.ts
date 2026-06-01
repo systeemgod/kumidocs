@@ -1,6 +1,6 @@
+import type { WikilinkLookup } from "@/lib/wikilinks";
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import matter from "gray-matter";
-import type { WikilinkLookup } from "@/lib/wikilinks";
 
 /** A single backlink reference — another page that links to the current page. */
 interface BacklinkEntry {

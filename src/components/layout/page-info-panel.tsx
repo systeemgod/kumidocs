@@ -4,15 +4,15 @@ import {
   DismissRegular,
   DocumentRegular,
 } from "@fluentui/react-icons";
-import { getBacklinks, getFileDiff, getFileHistory } from "@/lib/api";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
-import CommitDiffDialog from "./commit-diff-dialog";
+import { Link } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { getBacklinks, getFileDiff, getFileHistory } from "@/lib/api";
+import type { ReactNode } from "react";
 import type { BacklinkEntry } from "@/server/backlinks";
 import type { CommitEntry } from "@/lib/types";
 import type { DiffData } from "@/lib/api";
-import type { ReactNode } from "react";
+import CommitDiffDialog from "./commit-diff-dialog";
 import { UserAvatar } from "@/components/ui/avatar";
 import { emailToDisplayName } from "@/lib/avatar";
 import useMountEffect from "@/hooks/use-mount-effect";
