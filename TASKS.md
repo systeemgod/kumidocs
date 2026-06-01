@@ -6,31 +6,6 @@
 
 ## 🔥 High Impact
 
-### 3. Wiki-Links / Backlinks (Obsidian-style)
-
-Support `[[Page Name]]` or `[[path/to/page]]` syntax that auto-resolves to existing pages. Display backlinks in a panel so users discover related content organically.
-
-**Approach**:
-
-- **Wiki-link resolution**: Add a pre-processing step (or a `remark` plugin) that:
-  1. Scans for `[[target|display text]]` and `[[target]]` patterns
-  2. Resolves `target` against the file tree (fuzzy match by title, fallback to path)
-  3. Renders as `<a>` links to the resolved page, or a "dead link" style if unresolved
-- **Backlinks panel**: Add to `PageInfoPanel` (alongside commit history):
-  1. Scan all `.md` files in the index for references to the current page
-  2. Display as a list of clickable page titles
-  3. Update on page save / rename / delete
-- Add a server endpoint `GET /api/backlinks?path=` or compute from the existing search index
-
-**Files to touch**:
-
-- New: `src/components/editor/remark-wikilinks-plugin.ts`
-- `src/components/layout/page-info-panel.tsx` (backlinks section)
-- `src/server/search.ts` or new `src/server/backlinks.ts`
-- `src/lib/api.ts` (new `getBacklinks` function)
-
----
-
 ## 👍 Medium Impact
 
 ### 6. Spell Check in the Editor
@@ -97,24 +72,6 @@ Frontmatter-based tags with a tag cloud page and search filtering.
 ---
 
 ## 🛠 Quick Fixes / Polish
-
-### 9. `kumidocs_email` Cookie Security
-
-The `kumidocs_email` cookie fallback is convenient for local dev but a security risk if accidentally exposed in production.
-
-**Approach**:
-
-- Add a `KUMIDOCS_DEV_MODE` env var (default `false`)
-- When `false`, reject the `kumidocs_email` cookie auth path
-- Log a warning on startup if no production auth header is configured
-- Optionally: add a startup check that pings the SSO proxy
-
-**Files to touch**:
-
-- `src/server/auth.ts` (guard `cookieEmail` behind dev-mode check)
-- `src/server/config.ts` (add `devMode` option)
-
----
 
 ### 10. Configurable Rate Limit
 
