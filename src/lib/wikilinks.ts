@@ -16,49 +16,68 @@ export interface WikilinkLookup {
 }
 
 /**
- * Replace `[[target]]` and `[[target|display text]]` patterns in markdown
- * with resolved markdown links.
+ * Regex to match wiki-link patterns: `[[target]]` or `[[target|display text]]`.
+ *
+ * Capture groups:
+ * - `$1` — the link target (page name, path, etc.)
+ * - `$2` — optional display text (when using `[[target|text]]`)
+ */
+export const WIKILINK_RE = /\[\[([^\]]+?)(?:\|([^\]]+))?\]\]/gu;
+
+/**
+ * Resolve a wiki-link target to a file path using the lookup map.
  *
  * Resolution order:
  * 1. Exact path match (without `.md`)
- * 2. Exact title match (case-insensitive)
- * 3. If not found → render as a dead link to the slugified path (which will
- *    show the "Create this page?" prompt via NotFound)
+ * 2. Exact title match
+ * 3. Case-insensitive title match
+ *
+ * Returns `undefined` if no match is found (dead link).
+ */
+export function resolveWikilinkTarget(target: string, lookup: WikilinkLookup): string | undefined {
+  const trimmed = target.trim();
+
+  // 1. Try exact path match (e.g. [[docs/aws-architecture]])
+  const pathKey = trimmed.replace(/\.md$/u, "");
+  const resolvedPath = lookup.byPath[pathKey] ?? lookup.byPath[trimmed];
+  if (resolvedPath !== undefined) {
+    return resolvedPath;
+  }
+
+  // 2. Try title match (exact then case-insensitive)
+  return (
+    lookup.byTitle[trimmed] ??
+    Object.entries(lookup.byTitle).find(
+      ([title]) => title.toLowerCase() === trimmed.toLowerCase(),
+    )?.[1]
+  );
+}
+
+/**
+ * Replace `[[target]]` and `[[target|display text]]` patterns in markdown
+ * with resolved markdown links.
+ *
+ * Uses {@link resolveWikilinkTarget} for resolution. Unresolved targets
+ * render as dead links to a slugified path (showing the "Create this page?"
+ * prompt via NotFound).
  */
 export function resolveWikilinks(markdown: string, lookup: WikilinkLookup): string {
-  return markdown.replaceAll(
-    /\[\[([^\]]+?)(?:\|([^\]]+))?\]\]/gu,
-    (_match, target: string, displayText?: string) => {
-      const trimmed = target.trim();
-      const display = (displayText ?? trimmed).trim();
+  return markdown.replaceAll(WIKILINK_RE, (_match, target: string, displayText?: string) => {
+    const trimmed = target.trim();
+    const display = (displayText ?? trimmed).trim();
+    const resolved = resolveWikilinkTarget(target, lookup);
 
-      // 1. Try exact path match (e.g. [[docs/aws-architecture]])
-      const pathKey = trimmed.replace(/\.md$/u, "");
-      const resolvedPath = lookup.byPath[pathKey] ?? lookup.byPath[trimmed];
+    if (resolved !== undefined) {
+      return `[${display}](/p/${resolved.replace(/\.md$/u, "")})`;
+    }
 
-      if (resolvedPath !== undefined) {
-        return `[${display}](/p/${resolvedPath.replace(/\.md$/u, "")})`;
-      }
-
-      // 2. Try title match (exact then case-insensitive)
-      const titleHit =
-        lookup.byTitle[trimmed] ??
-        Object.entries(lookup.byTitle).find(
-          ([title]) => title.toLowerCase() === trimmed.toLowerCase(),
-        )?.[1];
-
-      if (titleHit !== undefined) {
-        return `[${display}](/p/${titleHit.replace(/\.md$/u, "")})`;
-      }
-
-      // 3. Dead link — slugify target and link to create page
-      const slug = trimmed
-        .toLowerCase()
-        .replaceAll(/[^\w\s-]/gu, "")
-        .trim()
-        .replaceAll(/[\s_]+/gu, "-")
-        .replaceAll(/-+/gu, "-");
-      return `[${display}](/p/${slug}.md)`;
-    },
-  );
+    // Dead link — slugify target and link to create page
+    const slug = trimmed
+      .toLowerCase()
+      .replaceAll(/[^\w\s-]/gu, "")
+      .trim()
+      .replaceAll(/[\s_]+/gu, "-")
+      .replaceAll(/-+/gu, "-");
+    return `[${display}](/p/${slug}.md)`;
+  });
 }

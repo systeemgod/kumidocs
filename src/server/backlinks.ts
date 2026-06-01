@@ -1,4 +1,5 @@
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
+import { WIKILINK_RE, resolveWikilinkTarget } from "@/lib/wikilinks";
 import type { WikilinkLookup } from "@/lib/wikilinks";
 import matter from "gray-matter";
 
@@ -91,23 +92,16 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
     }
 
     // Find all [[target]] patterns in this file
-    const wikiLinkRe = /\[\[([^\]]+?)(?:\|[^\]]+)?\]\]/gu;
+    WIKILINK_RE.lastIndex = 0;
     let match: RegExpExecArray | null;
-    while ((match = wikiLinkRe.exec(body)) !== null) {
+    while ((match = WIKILINK_RE.exec(body)) !== null) {
       const target = match[1]?.trim();
       if (target === undefined || target === "") {
         continue;
       }
 
       // Resolve the target the same way the client does
-      const pathKey = target.replace(/\.md$/u, "");
-      const resolved =
-        lookup.byPath[pathKey] ??
-        lookup.byPath[target] ??
-        lookup.byTitle[target] ??
-        Object.entries(lookup.byTitle).find(
-          ([title]) => title.toLowerCase() === target.toLowerCase(),
-        )?.[1];
+      const resolved = resolveWikilinkTarget(target, lookup);
 
       if (resolved?.replace(/\.md$/u, "") === queryNormalised) {
         const entry = parseFileEntry(filePath);
