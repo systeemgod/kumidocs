@@ -1,5 +1,4 @@
 import type { WikilinkLookup } from "@/lib/wikilinks";
-import { extractHeadingTitle } from "@/lib/frontmatter";
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import matter from "gray-matter";
 
@@ -65,7 +64,11 @@ function buildBacklinks(queryPath: string): BacklinkEntry[] {
   const queryNormalised = queryPath.replace(/\.md$/u, "");
 
   for (const filePath of getAllPaths()) {
-    if (!filePath.endsWith(".md") || filePath === queryPath || filePath === `${queryNormalised}.md`) {
+    if (
+      !filePath.endsWith(".md") ||
+      filePath === queryPath ||
+      filePath === `${queryNormalised}.md`
+    ) {
       continue;
     }
 
