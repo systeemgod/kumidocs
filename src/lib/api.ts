@@ -139,6 +139,14 @@ const uploadImage = async (file: File): Promise<{ url: string }> => {
   return request<{ url: string }>("/api/upload/image", { body: form, method: "POST" });
 };
 
+/** Set email via HttpOnly cookie (POST), returns user data on success. */
+const setAuthEmail = async (email: string): Promise<MeResponse> =>
+  request<MeResponse>("/api/auth/email", {
+    body: JSON.stringify({ email }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+
 export type { DiffData, FileGetResponse, FileSaveResponse, ImageEntry, MeResponse };
 export {
   ApiError,
@@ -156,5 +164,6 @@ export {
   putFile,
   renameFile,
   searchPages,
+  setAuthEmail,
   uploadImage,
 };

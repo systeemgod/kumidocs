@@ -72,6 +72,14 @@ const resolveEmail = (value: string): string | undefined => {
   return value.trim().toLowerCase();
 };
 
+/** Build a User object from a verified email address and the current permissions. */
+function makeUser(email: string): User {
+  const displayName = emailToDisplayName(email);
+  const editors = perms.editors ?? [];
+  const canEdit = editors.length === 0 || editors.includes(email);
+  return { canEdit, displayName, email, id: email, name: displayName };
+}
+
 const parseUser = (headers: Headers, authHeader: string): User | undefined => {
   // Check the configured auth header first. If absent or empty, fall through
   // to the kumidocs_email cookie (used when no SSO proxy is present).
@@ -89,14 +97,8 @@ const parseUser = (headers: Headers, authHeader: string): User | undefined => {
     return undefined;
   }
 
-  const displayName = emailToDisplayName(email);
-  const editors = perms.editors ?? [];
-
-  // If no editors configured at all, everyone can edit
-  const canEdit = editors.length === 0 || editors.includes(email);
-
-  return { canEdit, displayName, email, id: email, name: displayName };
+  return makeUser(email);
 };
 
 export type { KumiDocsPermissions };
-export { setPermissions, getPermissions, parseUser };
+export { makeUser, setPermissions, getPermissions, parseUser };

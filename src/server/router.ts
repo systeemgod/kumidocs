@@ -23,6 +23,7 @@ import type { Config } from "./config";
 import RateLimiter from "./rate-limit";
 import type { User } from "@/lib/types";
 import devIndex from "@/index.html";
+import { makeUser } from "./auth";
 
 // oxlint-disable-next-line no-underscore-dangle
 declare const __BUNDLED__: boolean | undefined;
@@ -64,6 +65,33 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
   mutationLimiter.startCleanup();
   return {
     "/*": isBundled ? serveSPA : devIndex,
+
+    "/api/auth/email": {
+      async POST(req: Request) {
+        let body: unknown;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response("Bad request", { status: 400 });
+        }
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        const rawEmail = (body as Record<string, unknown>).email;
+        if (typeof rawEmail !== "string" || rawEmail === "") {
+          return new Response("Bad request", { status: 400 });
+        }
+        const email = rawEmail.trim().toLowerCase();
+        if (!email.includes("@") || email.startsWith("@") || email.endsWith("@")) {
+          return new Response("Bad request", { status: 400 });
+        }
+        const user = makeUser(email);
+        const secureFlag = req.url.startsWith("https:") ? "; Secure" : "";
+        const cookie = `kumidocs_email=${encodeURIComponent(email)}; Path=/; SameSite=Lax; HttpOnly${secureFlag}`;
+        const res = apiMe(user, config);
+        const headers = new Headers(res.headers);
+        headers.set("Set-Cookie", cookie);
+        return new Response(await res.text(), { headers, status: res.status });
+      },
+    },
 
     "/api/avatar/:hash": {
       async GET(req: Request) {

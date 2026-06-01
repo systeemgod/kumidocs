@@ -1,4 +1,4 @@
-import { ApiError, getMe } from "@/lib/api";
+import { ApiError, getMe, setAuthEmail } from "@/lib/api";
 import { createContext, useCallback, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import type { SlideThemeMap } from "@/lib/slide";
@@ -69,28 +69,18 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
     // The UI dialog also validates, but this guard prevents storing
     // garbage if called programmatically.
     if (!trimmed.includes("@") || trimmed.startsWith("@") || trimmed.endsWith("@")) {
-      globalThis.location.reload();
       return;
     }
-    // cookieStore is Chromium-only (Chrome 87+, Edge 87+).
-    // Fall back to document.cookie for Firefox/Safari.
-    // Use 'in' check instead of typeof/!== to avoid TS type overlap warnings.
-    if ("cookieStore" in globalThis) {
-      try {
-        await globalThis.cookieStore.set({
-          name: "kumidocs_email",
-          path: "/",
-          sameSite: "lax",
-          value: encodeURIComponent(trimmed),
-        });
-      } catch {
-        // ignore — reload regardless
-      }
-    } else {
-      // oxlint-disable-next-line unicorn/no-document-cookie
-      document.cookie = `kumidocs_email=${encodeURIComponent(trimmed)}; path=/; SameSite=Lax`;
+    try {
+      const data = await setAuthEmail(trimmed);
+      const { id, email: userEmail, name, displayName, canEdit, slideThemes: themeData } = data;
+      const parsedUser: User = { canEdit, displayName, email: userEmail, id, name };
+      setUser(parsedUser);
+      setSlideThemes(themeData ?? {});
+      setNeedsEmailSetup(false);
+    } catch {
+      // Server rejected the email — keep the dialog open
     }
-    globalThis.location.reload();
   }, []);
 
   return (
