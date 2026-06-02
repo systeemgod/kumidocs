@@ -18,7 +18,7 @@ import { existsSync, watch } from "node:fs";
 import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
 import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
 import { join, relative } from "node:path";
-import { parseUser, setPermissions } from "./server/auth";
+import { parseUser, setPermissions, setReadonly } from "./server/auth";
 import { readdir, stat } from "node:fs/promises";
 import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
@@ -44,8 +44,15 @@ if (!existsSync(join(config.repoPath, ".git"))) {
   throw new Error(`Fatal: ${config.repoPath} is not a git repository.`);
 }
 
+// Propagate readonly flag to auth layer so all users get canEdit=false
+setReadonly(config.readonly);
+
 // Load .kumidocs.json permissions
 async function loadPermissions(): Promise<void> {
+  if (config.readonly) {
+    setPermissions({});
+    return;
+  }
   const configPath = join(config.repoPath, ".kumidocs.json");
   try {
     const raw = await Bun.file(configPath).text();

@@ -1,5 +1,5 @@
-import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import { WIKILINK_RE, resolveWikilinkTarget } from "@/lib/wikilinks";
+import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import type { WikilinkLookup } from "@/lib/wikilinks";
 import matter from "gray-matter";
 

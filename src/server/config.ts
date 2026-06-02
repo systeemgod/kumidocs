@@ -20,6 +20,7 @@ interface Config {
   instanceName: string;
   pullInterval: number;
   rateLimit: { count: number; windowMs: number };
+  readonly: boolean;
 }
 
 // ── Option definitions ────────────────────────────────────────────────────────
@@ -62,6 +63,18 @@ const coerceMs = (flag: string, raw: string): number => {
     fatal(`${flag} expects a non-negative integer (ms), got: ${JSON.stringify(raw)}`);
   }
   return parsed;
+};
+
+const coerceBool = (raw: string): boolean => {
+  const lower = raw.trim().toLowerCase();
+  if (lower === "true" || lower === "1" || lower === "yes") {
+    return true;
+  }
+  if (lower === "false" || lower === "0" || lower === "no") {
+    return false;
+  }
+  fatal(`Expected a boolean (true/false/1/0/yes/no), got: ${JSON.stringify(raw)}`);
+  return false;
 };
 
 const coerceGitImpl = (raw: string): "native" | "builtin" => {
@@ -157,6 +170,14 @@ const OPTIONS: OptionDef[] = [
     env: "KUMIDOCS_RATE_LIMIT",
     flags: ["--rate-limit"],
     key: "rateLimit",
+  },
+  {
+    coerce: coerceBool,
+    default: false,
+    description: "Prevent all file edits and git modifications",
+    env: "KUMIDOCS_READONLY",
+    flags: ["--readonly"],
+    key: "readonly",
   },
 ];
 

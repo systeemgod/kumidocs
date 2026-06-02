@@ -8,7 +8,7 @@
  */
 
 /** Lookup map returned by `GET /api/pages/lookup`. */
-export interface WikilinkLookup {
+interface WikilinkLookup {
   /** "Page Title" → "path/to/page.md" */
   byTitle: Record<string, string>;
   /** "path/to/page" (without .md) → "path/to/page.md" */
@@ -22,7 +22,7 @@ export interface WikilinkLookup {
  * - `$1` — the link target (page name, path, etc.)
  * - `$2` — optional display text (when using `[[target|text]]`)
  */
-export const WIKILINK_RE = /\[\[([^\]]+?)(?:\|([^\]]+))?\]\]/gu;
+const WIKILINK_RE = /\[\[([^\]]+?)(?:\|([^\]]+))?\]\]/gu;
 
 /**
  * Resolve a wiki-link target to a file path using the lookup map.
@@ -34,7 +34,7 @@ export const WIKILINK_RE = /\[\[([^\]]+?)(?:\|([^\]]+))?\]\]/gu;
  *
  * Returns `undefined` if no match is found (dead link).
  */
-export function resolveWikilinkTarget(target: string, lookup: WikilinkLookup): string | undefined {
+function resolveWikilinkTarget(target: string, lookup: WikilinkLookup): string | undefined {
   const trimmed = target.trim();
 
   // 1. Try exact path match (e.g. [[docs/aws-architecture]])
@@ -61,7 +61,7 @@ export function resolveWikilinkTarget(target: string, lookup: WikilinkLookup): s
  * render as dead links to a slugified path (showing the "Create this page?"
  * prompt via NotFound).
  */
-export function resolveWikilinks(markdown: string, lookup: WikilinkLookup): string {
+function resolveWikilinks(markdown: string, lookup: WikilinkLookup): string {
   return markdown.replaceAll(WIKILINK_RE, (_match, target: string, displayText?: string) => {
     const trimmed = target.trim();
     const display = (displayText ?? trimmed).trim();
@@ -81,3 +81,6 @@ export function resolveWikilinks(markdown: string, lookup: WikilinkLookup): stri
     return `[${display}](/p/${slug}.md)`;
   });
 }
+
+export type { WikilinkLookup };
+export { resolveWikilinks, resolveWikilinkTarget, WIKILINK_RE };

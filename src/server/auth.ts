@@ -9,12 +9,19 @@ interface KumiDocsPermissions {
 }
 
 let perms: KumiDocsPermissions = {};
+let isReadonly = false;
 
 const setPermissions = (permissions: KumiDocsPermissions): void => {
   perms = permissions;
 };
 
 const getPermissions = (): KumiDocsPermissions => perms;
+
+const setReadonly = (value: boolean): void => {
+  isReadonly = value;
+};
+
+const getReadonly = (): boolean => isReadonly;
 
 /** Parse the `kumidocs_email` cookie value from a Cookie header string. */
 const cookieEmail = (cookieHeader: string | null): string | undefined => {
@@ -76,7 +83,7 @@ const resolveEmail = (value: string): string | undefined => {
 function makeUser(email: string): User {
   const displayName = emailToDisplayName(email);
   const editors = perms.editors ?? [];
-  const canEdit = editors.length === 0 || editors.includes(email);
+  const canEdit = isReadonly ? false : editors.length === 0 || editors.includes(email);
   return { canEdit, displayName, email, id: email, name: displayName };
 }
 
@@ -101,4 +108,4 @@ const parseUser = (headers: Headers, authHeader: string): User | undefined => {
 };
 
 export type { KumiDocsPermissions };
-export { makeUser, setPermissions, getPermissions, parseUser };
+export { getReadonly, makeUser, parseUser, setPermissions, getPermissions, setReadonly };
