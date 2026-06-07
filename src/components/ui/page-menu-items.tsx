@@ -5,11 +5,12 @@ import {
   LinkRegular,
   OpenRegular,
 } from "@fluentui/react-icons";
+import { ApiError, createFile } from "@/lib/api";
 import { ContextMenuItem, ContextMenuSeparator } from "./context-menu";
 import { DropdownMenuItem, DropdownMenuSeparator } from "./dropdown-menu";
-import { Link } from "react-router-dom";
 import { Square } from "lucide-react";
 import { toast } from "@/components/ui/toaster";
+import { useNavigate } from "react-router-dom";
 
 interface PageMenuItemsProps {
   variant: "dropdown" | "context";
@@ -143,11 +144,29 @@ const PageMenuItems = (allProps: PageMenuItemsProps): JSX.Element => {
   if (variant !== "dropdown") {
     Item = ContextMenuItem as typeof DropdownMenuItem;
   }
+  const navigate = useNavigate();
 
   if (isVirtual) {
     return (
-      <Item asChild>
-        <Link to={href}>Create this page</Link>
+      <Item
+        onClick={() => {
+          void (async (): Promise<void> => {
+            try {
+              const nav = href.replace(/^\/p\//u, "");
+              await createFile(`${nav}.md`, `# ${displayTitle}\n`);
+              toast.success("Page created");
+              void navigate(href);
+            } catch (error: unknown) {
+              if (error instanceof ApiError && error.status === 409) {
+                toast.error("A page at that path already exists.");
+              } else {
+                toast.error("Failed to create page");
+              }
+            }
+          })();
+        }}
+      >
+        Create this page
       </Item>
     );
   }
