@@ -259,7 +259,8 @@ const loadConfig = (): Config => {
       if (opt.needsValue === false) {
         // Boolean flags — presence alone sets the value to true
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-        (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = true as Config[keyof Config];
+        (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] =
+          true as Config[keyof Config];
       } else {
         const raw = args.at(argIdx + 1) ?? "";
         if (raw === "") {
