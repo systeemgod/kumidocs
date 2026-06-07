@@ -39,6 +39,8 @@ interface OptionDef {
   default: Config[keyof Config] | (() => Config[keyof Config]);
   /** One-line description used in --help output. */
   description: string;
+  /** When false, the flag takes no value — presence alone sets it to true. */
+  needsValue?: boolean;
 }
 
 // ── Coercers ──────────────────────────────────────────────────────────────────
@@ -178,6 +180,7 @@ const OPTIONS: OptionDef[] = [
     env: "KUMIDOCS_READONLY",
     flags: ["--readonly"],
     key: "readonly",
+    needsValue: false,
   },
 ];
 
@@ -253,13 +256,19 @@ const loadConfig = (): Config => {
     const arg = args[argIdx];
     const opt = OPTIONS.find((option) => option.flags.includes(arg ?? ""));
     if (opt) {
-      const raw = args.at(argIdx + 1) ?? "";
-      if (raw === "") {
-        fatal(`${String(opt.flags.at(0))} requires a value.`);
+      if (opt.needsValue === false) {
+        // Boolean flags — presence alone sets the value to true
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = true as Config[keyof Config];
+      } else {
+        const raw = args.at(argIdx + 1) ?? "";
+        if (raw === "") {
+          fatal(`${String(opt.flags.at(0))} requires a value.`);
+        }
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = opt.coerce(raw);
+        argIdx += 1;
       }
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] = opt.coerce(raw);
-      argIdx += 1;
     } else if (
       arg !== undefined &&
       arg !== "" &&
