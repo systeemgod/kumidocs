@@ -7,11 +7,12 @@ import { searchDocs } from "./search";
 
 // GET /api/me
 function apiMe(user: User, config: Config): Response {
+  const perms = getPermissions();
   return Response.json({
     ...user,
     autoSaveDelay: config.autoSaveDelay,
-    instanceName: config.instanceName,
-    slideThemes: getPermissions().slideThemes ?? {},
+    instanceName: perms.instanceName ?? config.instanceName,
+    slideThemes: perms.slideThemes ?? {},
   });
 }
 
