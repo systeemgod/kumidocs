@@ -22,7 +22,12 @@ const ThemeToggle = (): JSX.Element => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggle}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-blue-50 hover:bg-blue-800"
+          onClick={toggle}
+        >
           <EmojiIcon emoji={emoji} size={16} />
         </Button>
       </TooltipTrigger>
@@ -38,7 +43,7 @@ const UserProfile = (): JSX.Element => {
   }
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-foreground select-none">{user.displayName}</span>
+      <span className="text-xs text-blue-50 select-none">{user.displayName}</span>
       <PopoverPrimitive.Root>
         <PopoverPrimitive.Trigger asChild>
           <button className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -68,22 +73,28 @@ const UserProfile = (): JSX.Element => {
 const TopBar = (allProps: TopBarProps): JSX.Element => {
   const { instanceName, onSearchOpen } = allProps;
   return (
-    <header className="h-11 border-b border-border bg-background/95 backdrop-blur flex items-center px-3 gap-2 shrink-0 z-10">
-      <span className="font-semibold text-sm text-foreground select-none mr-2">{instanceName}</span>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 gap-1.5 text-muted-foreground hover:text-foreground text-xs font-normal flex-1 max-w-64 justify-start bg-muted hover:bg-muted/80"
-        onClick={onSearchOpen}
-      >
-        <SearchRegular className="w-3.5 h-3.5 shrink-0" />
-        <span>Search...</span>
-        <KbdGroup className="ml-auto">
-          <Kbd>⌘</Kbd>
-          <Kbd>K</Kbd>
-        </KbdGroup>
-      </Button>
-      <div className="ml-auto flex items-center gap-1">
+    <header className="h-11 border-b border-blue-900 bg-blue-950 grid grid-cols-3 items-center px-3 gap-2 shrink-0 z-10 shadow-sm">
+      <div className="flex justify-start">
+        <span className="font-mono font-bold text-2xl text-blue-50 select-none pt-[3px]">
+          {instanceName}
+        </span>
+      </div>
+      <div className="flex justify-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1.5 text-muted-foreground hover:text-foreground text-xs font-normal w-full max-w-96 justify-start bg-white hover:bg-white/90"
+          onClick={onSearchOpen}
+        >
+          <SearchRegular className="w-3.5 h-3.5 shrink-0" />
+          <span>Search...</span>
+          <KbdGroup className="ml-auto">
+            <Kbd>⌘</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>
+        </Button>
+      </div>
+      <div className="flex items-center gap-1 justify-end">
         <ThemeToggle />
         <UserProfile />
       </div>
