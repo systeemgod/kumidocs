@@ -160,25 +160,16 @@ function useFilePage(): UseFilePageReturn {
       const newMeta = { ...metaRef.current, emoji: newEmoji };
       metaRef.current = newMeta;
       setMeta((prev) => ({ ...prev, emoji: newEmoji }));
-      if (editModeRef.current) {
-        const parsed = parseFrontmatter(rawContentRef.current);
-        const newRaw = buildFrontmatter(newMeta) + parsed.content;
-        void (async (): Promise<void> => {
-          try {
-            await doSave(newRaw, true);
-          } catch (error: unknown) {
-            console.error("Emoji save failed:", error);
-          }
-        })();
-      } else {
-        void (async (): Promise<void> => {
-          try {
-            await doSave(rawContentRef.current);
-          } catch (error: unknown) {
-            console.error("Emoji save failed:", error);
-          }
-        })();
-      }
+      // Rebuild raw content with updated frontmatter, same in both edit and view mode
+      const parsed = parseFrontmatter(rawContentRef.current);
+      const newRaw = buildFrontmatter(newMeta) + parsed.content;
+      void (async (): Promise<void> => {
+        try {
+          await doSave(newRaw, true);
+        } catch (error: unknown) {
+          console.error("Emoji save failed:", error);
+        }
+      })();
     },
     [doSave, metaRef, rawContentRef, setMeta],
   );
