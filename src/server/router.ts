@@ -29,7 +29,9 @@ import { makeUser } from "./auth";
 declare const __BUNDLED__: boolean | undefined;
 // oxlint-disable-next-line unicorn/no-typeof-undefined
 const isBundled = typeof __BUNDLED__ !== "undefined";
-const publicDir = join(import.meta.dir, "..", "public");
+const publicDir = isBundled
+  ? join(import.meta.dir, "public")
+  : join(import.meta.dir, "..", "public");
 
 async function serveSPA(req: Request): Promise<Response> {
   const rel = new URL(req.url).pathname.replace(/^\/+/u, "") || "index.html";
