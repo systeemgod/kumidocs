@@ -174,7 +174,7 @@ export default function FilePage(): JSX.Element {
         {/* TOC sidebar — doc pages only, view mode */}
         {tocOpen && !editMode && fileType === "doc" && (
           <TocSidebar
-            key={filePath}
+            key={`toc-${filePath}`}
             content={content}
             onClose={() => {
               setTocOpen(false);
@@ -184,7 +184,7 @@ export default function FilePage(): JSX.Element {
         )}
         {infoOpen && !editMode && (
           <PageInfoPanel
-            key={filePath}
+            key={`info-${filePath}`}
             filePath={filePath}
             title={title}
             onClose={() => {
