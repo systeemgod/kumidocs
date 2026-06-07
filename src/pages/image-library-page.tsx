@@ -99,7 +99,7 @@ function ImageDetailPanel({
         <div>
           <p className="text-xs text-muted-foreground mb-1">Used in</p>
           {image.usedIn.length === 0 ? (
-            <p className="text-muted-foreground italic">Not used in any page</p>
+            <p className="text-foreground italic">Not used in any page</p>
           ) : (
             <ul className="space-y-1">
               {image.usedIn.map((pagePath) => (

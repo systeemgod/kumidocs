@@ -168,7 +168,7 @@ const ThemesGrid = (allProps: ThemesGridProps): JSX.Element => {
   const colStyle = { gridTemplateColumns: `repeat(auto-fill, ${String(CARD_W)}px)` };
   return (
     <div className="flex-1 overflow-y-auto p-6">
-      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+      <h2 className="text-xs font-semibold text-foreground uppercase tracking-wide mb-4">
         Built-in
       </h2>
       <div className="grid gap-6 mb-8" style={colStyle}>
@@ -189,7 +189,7 @@ const ThemesGrid = (allProps: ThemesGridProps): JSX.Element => {
       </div>
       {customEntries.length > 0 && (
         <>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+          <h2 className="text-xs font-semibold text-foreground uppercase tracking-wide mb-4">
             Custom (.kumidocs.json)
           </h2>
           <div className="grid gap-6" style={colStyle}>

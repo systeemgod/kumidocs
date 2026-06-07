@@ -105,9 +105,9 @@ export default function PageInfoPanel({
 
   let backlinksContent: ReactNode;
   if (backlinksLoading) {
-    backlinksContent = <p className="text-xs text-muted-foreground py-2">Loading…</p>;
+    backlinksContent = <p className="text-xs text-foreground py-2">Loading…</p>;
   } else if (backlinks.length === 0) {
-    backlinksContent = <p className="text-xs text-muted-foreground py-2">No backlinks yet.</p>;
+    backlinksContent = <p className="text-xs text-foreground py-2">No backlinks yet.</p>;
   } else {
     backlinksContent = (
       <ul className="space-y-0.5 list-disc list-inside">
@@ -127,9 +127,9 @@ export default function PageInfoPanel({
 
   let commitHistoryContent: ReactNode;
   if (loading) {
-    commitHistoryContent = <p className="text-xs text-muted-foreground py-2">Loading…</p>;
+    commitHistoryContent = <p className="text-xs text-foreground py-2">Loading…</p>;
   } else if (commits.length === 0) {
-    commitHistoryContent = <p className="text-xs text-muted-foreground py-2">No commits yet.</p>;
+    commitHistoryContent = <p className="text-xs text-foreground py-2">No commits yet.</p>;
   } else {
     commitHistoryContent = (
       <div className="space-y-1">
@@ -220,29 +220,23 @@ export default function PageInfoPanel({
         <div className="p-3 space-y-3">
           {/* Title + path */}
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Title
-            </p>
+            <p className="text-xs font-medium text-foreground uppercase tracking-wide">Title</p>
             <p className="text-sm text-foreground break-words">{title}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Path
-            </p>
+            <p className="text-xs font-medium text-foreground uppercase tracking-wide">Path</p>
             <p className="text-sm font-mono text-foreground break-all">{filePath}</p>
           </div>
 
           {/* Backlinks */}
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Backlinks
-            </p>
+            <p className="text-xs font-medium text-foreground uppercase tracking-wide">Backlinks</p>
             {backlinksContent}
           </div>
 
           {/* Commit history */}
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-foreground uppercase tracking-wide">
               Commit history
             </p>
             {commitHistoryContent}

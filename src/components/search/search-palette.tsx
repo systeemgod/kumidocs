@@ -35,9 +35,7 @@ const SearchResultsList = (allProps: SearchResultsListProps): JSX.Element => {
   }
   return (
     <CommandList>
-      {loading && (
-        <div className="py-3 text-center text-sm text-muted-foreground">Searching...</div>
-      )}
+      {loading && <div className="py-3 text-center text-sm text-foreground">Searching...</div>}
       {!loading && Boolean(query) && activeResults.length === 0 && (
         <CommandEmpty>No results for &quot;{query}&quot;.</CommandEmpty>
       )}

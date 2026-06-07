@@ -54,7 +54,7 @@ export default function FilePage(): JSX.Element {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+      <div className="flex-1 flex items-center justify-center text-foreground text-sm">
         Loading…
       </div>
     );

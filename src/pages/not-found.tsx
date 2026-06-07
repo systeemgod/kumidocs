@@ -11,7 +11,7 @@ const NotFound = (): JSX.Element => {
         <EmojiIcon emoji="🔍" size="1em" />
       </div>
       <h1 className="text-xl font-semibold">Page not found</h1>
-      <p className="text-muted-foreground text-sm max-w-xs">
+      <p className="text-foreground text-sm max-w-xs">
         The path you navigated to doesn't match any known route.
       </p>
       <Button

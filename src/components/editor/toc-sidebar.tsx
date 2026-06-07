@@ -84,7 +84,7 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
   if (tocItems.length === 0) {
     return (
       <div className="w-72 shrink-0 border-l border-border bg-sidebar p-4">
-        <p className="text-xs text-muted-foreground">No headings found</p>
+        <p className="text-xs text-foreground">No headings found</p>
       </div>
     );
   }

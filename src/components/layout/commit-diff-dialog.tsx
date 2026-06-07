@@ -48,14 +48,14 @@ export default function CommitDiffDialog({
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-4">
             {diffLoading && (
-              <p className="text-sm text-muted-foreground py-4 text-center">Loading diff\u2026</p>
+              <p className="text-sm text-foreground py-4 text-center">Loading diff…</p>
             )}
             {!diffLoading &&
               diffData &&
               (() => {
                 if (!diffData.unifiedDiff.trim()) {
                   return (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
+                    <p className="text-sm text-foreground py-4 text-center">
                       No changes in this commit.
                     </p>
                   );
@@ -65,14 +65,14 @@ export default function CommitDiffDialog({
                   files = parseDiff(diffData.unifiedDiff);
                 } catch {
                   return (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
+                    <p className="text-sm text-foreground py-4 text-center">
                       No changes in this commit.
                     </p>
                   );
                 }
                 if (files.length === 0) {
                   return (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
+                    <p className="text-sm text-foreground py-4 text-center">
                       No changes in this commit.
                     </p>
                   );

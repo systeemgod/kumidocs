@@ -129,7 +129,7 @@ export default function Sidebar({
       >
         {/* ── Pages header ── */}
         <div className="flex items-center px-3 py-1.5 border-b border-border shrink-0">
-          <span className="flex-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide select-none">
+          <span className="flex-1 text-xs font-semibold text-foreground uppercase tracking-wide select-none">
             Pages
           </span>
           <DropdownMenu>
@@ -167,7 +167,7 @@ export default function Sidebar({
           <ContextMenuTrigger asChild>
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-1 py-2">
               {pages.length === 0 ? (
-                <div className="px-3 py-4 text-xs text-muted-foreground text-center">
+                <div className="px-3 py-4 text-xs text-foreground text-center">
                   No pages yet.
                   <br />
                   Create your first page below.
