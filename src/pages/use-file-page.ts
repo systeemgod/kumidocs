@@ -92,6 +92,7 @@ function useFilePage(): UseFilePageReturn {
     savePromiseRef,
     saveStatus,
     setMeta,
+    setRawContent,
   } = useFilePageSave({ autoSaveDelay, filePath, reloadTree, setEditMode, setFilePath });
 
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
@@ -160,9 +161,11 @@ function useFilePage(): UseFilePageReturn {
       const newMeta = { ...metaRef.current, emoji: newEmoji };
       metaRef.current = newMeta;
       setMeta((prev) => ({ ...prev, emoji: newEmoji }));
-      // Rebuild raw content with updated frontmatter, same in both edit and view mode
+      // Rebuild raw content with updated frontmatter
       const parsed = parseFrontmatter(rawContentRef.current);
       const newRaw = buildFrontmatter(newMeta) + parsed.content;
+      rawContentRef.current = newRaw;
+      setRawContent(newRaw);
       void (async (): Promise<void> => {
         try {
           await doSave(newRaw, true);
@@ -171,7 +174,7 @@ function useFilePage(): UseFilePageReturn {
         }
       })();
     },
-    [doSave, metaRef, rawContentRef, setMeta],
+    [doSave, metaRef, rawContentRef, setMeta, setRawContent],
   );
 
   const handlePageDuplicate = useCallback(async () => {
