@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import EmojiPickerPopover from "@/components/ui/emoji-picker-popover";
+import { Link } from "react-router-dom";
 import { PageMenuItems } from "@/components/ui/page-menu-items";
 import type { SaveStatus } from "./use-file-page-save";
 import { UserAvatar } from "@/components/ui/avatar";
@@ -24,6 +25,7 @@ interface FilePageHeaderProps {
   meta: DocMeta;
   fileType: FileType;
   title: string;
+  breadcrumb: string[];
   user: User | undefined;
   editMode: boolean;
   editLocked: PresenceUser | undefined;
@@ -48,6 +50,7 @@ function FilePageHeader({
   meta,
   fileType,
   title,
+  breadcrumb,
   user,
   editMode,
   editLocked,
@@ -70,8 +73,10 @@ function FilePageHeader({
   const editButtonClass = getEditButtonClass(editMode, editLocked, user);
   const saveBadgeClass = getSaveBadgeClass(saveStatus);
   return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
-      {/* Left: icon + title */}
+    <div
+      className={`flex items-center gap-2 px-4 ${breadcrumb.length > 0 ? "py-1" : "py-2"} border-b border-border shrink-0`}
+    >
+      {/* Left: icon + title + breadcrumb */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <EmojiPickerPopover
           emoji={meta.emoji}
@@ -80,7 +85,32 @@ function FilePageHeader({
           editable={editMode}
           onSelect={handleEmojiChange}
         />
-        <h1 className="font-semibold text-base truncate">{title}</h1>
+        <div className="flex flex-col min-w-0">
+          <h1 className="font-semibold text-base truncate">{title}</h1>
+          {breadcrumb.length > 0 && (
+            <div className="flex items-center gap-1 text-xs -mt-1">
+              {breadcrumb.map((segment, idx) => {
+                const path = breadcrumb.slice(0, idx + 1).join("/");
+                const isLast = idx === breadcrumb.length - 1;
+                return (
+                  <span key={path} className="flex items-center gap-1">
+                    {idx > 0 && <span className="text-muted-foreground/50">/</span>}
+                    {isLast ? (
+                      <span className="text-foreground/60">{segment}</span>
+                    ) : (
+                      <Link
+                        to={`/p/${path}`}
+                        className="text-primary hover:text-primary/80 transition-colors"
+                      >
+                        {segment}
+                      </Link>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Center: Read/Edit segmented switch */}

@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import FilePageHeader from "./file-page-header";
-import { Link } from "react-router-dom";
 import MarkdownViewer from "@/components/editor/markdown-viewer";
 import NotFound from "./not-found";
 import PageInfoPanel from "@/components/layout/page-info-panel";
@@ -117,6 +116,7 @@ export default function FilePage(): JSX.Element {
         meta={meta}
         fileType={fileType}
         title={title}
+        breadcrumb={breadcrumb}
         user={user}
         editMode={editMode}
         editLocked={editLocked}
@@ -143,30 +143,8 @@ export default function FilePage(): JSX.Element {
         }}
       />
 
-      {/* Content area — breadcrumbs in left column so side panels get full height */}
       <div className="flex flex-1 overflow-hidden">
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          {/* Breadcrumb (only spans content width, not behind TOC/PageInfo) */}
-          {breadcrumb.length > 0 && (
-            <div className="px-4 py-0.5 text-xs text-muted-foreground border-b border-border shrink-0 flex items-center gap-1">
-              {breadcrumb.map((segment, idx) => {
-                const path = breadcrumb.slice(0, idx + 1).join("/");
-                const isLast = idx === breadcrumb.length - 1;
-                return (
-                  <span key={path} className="flex items-center gap-1">
-                    {idx > 0 && <span className="text-muted-foreground/50">/</span>}
-                    {isLast ? (
-                      <span className="text-foreground/60">{segment}</span>
-                    ) : (
-                      <Link to={`/p/${path}`} className="hover:text-foreground transition-colors">
-                        {segment}
-                      </Link>
-                    )}
-                  </span>
-                );
-              })}
-            </div>
-          )}
           <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
         </div>
         {/* TOC sidebar — doc pages only, view mode */}
