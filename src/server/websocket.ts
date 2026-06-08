@@ -35,6 +35,13 @@ interface SyncStatus {
 
 let currentSyncStatus: SyncStatus = { pull: "ok", push: "ok" };
 
+function broadcastConfigChanged(): void {
+  const msg: WsServerMessage = { type: "config_changed" };
+  for (const ws of sessions.values()) {
+    send(ws, msg);
+  }
+}
+
 function broadcastSyncStatus(status: SyncStatus): void {
   const prev = currentSyncStatus;
   // Avoid spamming clients with no-op updates
@@ -286,6 +293,7 @@ export {
   wsOpen,
   wsMessage,
   wsClose,
+  broadcastConfigChanged,
   broadcastPageChanged,
   broadcastPageDeleted,
   broadcastPageCreated,

@@ -6,6 +6,7 @@ import {
   removeFromCache,
 } from "./server/filestore";
 import {
+  broadcastConfigChanged,
   broadcastPageChanged,
   broadcastPageDeleted,
   broadcastSyncStatus,
@@ -111,6 +112,7 @@ const watchedDirs = new Set<string>();
 async function processFileChange(relPath: string): Promise<void> {
   if (relPath === ".kumidocs.json") {
     await loadPermissions();
+    broadcastConfigChanged();
     console.log("Reloaded .kumidocs.json");
     return;
   }

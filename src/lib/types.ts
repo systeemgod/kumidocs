@@ -65,6 +65,7 @@ type WsServerMessage =
   | { type: "page_created"; pageId: string; path: string }
   | { type: "save_conflict_lost"; pageId: string; message: string }
   | { type: "heartbeat_ack" }
+  | { type: "config_changed" }
   | {
       type: "sync_status";
       /** "ok" = all good, "degraded" = pushes failing, "unreachable" = remote unreachable */

@@ -71,21 +71,23 @@ export default function AppShell(): JSX.Element {
     }, 200);
   }, [loadTree]);
 
-  // Load user/instance info
-  useMountEffect(() => {
-    void (async (): Promise<void> => {
-      try {
-        const data = await getMe();
-        if (data.instanceName !== undefined && data.instanceName !== "") {
-          setInstanceName(data.instanceName);
-        }
-        if (data.autoSaveDelay !== undefined && data.autoSaveDelay !== 0) {
-          setAutoSaveDelay(data.autoSaveDelay);
-        }
-      } catch (error: unknown) {
-        console.error("Failed to load instance info:", error);
+  // Load instance config from server
+  const loadInstanceConfig = useCallback(async (): Promise<void> => {
+    try {
+      const data = await getMe();
+      if (data.instanceName !== undefined && data.instanceName !== "") {
+        setInstanceName(data.instanceName);
       }
-    })();
+      if (data.autoSaveDelay !== undefined && data.autoSaveDelay !== 0) {
+        setAutoSaveDelay(data.autoSaveDelay);
+      }
+    } catch (error: unknown) {
+      console.error("Failed to load instance info:", error);
+    }
+  }, []);
+
+  useMountEffect(() => {
+    void loadInstanceConfig();
     void loadTree();
   });
 
@@ -119,6 +121,9 @@ export default function AppShell(): JSX.Element {
     }
     if (msg.type === "page_created" || msg.type === "page_changed" || msg.type === "page_deleted") {
       scheduleTreeReload();
+    }
+    if (msg.type === "config_changed") {
+      void loadInstanceConfig();
     }
   });
 
