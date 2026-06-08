@@ -30,6 +30,7 @@ export default function AppShell(): JSX.Element {
   const [tree, setTree] = useState<TreeNode[]>([]);
   const [instanceName, setInstanceName] = useState("KumiDocs");
   const [autoSaveDelay, setAutoSaveDelay] = useState(5000);
+  const [headSha, setHeadSha] = useState("");
   const [presenceByPage, setPresenceByPage] = useState<Map<string, PresenceUser[]>>(new Map());
   const [newPageOpen, setNewPageOpen] = useState(false);
   const [newPageParentDir, setNewPageParentDir] = useState<string | undefined>();
@@ -80,6 +81,9 @@ export default function AppShell(): JSX.Element {
       }
       if (data.autoSaveDelay !== undefined && data.autoSaveDelay !== 0) {
         setAutoSaveDelay(data.autoSaveDelay);
+      }
+      if (data.headSha !== undefined && data.headSha !== "") {
+        setHeadSha(data.headSha);
       }
     } catch (error: unknown) {
       console.error("Failed to load instance info:", error);
@@ -210,6 +214,7 @@ export default function AppShell(): JSX.Element {
       {syncBanner}
       <TopBar
         instanceName={instanceName}
+        headSha={headSha}
         onSearchOpen={() => {
           setSearchOpen(true);
         }}

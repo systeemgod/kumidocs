@@ -2,15 +2,23 @@ import { apiBacklinks, apiPagesLookup } from "./backlinks";
 import { buildFileTree, getFile } from "./filestore";
 import type { Config } from "./config";
 import type { User } from "@/lib/types";
+import { getHeadSha } from "./git";
 import { getPermissions } from "./auth";
 import { searchDocs } from "./search";
 
 // GET /api/me
-function apiMe(user: User, config: Config): Response {
+async function apiMe(user: User, config: Config): Promise<Response> {
   const perms = getPermissions();
+  let headSha = "";
+  try {
+    headSha = await getHeadSha(config);
+  } catch {
+    // Not a git repo or no commits yet
+  }
   return Response.json({
     ...user,
     autoSaveDelay: config.autoSaveDelay,
+    headSha,
     instanceName: perms.instanceName ?? config.instanceName,
     slideThemes: perms.slideThemes ?? {},
   });

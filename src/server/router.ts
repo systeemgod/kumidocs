@@ -86,7 +86,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
         const user = makeUser(email);
         const secureFlag = req.url.startsWith("https:") ? "; Secure" : "";
         const cookie = `kumidocs_email=${encodeURIComponent(email)}; Path=/; SameSite=Lax; HttpOnly${secureFlag}`;
-        const res = apiMe(user, config);
+        const res = await apiMe(user, config);
         const headers = new Headers(res.headers);
         headers.set("Set-Cookie", cookie);
         return new Response(await res.text(), { headers, status: res.status });
@@ -208,7 +208,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
     },
 
     "/api/me": {
-      GET(req: Request) {
+      async GET(req: Request) {
         const user = requireUser(req);
         if (!user) {
           return new Response("Unauthorized", { status: 401 });

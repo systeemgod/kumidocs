@@ -25,6 +25,7 @@ interface MeResponse {
   name: string;
   displayName: string;
   canEdit: boolean;
+  headSha?: string;
   instanceName?: string;
   autoSaveDelay?: number;
   slideThemes?: SlideThemeMap;

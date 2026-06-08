@@ -10,6 +10,7 @@ import { useUser } from "@/store/user";
 
 interface TopBarProps {
   instanceName: string;
+  headSha: string;
   onSearchOpen: () => void;
 }
 
@@ -36,8 +37,9 @@ const ThemeToggle = (): JSX.Element => {
   );
 };
 
-const UserProfile = (): JSX.Element => {
+const UserProfile = (allProps: { headSha: string }): JSX.Element => {
   const { user } = useUser();
+  const { headSha } = allProps;
   if (!user) {
     return <></>;
   }
@@ -62,6 +64,12 @@ const UserProfile = (): JSX.Element => {
                 <p className="text-sm font-semibold text-foreground">{user.displayName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
               </div>
+              {headSha && (
+                <div className="w-full border-t border-border pt-2 mt-1 text-center">
+                  <p className="text-xs text-muted-foreground">HEAD</p>
+                  <code className="text-xs font-mono text-foreground">{headSha}</code>
+                </div>
+              )}
             </div>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
@@ -71,7 +79,7 @@ const UserProfile = (): JSX.Element => {
 };
 
 const TopBar = (allProps: TopBarProps): JSX.Element => {
-  const { instanceName, onSearchOpen } = allProps;
+  const { instanceName, headSha, onSearchOpen } = allProps;
   return (
     <header className="h-11 border-b border-neutral-800 bg-black grid grid-cols-3 items-center px-3 gap-2 shrink-0 z-10 shadow-sm">
       <div className="flex justify-start">
@@ -96,7 +104,7 @@ const TopBar = (allProps: TopBarProps): JSX.Element => {
       </div>
       <div className="flex items-center gap-1 justify-end">
         <ThemeToggle />
-        <UserProfile />
+        <UserProfile headSha={headSha} />
       </div>
     </header>
   );

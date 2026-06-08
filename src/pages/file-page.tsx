@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import MarkdownViewer from "@/components/editor/markdown-viewer";
 import NotFound from "./not-found";
 import PageInfoPanel from "@/components/layout/page-info-panel";
-import { SaveRegular } from "@fluentui/react-icons";
 import TocSidebar from "@/components/editor/toc-sidebar";
 import { buildEditorContent } from "./file-page-utils";
 import { useFilePage } from "./use-file-page";
@@ -20,7 +19,6 @@ export default function FilePage(): JSX.Element {
     meta,
     setMeta,
     saveStatus,
-    lastSha,
     loading,
     notFound,
     metaRef,
@@ -194,16 +192,6 @@ export default function FilePage(): JSX.Element {
           />
         )}
       </div>
-
-      {/* Footer */}
-      {lastSha !== undefined && lastSha !== "" && (
-        <div className="px-4 py-1 border-t border-border text-xs text-muted-foreground shrink-0 flex items-center gap-2">
-          <SaveRegular className="w-3 h-3" />
-          <span>
-            Last saved · <code className="font-mono">{lastSha}</code>
-          </span>
-        </div>
-      )}
 
       {/* Off-screen render container for PDF export */}
       {fileType === "doc" && (
