@@ -73,7 +73,7 @@ const UserProfile = (): JSX.Element => {
 const TopBar = (allProps: TopBarProps): JSX.Element => {
   const { instanceName, onSearchOpen } = allProps;
   return (
-    <header className="h-11 border-b border-blue-900 bg-blue-950 grid grid-cols-3 items-center px-3 gap-2 shrink-0 z-10 shadow-sm">
+    <header className="h-11 border-b border-blue-700 bg-blue-800 grid grid-cols-3 items-center px-3 gap-2 shrink-0 z-10 shadow-sm">
       <div className="flex justify-start">
         <span className="font-mono font-bold text-2xl text-blue-50 select-none pt-[3px]">
           {instanceName}

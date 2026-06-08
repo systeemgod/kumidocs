@@ -128,8 +128,8 @@ export default function Sidebar({
         style={{ width }}
       >
         {/* ── Pages header ── */}
-        <div className="flex items-center px-3 py-1.5 border-b border-border shrink-0">
-          <span className="flex-1 text-xs font-semibold text-foreground uppercase tracking-wide select-none">
+        <div className="flex items-center px-3 py-2.5 border-b border-border shrink-0">
+          <span className="flex-1 text-sm pt-1 font-semibold text-foreground uppercase tracking-wide select-none">
             Pages
           </span>
           <DropdownMenu>
