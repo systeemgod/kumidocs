@@ -25,7 +25,7 @@ const ThemeToggle = (): JSX.Element => {
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-blue-50 hover:bg-blue-800"
+          className="h-7 w-7 text-white hover:bg-neutral-800"
           onClick={toggle}
         >
           <EmojiIcon emoji={emoji} size={16} />
@@ -43,7 +43,7 @@ const UserProfile = (): JSX.Element => {
   }
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-blue-50 select-none">{user.displayName}</span>
+      <span className="text-xs text-white select-none">{user.displayName}</span>
       <PopoverPrimitive.Root>
         <PopoverPrimitive.Trigger asChild>
           <button className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -73,9 +73,9 @@ const UserProfile = (): JSX.Element => {
 const TopBar = (allProps: TopBarProps): JSX.Element => {
   const { instanceName, onSearchOpen } = allProps;
   return (
-    <header className="h-11 border-b border-blue-700 bg-blue-800 grid grid-cols-3 items-center px-3 gap-2 shrink-0 z-10 shadow-sm">
+    <header className="h-11 border-b border-neutral-800 bg-black grid grid-cols-3 items-center px-3 gap-2 shrink-0 z-10 shadow-sm">
       <div className="flex justify-start">
-        <span className="font-mono font-bold text-2xl text-blue-50 select-none pt-[3px]">
+        <span className="font-mono font-bold text-2xl text-white select-none pt-[3px]">
           {instanceName}
         </span>
       </div>

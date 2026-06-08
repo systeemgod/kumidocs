@@ -88,14 +88,14 @@ function updateInIndex(path: string): void {
 }
 
 function removeFromIndex(path: string): void {
-  if (!index) {
+  if (!index || !path.endsWith(".md")) {
     return;
   }
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     index.remove({ id: path } as DocEntry);
-  } catch (error: unknown) {
-    console.warn("Failed to remove from index:", error);
+  } catch {
+    // Document was not in the index — nothing to remove
   }
 }
 
