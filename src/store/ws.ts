@@ -15,7 +15,6 @@ class WsClient {
   private heartbeatTimer?: ReturnType<typeof setInterval>;
   private currentPageId?: string;
   private userId?: string;
-  private hasConnected = false;
 
   /** Register a callback that fires each time the WS opens (initial + reconnects). */
   public onReopen(fn: () => void): void {
@@ -38,7 +37,6 @@ class WsClient {
     this.ws = new WebSocket(`${proto}//${location.host}/ws`);
 
     this.ws.addEventListener("open", (): void => {
-      this.hasConnected = true;
       if (
         this.currentPageId !== undefined &&
         this.currentPageId !== "" &&
@@ -104,6 +102,7 @@ class WsClient {
   public leavePage(): void {
     if (this.currentPageId !== undefined && this.currentPageId !== "") {
       this.send({ type: "bye" });
+      this.currentPageId = undefined;
     }
   }
 
