@@ -11,10 +11,18 @@ import TopBar from "./top-bar";
 import useMountEffect from "@/hooks/use-mount-effect";
 import { useUser } from "@/store/user";
 
-// Connects the WS client once on mount (rendered only when user is available)
-function WsConnector({ userId }: { userId: string }): JSX.Element {
+// Connects the WS client and reloads the file tree once on mount.
+// Only rendered when the user is available (authenticated).
+function WsConnector({
+  userId,
+  onConnected,
+}: {
+  userId: string;
+  onConnected: () => void;
+}): JSX.Element {
   useMountEffect(() => {
     wsClient.connect(userId);
+    onConnected();
   });
   return <></>;
 }
@@ -89,6 +97,14 @@ export default function AppShell(): JSX.Element {
       console.error("Failed to load instance info:", error);
     }
   }, []);
+
+  // Reload tree whenever the WS reopens (initial connect or reconnect)
+  // so the sidebar is never stale after a WS disconnect.
+  useMountEffect(() => {
+    wsClient.onReopen(() => {
+      scheduleTreeReload();
+    });
+  });
 
   useMountEffect(() => {
     void loadInstanceConfig();
@@ -210,7 +226,7 @@ export default function AppShell(): JSX.Element {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background text-foreground">
-      {user && <WsConnector userId={user.id} />}
+      {user && <WsConnector userId={user.id} onConnected={loadTree} />}
       {syncBanner}
       <TopBar
         instanceName={instanceName}

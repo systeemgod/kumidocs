@@ -10,10 +10,17 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 class WsClient {
   private ws?: WebSocket;
   private readonly listeners = new Set<WsListener>();
+  private reopenCallbacks: Array<() => void> = [];
   private reconnectTimer?: ReturnType<typeof setTimeout>;
   private heartbeatTimer?: ReturnType<typeof setInterval>;
   private currentPageId?: string;
   private userId?: string;
+  private hasConnected = false;
+
+  /** Register a callback that fires each time the WS opens (initial + reconnects). */
+  public onReopen(fn: () => void): void {
+    this.reopenCallbacks.push(fn);
+  }
 
   public connect(userId: string): void {
     this.userId = userId;
@@ -31,6 +38,7 @@ class WsClient {
     this.ws = new WebSocket(`${proto}//${location.host}/ws`);
 
     this.ws.addEventListener("open", (): void => {
+      this.hasConnected = true;
       if (
         this.currentPageId !== undefined &&
         this.currentPageId !== "" &&
@@ -44,6 +52,9 @@ class WsClient {
         });
       }
       this.startHeartbeat();
+      for (const cb of this.reopenCallbacks) {
+        cb();
+      }
     });
 
     this.ws.addEventListener("message", (event: MessageEvent): void => {
