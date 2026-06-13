@@ -18,26 +18,26 @@ import {
   apiUploadImage,
   serveRepoAsset,
 } from "./api";
-import { join, sep } from "node:path";
-import type { Config } from "./config";
-import RateLimiter from "./rate-limit";
-import type { User } from "@/lib/types";
-import devIndex from "@/index.html";
 import { makeUser } from "./auth";
+import devIndex from "@/index.html";
+import path from "node:path";
+import RateLimiter from "./rate-limit";
+import type { Config } from "./config";
+import type { User } from "@/lib/types";
 
 // oxlint-disable-next-line no-underscore-dangle
 declare const __BUNDLED__: boolean | undefined;
 // oxlint-disable-next-line unicorn/no-typeof-undefined
 const isBundled = typeof __BUNDLED__ !== "undefined";
 const publicDir = isBundled
-  ? join(import.meta.dir, "public")
-  : join(import.meta.dir, "..", "public");
+  ? path.join(import.meta.dir, "public")
+  : path.join(import.meta.dir, "..", "public");
 
 async function serveSPA(req: Request): Promise<Response> {
   const rel = new URL(req.url).pathname.replace(/^\/+/u, "") || "index.html";
-  const filePath = join(publicDir, rel);
-  if (!filePath.startsWith(publicDir + sep)) {
-    return new Response(Bun.file(join(publicDir, "index.html")));
+  const filePath = path.join(publicDir, rel);
+  if (!filePath.startsWith(publicDir + path.sep)) {
+    return new Response(Bun.file(path.join(publicDir, "index.html")));
   }
   const file = Bun.file(filePath);
   if (await file.exists()) {
@@ -50,7 +50,7 @@ async function serveSPA(req: Request): Promise<Response> {
           : { "Cache-Control": "public, max-age=31536000, immutable" },
     });
   }
-  return new Response(Bun.file(join(publicDir, "index.html")), {
+  return new Response(Bun.file(path.join(publicDir, "index.html")), {
     headers: {
       "Content-Security-Policy": `default-src 'self'; img-src 'self' https: http: data:; style-src 'self' 'unsafe-inline'; script-src 'self'${isBundled ? "" : " 'unsafe-eval'"}; font-src 'self' data:; connect-src 'self' ws: wss:`,
     },

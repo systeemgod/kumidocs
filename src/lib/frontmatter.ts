@@ -45,8 +45,7 @@ const applyKv = (data: PageMeta, key: string, val: string): void => {
     data.footer = trimmedVal;
   }
   if (key.startsWith("theme-var-")) {
-    const THEME_VAR_PREFIX = "theme-var-";
-    const varName = key.slice(THEME_VAR_PREFIX.length);
+    const varName = key.slice("theme-var-".length);
     if (varName) {
       (data.themeVars ??= {})[varName] = trimmedVal;
     }
@@ -55,7 +54,7 @@ const applyKv = (data: PageMeta, key: string, val: string): void => {
 
 /** Parse only the whitelisted KumiDocs frontmatter fields from a raw markdown string. */
 const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
-  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/u.exec(raw);
+  const match = /^---\r?\n(?<block>[\s\S]*?)\r?\n---\r?\n?/u.exec(raw);
   if (!match) {
     return { content: raw, data: {} };
   }
@@ -64,7 +63,7 @@ const parseFrontmatter = (raw: string): { data: PageMeta; content: string } => {
   const content = raw.slice(fullMatch.length);
   const data: PageMeta = {};
   for (const line of block.split("\n")) {
-    const kv = /^([\w-]+):\s*(.*)$/u.exec(line.trim());
+    const kv = /^(?<key>[\w-]+):\s*(?<value>.*)$/u.exec(line.trim());
     if (kv) {
       const key = kv.at(1);
       const val = kv.at(2) ?? "";

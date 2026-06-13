@@ -10,7 +10,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 class WsClient {
   private ws?: WebSocket;
   private readonly listeners = new Set<WsListener>();
-  private reopenCallbacks: Array<() => void> = [];
+  private readonly reopenCallbacks: (() => void)[] = [];
   private reconnectTimer?: ReturnType<typeof setTimeout>;
   private heartbeatTimer?: ReturnType<typeof setInterval>;
   private currentPageId?: string;
@@ -51,6 +51,7 @@ class WsClient {
       }
       this.startHeartbeat();
       for (const cb of this.reopenCallbacks) {
+        // oxlint-disable-next-line node/callback-return, promise/prefer-await-to-callbacks
         cb();
       }
     });

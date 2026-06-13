@@ -1,11 +1,11 @@
 import { CODE_TYPES, IMAGE_TYPES, extensionToType, pathExtension } from "@/lib/filetypes";
-import type { FileEntry, TreeNode } from "@/lib/types";
-import { dirname, extname, join, relative } from "node:path";
+import { extractHeadingTitle } from "@/lib/frontmatter";
 import { mkdir, readdir, unlink } from "node:fs/promises";
+import type { FileEntry, TreeNode } from "@/lib/types";
 import type { Config } from "./config";
 import type { IgnoreChecker } from "./git-ignore";
-import { extractHeadingTitle } from "@/lib/frontmatter";
 import matter from "gray-matter";
+import path from "node:path";
 
 const fileCache = new Map<string, string>(); // relPath -> content
 let treeCache: TreeNode[] | undefined; // invalidated on every write/delete/move
@@ -51,8 +51,8 @@ async function scanDir(basePath: string, dirPath: string, ig: IgnoreChecker): Pr
       if (IGNORED_NAMES.has(entry.name)) {
         return;
       }
-      const fullPath = join(dirPath, entry.name);
-      const relPath = relative(basePath, fullPath);
+      const fullPath = path.join(dirPath, entry.name);
+      const relPath = path.relative(basePath, fullPath);
 
       if (ig(relPath)) {
         return;
@@ -61,7 +61,7 @@ async function scanDir(basePath: string, dirPath: string, ig: IgnoreChecker): Pr
       if (entry.isDirectory()) {
         await scanDir(basePath, fullPath, ig);
       } else if (entry.isFile()) {
-        const ext = extname(entry.name).toLowerCase();
+        const ext = path.extname(entry.name).toLowerCase();
         if (IGNORED_EXT.has(ext)) {
           return;
         }
@@ -88,50 +88,50 @@ async function loadFilestore(config: Config, ig: IgnoreChecker): Promise<void> {
   console.log(`Filestore: loaded ${String(fileCache.size)} files`);
 }
 
-function getFile(path: string): string | undefined {
-  return fileCache.get(path);
+function getFile(filePath: string): string | undefined {
+  return fileCache.get(filePath);
 }
 
 function getAllPaths(): string[] {
   return [...fileCache.keys()].toSorted();
 }
 
-async function writeFileToRepo(path: string, content: string, config: Config): Promise<void> {
-  markWritten(path); // suppress watcher broadcast for this server-initiated write
-  const fullPath = join(config.repoPath, path);
-  await mkdir(dirname(fullPath), { recursive: true });
-  const isBinary = IMAGE_TYPES.has(extname(path).toLowerCase());
+async function writeFileToRepo(filePath: string, content: string, config: Config): Promise<void> {
+  markWritten(filePath); // suppress watcher broadcast for this server-initiated write
+  const fullPath = path.join(config.repoPath, filePath);
+  await mkdir(path.dirname(fullPath), { recursive: true });
+  const isBinary = IMAGE_TYPES.has(path.extname(filePath).toLowerCase());
   const normalised = isBinary || content.endsWith("\n") ? content : `${content}\n`;
   await Bun.write(fullPath, normalised);
-  fileCache.set(path, normalised);
+  fileCache.set(filePath, normalised);
   invalidateTree();
 }
 
-async function deleteFileFromRepo(path: string, config: Config): Promise<void> {
-  const fullPath = join(config.repoPath, path);
+async function deleteFileFromRepo(filePath: string, config: Config): Promise<void> {
+  const fullPath = path.join(config.repoPath, filePath);
   await unlink(fullPath);
-  fileCache.delete(path);
+  fileCache.delete(filePath);
   invalidateTree();
 }
 
-async function reloadFile(path: string, config: Config): Promise<void> {
-  const fullPath = join(config.repoPath, path);
+async function reloadFile(filePath: string, config: Config): Promise<void> {
+  const fullPath = path.join(config.repoPath, filePath);
   try {
     const content = await Bun.file(fullPath).text();
-    fileCache.set(path, content);
+    fileCache.set(filePath, content);
   } catch {
-    fileCache.delete(path);
+    fileCache.delete(filePath);
   }
   invalidateTree();
 }
 
-function addToCache(path: string, content: string): void {
-  fileCache.set(path, content);
+function addToCache(filePath: string, content: string): void {
+  fileCache.set(filePath, content);
   invalidateTree();
 }
 
-function removeFromCache(path: string): void {
-  fileCache.delete(path);
+function removeFromCache(filePath: string): void {
+  fileCache.delete(filePath);
   invalidateTree();
 }
 
@@ -145,9 +145,9 @@ function moveInCache(from: string, to: string): void {
 /** Return the text of the first `# Heading` line in a markdown body, or null.
  * Imported from @/lib/frontmatter — re-exported here for convenience.
  */
-function parseFileEntry(path: string): FileEntry {
-  const ext = pathExtension(path);
-  const fileName = path.split("/").pop() ?? path;
+function parseFileEntry(filePath: string): FileEntry {
+  const ext = pathExtension(filePath);
+  const fileName = filePath.split("/").pop() ?? filePath;
   const baseName = fileName.replace(/\.md$/u, "");
   const titleFromName = baseName.replaceAll(/[-_]/gu, " ");
 
@@ -157,7 +157,7 @@ function parseFileEntry(path: string): FileEntry {
 
   if (ext === "md") {
     type = "doc";
-    const content = fileCache.get(path) ?? "";
+    const content = fileCache.get(filePath) ?? "";
     try {
       const parsed = matter(content);
       const headingTitle = extractHeadingTitle(parsed.content);
@@ -175,7 +175,7 @@ function parseFileEntry(path: string): FileEntry {
     }
   }
 
-  return { emoji, path, title, type };
+  return { emoji, path: filePath, title, type };
 }
 
 // Build file tree for /api/tree

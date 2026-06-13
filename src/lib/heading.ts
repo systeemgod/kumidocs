@@ -52,7 +52,7 @@ function extractTocItems(markdown: string): TocItem[] {
 
   for (const line of lines) {
     // Toggle code-fence tracking (triple backticks or tildes).
-    if (/^(```|~~~)/u.test(line.trim())) {
+    if (/^(?<fence>```|~~~)/u.test(line.trim())) {
       inCodeBlock = !inCodeBlock;
       continue;
     }
@@ -61,7 +61,7 @@ function extractTocItems(markdown: string): TocItem[] {
     }
 
     // Match ATX headings: `### Some Title`
-    const match = /^(#{1,6})\s+(.+)$/u.exec(line);
+    const match = /^(?<hashes>#{1,6})\s+(?<text>.+)$/u.exec(line);
     if (match) {
       const hashes = match[1];
       const headingText = match[2];

@@ -1,5 +1,5 @@
+import path from "node:path";
 import pkg from "@root/package.json";
-import { resolve } from "node:path";
 
 // ExitRequest - thrown instead of process.exit() for clean exit handling
 class ExitRequestError extends Error {
@@ -91,7 +91,7 @@ const coerceGitImpl = (raw: string): "native" | "builtin" => {
 
 const OPTIONS: OptionDef[] = [
   {
-    coerce: resolve,
+    coerce: path.resolve,
     default: () => process.cwd(),
     description: "Path to git repository",
     env: "KUMIDOCS_REPO_PATH",
@@ -277,7 +277,7 @@ const loadConfig = (): Config => {
       (cliOverrides.repoPath === undefined || cliOverrides.repoPath === "")
     ) {
       // Bare positional argument - treat as --repo
-      cliOverrides.repoPath = resolve(arg);
+      cliOverrides.repoPath = path.resolve(arg);
     }
   }
 

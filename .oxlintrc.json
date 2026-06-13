@@ -33,6 +33,7 @@
     "eslint/no-void": "off",
     "eslint/prefer-destructuring": "off",
     "eslint/require-await": "off",
+    "eslint/sort-imports": "off",
     "import/max-dependencies": "off",
     "import/no-default-export": "off",
     "import/no-named-as-default-member": "off",

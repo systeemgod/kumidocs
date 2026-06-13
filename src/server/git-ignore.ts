@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import ignore from "ignore";
-import { join } from "node:path";
+import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 /** Returns true if the repo-relative path should be excluded from watching/indexing. */
@@ -17,7 +17,7 @@ function loadGlobalGitignore(): string | undefined {
       const configPath = result.stdout.trim();
       // Expand ~ manually since spawnSync doesn't run through a shell
       const expanded = configPath.startsWith("~/")
-        ? join(homedir(), configPath.slice(2))
+        ? path.join(homedir(), configPath.slice(2))
         : configPath;
       if (expanded && existsSync(expanded)) {
         return readFileSync(expanded, "utf8");
@@ -29,9 +29,9 @@ function loadGlobalGitignore(): string | undefined {
 
   // Common fallback locations
   for (const candidate of [
-    join(homedir(), ".config/git/ignore"),
-    join(homedir(), ".gitignore"),
-    join(homedir(), ".gitignore_global"),
+    path.join(homedir(), ".config/git/ignore"),
+    path.join(homedir(), ".gitignore"),
+    path.join(homedir(), ".gitignore_global"),
   ]) {
     if (existsSync(candidate)) {
       try {
@@ -57,7 +57,7 @@ function buildIgnoreChecker(repoPath: string): IgnoreChecker {
     ig.add(globalContent);
   }
 
-  const repoGitignorePath = join(repoPath, ".gitignore");
+  const repoGitignorePath = path.join(repoPath, ".gitignore");
   if (existsSync(repoGitignorePath)) {
     try {
       ig.add(readFileSync(repoGitignorePath, "utf8"));

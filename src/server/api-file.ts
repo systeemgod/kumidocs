@@ -14,10 +14,10 @@ import {
   moveInCache,
   writeFileToRepo,
 } from "./filestore";
-import { dirname, join } from "node:path";
 import { getHeadSha, gitMoveAndCommit, gitRemoveAndCommit, gitStageAndCommit } from "./git";
 import { mkdir, rename } from "node:fs/promises";
 import { removeFromIndex, updateInIndex } from "./search";
+import path from "node:path";
 import type { Config } from "./config";
 import type { User } from "@/lib/types";
 
@@ -39,21 +39,21 @@ function handlePushResult(result: { error?: string }): void {
 
 // GET /api/file?path=<path>
 async function apiFileGet(url: URL, config: Config): Promise<Response> {
-  const path = decodeURIComponent(url.searchParams.get("path") ?? "");
-  if (!path) {
+  const filePath = decodeURIComponent(url.searchParams.get("path") ?? "");
+  if (!filePath) {
     return Response.json({ error: "path required" }, { status: 400 });
   }
-  if (!isSafePath(config.repoPath, path)) {
+  if (!isSafePath(config.repoPath, filePath)) {
     return new Response("Forbidden", { status: 403 });
   }
 
-  const content = getFile(path);
+  const content = getFile(filePath);
   if (content === undefined) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
 
   const sha = await getHeadSha(config);
-  return Response.json({ content, path, sha });
+  return Response.json({ content, path: filePath, sha });
 }
 
 // PUT /api/file?path=<path>   body: { content: string }
@@ -62,17 +62,17 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const path = decodeURIComponent(url.searchParams.get("path") ?? "");
-  if (!path) {
+  const filePath = decodeURIComponent(url.searchParams.get("path") ?? "");
+  if (!filePath) {
     return Response.json({ error: "path required" }, { status: 400 });
   }
-  if (!isSafePath(config.repoPath, path)) {
+  if (!isSafePath(config.repoPath, filePath)) {
     return new Response("Forbidden", { status: 403 });
   }
 
   // Enforce the WebSocket edit lock: reject writes from users who don't hold it
   // if another active session is currently editing this page.
-  const lockHolder = getEditorForPage(path);
+  const lockHolder = getEditorForPage(filePath);
   if (lockHolder && lockHolder.id !== user.id) {
     return Response.json(
       { editedBy: lockHolder.displayName, error: "Page is locked by another editor" },
@@ -92,13 +92,13 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
   if (content.length > 200 * 1024) {
     return Response.json({ error: "Content too large (max 200 KB)" }, { status: 413 });
   }
-  await writeFileToRepo(path, content, config);
-  updateInIndex(path);
+  await writeFileToRepo(filePath, content, config);
+  updateInIndex(filePath);
 
-  const msg = `docs(${path}): save by ${user.displayName}`;
+  const msg = `docs(${filePath}): save by ${user.displayName}`;
   const result = await gitStageAndCommit(
     config,
-    [path],
+    [filePath],
     msg,
     user.displayName,
     user.email || "kumidocs@localhost",
@@ -106,7 +106,7 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
 
   // Only broadcast if a new commit was actually made — skip no-op saves
   if (result.committed !== false) {
-    broadcastPageChanged(path, result.sha, user.id, user.displayName);
+    broadcastPageChanged(filePath, result.sha, user.id, user.displayName);
   }
 
   if (result.error === "push_failed") {
@@ -131,41 +131,41 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const path = typeof body.path === "string" ? body.path : "";
+  const filePath = typeof body.path === "string" ? body.path : "";
   const content = typeof body.content === "string" ? body.content : "";
   if (content.length > 200 * 1024) {
     return Response.json({ error: "Content too large (max 200 KB)" }, { status: 413 });
   }
-  if (!path) {
+  if (!filePath) {
     return Response.json({ error: "path required" }, { status: 400 });
   }
-  if (!isSafePath(config.repoPath, path)) {
+  if (!isSafePath(config.repoPath, filePath)) {
     return new Response("Forbidden", { status: 403 });
   }
-  if (getFile(path) !== undefined) {
+  if (getFile(filePath) !== undefined) {
     return Response.json({ error: "File already exists" }, { status: 409 });
   }
 
-  await writeFileToRepo(path, content, config);
-  updateInIndex(path);
+  await writeFileToRepo(filePath, content, config);
+  updateInIndex(filePath);
 
-  const msg = `docs(${path}): create by ${user.displayName}`;
+  const msg = `docs(${filePath}): create by ${user.displayName}`;
   const result = await gitStageAndCommit(
     config,
-    [path],
+    [filePath],
     msg,
     user.displayName,
     user.email || "kumidocs@localhost",
   );
 
-  broadcastPageCreated(path, path);
+  broadcastPageCreated(filePath, filePath);
 
   if (result.error === "push_failed") {
     handlePushResult(result);
-    return Response.json({ path, pushWarning: true, sha: result.sha });
+    return Response.json({ path: filePath, pushWarning: true, sha: result.sha });
   }
   handlePushResult(result);
-  return Response.json({ path, sha: result.sha });
+  return Response.json({ path: filePath, sha: result.sha });
 }
 
 // DELETE /api/file?path=<path>
@@ -174,30 +174,30 @@ async function apiFileDelete(url: URL, user: User, config: Config): Promise<Resp
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const path = decodeURIComponent(url.searchParams.get("path") ?? "");
-  if (!path) {
+  const filePath = decodeURIComponent(url.searchParams.get("path") ?? "");
+  if (!filePath) {
     return Response.json({ error: "path required" }, { status: 400 });
   }
-  if (!isSafePath(config.repoPath, path)) {
+  if (!isSafePath(config.repoPath, filePath)) {
     return new Response("Forbidden", { status: 403 });
   }
-  if (getFile(path) === undefined) {
+  if (getFile(filePath) === undefined) {
     return Response.json({ error: "Not found" }, { status: 404 });
   }
 
-  await deleteFileFromRepo(path, config);
-  removeFromIndex(path);
+  await deleteFileFromRepo(filePath, config);
+  removeFromIndex(filePath);
 
-  const msg = `docs(${path}): delete by ${user.displayName}`;
+  const msg = `docs(${filePath}): delete by ${user.displayName}`;
   const result = await gitRemoveAndCommit(
     config,
-    path,
+    filePath,
     msg,
     user.displayName,
     user.email || "kumidocs@localhost",
   );
 
-  broadcastPageDeleted(path);
+  broadcastPageDeleted(filePath);
 
   if (result.error === "push_failed") {
     handlePushResult(result);
@@ -262,8 +262,8 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
   }
   const renameResults = await Promise.allSettled(
     renameOps.map(async (op) => {
-      await mkdir(dirname(join(config.repoPath, op.relTo)), { recursive: true });
-      await rename(join(config.repoPath, op.relFrom), join(config.repoPath, op.relTo));
+      await mkdir(path.dirname(path.join(config.repoPath, op.relTo)), { recursive: true });
+      await rename(path.join(config.repoPath, op.relFrom), path.join(config.repoPath, op.relTo));
       return op;
     }),
   );
@@ -274,7 +274,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
       .map((res) => res.value);
     await Promise.all(
       completed.toReversed().map(async (op) =>
-        rename(join(config.repoPath, op.relTo), join(config.repoPath, op.relFrom)).catch(
+        rename(path.join(config.repoPath, op.relTo), path.join(config.repoPath, op.relFrom)).catch(
           (_err: unknown) => {
             /* rollback best-effort, ignore failure */
           },

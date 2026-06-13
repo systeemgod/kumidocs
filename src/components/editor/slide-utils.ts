@@ -72,7 +72,7 @@ function splitSlides(content: string): string[] {
   for (const line of content.split("\n")) {
     const trimmed = line.trimStart();
     if (fence === undefined) {
-      const match = /^(`{3,}|~{3,})/u.exec(trimmed);
+      const match = /^(?<fence>`{3,}|~{3,})/u.exec(trimmed);
       if (match) {
         // Opening a fenced code block — capture the fence character string
         fence = match[1] ?? "```";

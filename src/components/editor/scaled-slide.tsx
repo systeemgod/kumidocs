@@ -104,7 +104,7 @@ function ScaledSlide({
   );
 
   // Extract first heading for template variable substitution
-  const slideTitle = /^#+\s+(.+)$/mu.exec(slide.content)?.[1]?.trim() ?? "";
+  const slideTitle = /^#+\s+(?<title>.+)$/mu.exec(slide.content)?.[1]?.trim() ?? "";
 
   // Build canvas inline style: custom theme bg/fg first, then per-slide directive overrides
   const canvasStyle = buildCanvasStyle(resolvedTheme, directives);

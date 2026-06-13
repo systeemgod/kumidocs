@@ -1,10 +1,10 @@
-import { addToCache, deleteFileFromRepo, getAllPaths, getFile } from "./filestore";
-import { extname, join, resolve } from "node:path";
-import { gitRemoveAndCommit, gitStageAndCommit } from "./git";
-import type { Config } from "./config";
 import { IMAGE_TYPES } from "@/lib/filetypes";
-import type { User } from "@/lib/types";
+import { addToCache, deleteFileFromRepo, getAllPaths, getFile } from "./filestore";
+import { gitRemoveAndCommit, gitStageAndCommit } from "./git";
 import { mkdir } from "node:fs/promises";
+import path from "node:path";
+import type { Config } from "./config";
+import type { User } from "@/lib/types";
 
 async function apiUploadImage(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
@@ -29,7 +29,7 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
     return Response.json({ error: "File too large (max 25 MB)" }, { status: 413 });
   }
 
-  const ext = extname(file.name).toLowerCase();
+  const ext = path.extname(file.name).toLowerCase();
   if (!IMAGE_TYPES.has(ext)) {
     return Response.json({ error: "File type not allowed" }, { status: 415 });
   }
@@ -38,9 +38,9 @@ async function apiUploadImage(req: Request, user: User, config: Config): Promise
   const sha256 = new Bun.CryptoHasher("sha256").update(bytes).digest("hex");
   const filename = `${sha256}${ext}`;
   const repoPath = `images/${filename}`;
-  const fullPath = join(config.repoPath, repoPath);
+  const fullPath = path.join(config.repoPath, repoPath);
 
-  await mkdir(join(config.repoPath, "images"), { recursive: true });
+  await mkdir(path.join(config.repoPath, "images"), { recursive: true });
   await Bun.write(fullPath, bytes);
   addToCache(repoPath, "");
 
@@ -70,7 +70,7 @@ function apiImagesList(config: Config): Response {
 
     let size = 0;
     try {
-      size = Bun.file(join(config.repoPath, repoPath)).size;
+      size = Bun.file(path.join(config.repoPath, repoPath)).size;
     } catch {
       // file may be transiently unavailable
     }
@@ -164,7 +164,7 @@ function sanitizeSvg(raw: string): string {
       .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
       // javascript: and data: URIs in href, xlink:href, action, src
       .replaceAll(
-        /((?:xlink:)?href|action|src)\s*=\s*(?:"(?:javascript|data):[^"]*"|'(?:javascript|data):[^']*')/giu,
+        /(?<attr>(?:xlink:)?href|action|src)\s*=\s*(?:"(?:javascript|data):[^"]*"|'(?:javascript|data):[^']*')/giu,
         "",
       )
   );
@@ -172,8 +172,8 @@ function sanitizeSvg(raw: string): string {
 
 // GET /images/:filename
 async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
-  const imagesDir = resolve(config.repoPath, "images");
-  const fullPath = resolve(config.repoPath, assetPath);
+  const imagesDir = path.resolve(config.repoPath, "images");
+  const fullPath = path.resolve(config.repoPath, assetPath);
   // Restrict to the images/ subdirectory — isSafePath alone only prevents escaping
   // repoPath, so a crafted path like 'images/../.env' would otherwise be served.
   const imagesDirPrefix = `${imagesDir}/`;
@@ -189,7 +189,7 @@ async function serveRepoAsset(assetPath: string, config: Config): Promise<Respon
     ".svg": "image/svg+xml",
     ".webp": "image/webp",
   };
-  const ext = extname(assetPath).toLowerCase();
+  const ext = path.extname(assetPath).toLowerCase();
   const mime = MIME[ext] ?? "application/octet-stream";
 
   const bunFile = Bun.file(fullPath);

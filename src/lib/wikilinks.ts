@@ -22,7 +22,7 @@ interface WikilinkLookup {
  * - `$1` — the link target (page name, path, etc.)
  * - `$2` — optional display text (when using `[[target|text]]`)
  */
-const WIKILINK_RE = /\[\[([^\]]+?)(?:\|([^\]]+))?\]\]/gu;
+const WIKILINK_RE = /\[\[(?<target>[^\]]+?)(?:\|(?<display>[^\]]+))?\]\]/gu;
 
 /**
  * Resolve a wiki-link target to a file path using the lookup map.

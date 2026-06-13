@@ -32,7 +32,7 @@ function buildDocs(paths: string[]): DocEntry[] {
         .replaceAll(/```[\s\S]*?```/gu, " ")
         .replaceAll(/`[^`]+`/gu, " ")
         .replaceAll(/^#{1,6}\s+/gmu, "")
-        .replaceAll(/\[([^\]]+)\]\([^)]+\)/gu, "$1")
+        .replaceAll(/\[(?<text>[^\]]+)\]\([^)]+\)/gu, "$1")
         .replaceAll(/[*_~>|]/gu, "")
         .replaceAll(/\s+/gu, " ")
         .trim();

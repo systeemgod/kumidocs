@@ -105,7 +105,7 @@ function interpolate(
     .replaceAll("{{slideNum}}", String(vars.slideNum))
     .replaceAll("{{slideTotal}}", String(vars.slideTotal))
     .replaceAll("{{title}}", vars.title)
-    .replaceAll(/\{\{date:([^}]+)\}\}/gu, (_match, fmt: string) => {
+    .replaceAll(/\{\{date:(?<fmt>[^}]+)\}\}/gu, (_match, fmt: string) => {
       const now = new Date();
       return fmt
         .replaceAll("YYYY", String(now.getFullYear()))
@@ -138,7 +138,7 @@ function patchSvgDimensions(src: string, width?: number, height?: number): strin
   try {
     const b64 = src.slice("data:image/svg+xml;base64,".length);
     let svg = atob(b64);
-    svg = svg.replace(/<svg([^>]*)>/iu, (_match, attrs: string) => {
+    svg = svg.replace(/<svg(?<attrs>[^>]*)>/iu, (_match, attrs: string) => {
       const cleaned = attrs
         .replaceAll(/\s+width="[^"]*"/gu, "")
         .replaceAll(/\s+height="[^"]*"/gu, "");

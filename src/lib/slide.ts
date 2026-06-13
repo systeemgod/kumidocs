@@ -9,7 +9,7 @@ const ALLOWED_BG_URL_PREFIXES = ["/images/", "https://", "http://", "data:image/
  * Pure colours and gradients without URLs always pass.
  */
 const cssUrlsAreSafe = (cssValue: string): boolean => {
-  const URL_RE = /url\(\s*['"]?\s*([^)'"]+\s*)['"]?\s*\)/giu;
+  const URL_RE = /url\(\s*['"]?\s*(?<url>[^)'"]+\s*)['"]?\s*\)/giu;
   let match: RegExpExecArray | null;
   while ((match = URL_RE.exec(cssValue)) !== null) {
     const url = (match[1] ?? "").trim();
@@ -78,7 +78,7 @@ interface ParsedSlide {
 const parseSlideDirectives = (raw: string): ParsedSlide => {
   const directives: SlideDirectives = { classes: [] };
   const content = raw.replaceAll(
-    /<!--\s*([\w-]+)\s*:\s*([\s\S]*?)\s*-->/giu,
+    /<!--\s*(?<key>[\w-]+)\s*:\s*(?<value>[\s\S]*?)\s*-->/giu,
     (_match: string, key: string, value: string) => {
       // Strip leading _ (Marp spot-directive prefix) — all our directives are already per-slide
       const directiveKey = key.trim().toLowerCase().replace(/^_/u, "");
@@ -213,7 +213,7 @@ const isBgDark = (color: string): boolean => {
   const DARK_THRESHOLD = 128;
   const OKLCH_DARK_LIGHTNESS = 0.4;
 
-  const hexMatch = /^#([0-9a-f]{3,6})$/iu.exec(color.trim());
+  const hexMatch = /^#(?<hex>[0-9a-f]{3,6})$/iu.exec(color.trim());
   if (hexMatch) {
     const hexValue = hexMatch.at(1) ?? "";
     let full = hexValue;
@@ -229,7 +229,7 @@ const isBgDark = (color: string): boolean => {
       DARK_THRESHOLD
     );
   }
-  const oklchMatch = /oklch\(\s*([\d.]+)/u.exec(color);
+  const oklchMatch = /oklch\(\s*(?<lightness>[\d.]+)/u.exec(color);
   if (oklchMatch) {
     return Number.parseFloat(oklchMatch.at(1) ?? "1") < OKLCH_DARK_LIGHTNESS;
   }

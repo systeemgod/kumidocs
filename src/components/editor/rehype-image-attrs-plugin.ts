@@ -15,9 +15,9 @@
 import type { Element, ElementContent, Root } from "hast";
 
 // Matches a {key=value …} block — no nested braces.
-const ATTRS_RE = /^\{([^}]+)\}/u;
+const ATTRS_RE = /^\{(?<block>[^}]+)\}/u;
 // Matches individual key=value pairs. Values: alphanumeric chars plus - . % (no spaces).
-const PAIR_RE = /([a-zA-Z-]+)=([\w.%]+)/gu;
+const PAIR_RE = /(?<key>[a-zA-Z-]+)=(?<value>[\w.%]+)/gu;
 
 // CSS properties we allow to be set via this syntax.
 const ALLOWED: ReadonlySet<string> = new Set([

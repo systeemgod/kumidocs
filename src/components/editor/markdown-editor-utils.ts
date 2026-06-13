@@ -69,7 +69,7 @@ function setLinePrefix(ta: HTMLTextAreaElement, prefix: string, forcedStart?: nu
   const lineEnd = lineEndRaw === -1 ? ta.value.length : lineEndRaw;
   const line = ta.value.slice(lineStart, lineEnd);
   // Strip any existing heading/blockquote prefix.
-  const stripped = line.replace(/^(#{1,6} |> )/u, "");
+  const stripped = line.replace(/^(?<prefix>#{1,6} |> )/u, "");
   const newLine = prefix ? `${prefix}${stripped}` : stripped;
   ta.setRangeText(newLine, lineStart, lineEnd, "preserve");
   ta.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
@@ -84,7 +84,7 @@ function toggleListPrefix(ta: HTMLTextAreaElement, prefix: string): void {
   const lineEndRaw = ta.value.indexOf("\n", start);
   const lineEnd = lineEndRaw === -1 ? ta.value.length : lineEndRaw;
   const line = ta.value.slice(lineStart, lineEnd);
-  const stripped = line.replace(/^(#{1,6} |> |- \[ \] |- |[0-9]+\. )/u, "");
+  const stripped = line.replace(/^(?<prefix>#{1,6} |> |- \[ \] |- |[0-9]+\. )/u, "");
   const newLine = line.startsWith(prefix) ? stripped : `${prefix}${stripped}`;
   ta.setRangeText(newLine, lineStart, lineEnd, "preserve");
   ta.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);

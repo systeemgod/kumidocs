@@ -1,3 +1,8 @@
+import { serve } from "bun";
+import { existsSync, watch } from "node:fs";
+import { readdir, stat } from "node:fs/promises";
+import { parseUser, setPermissions, setReadonly } from "./server/auth";
+import { loadConfig } from "./server/config";
 import {
   IGNORED_NAMES,
   consumeWritten,
@@ -5,6 +10,9 @@ import {
   reloadFile,
   removeFromCache,
 } from "./server/filestore";
+import { buildIgnoreChecker } from "./server/git-ignore";
+import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
+import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
 import {
   broadcastConfigChanged,
   broadcastPageChanged,
@@ -15,19 +23,11 @@ import {
   wsMessage,
   wsOpen,
 } from "./server/websocket";
-import { existsSync, watch } from "node:fs";
-import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
-import { initSearch, removeFromIndex, updateInIndex } from "./server/search";
-import { join, relative } from "node:path";
-import { parseUser, setPermissions, setReadonly } from "./server/auth";
-import { readdir, stat } from "node:fs/promises";
 import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
-import { buildIgnoreChecker } from "./server/git-ignore";
+import path from "node:path";
 import buildRoutes from "./server/router";
-import { loadConfig } from "./server/config";
-import { serve } from "bun";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -41,7 +41,7 @@ try {
 }
 
 // Validate repo
-if (!existsSync(join(config.repoPath, ".git"))) {
+if (!existsSync(path.join(config.repoPath, ".git"))) {
   throw new Error(`Fatal: ${config.repoPath} is not a git repository.`);
 }
 
@@ -54,7 +54,7 @@ async function loadPermissions(): Promise<void> {
     setPermissions({});
     return;
   }
-  const configPath = join(config.repoPath, ".kumidocs.json");
+  const configPath = path.join(config.repoPath, ".kumidocs.json");
   try {
     const raw = await Bun.file(configPath).text();
     const parsed: unknown = JSON.parse(raw);
@@ -116,7 +116,7 @@ async function processFileChange(relPath: string): Promise<void> {
     console.log("Reloaded .kumidocs.json");
     return;
   }
-  const fullPath = join(config.repoPath, relPath);
+  const fullPath = path.join(config.repoPath, relPath);
   if (existsSync(fullPath)) {
     await reloadFile(relPath, config);
     updateInIndex(relPath);
@@ -135,7 +135,7 @@ async function watchDir(absDir: string): Promise<void> {
   if (watchedDirs.has(absDir)) {
     return;
   }
-  const relDir = relative(config.repoPath, absDir).replaceAll("\\", "/");
+  const relDir = path.relative(config.repoPath, absDir).replaceAll("\\", "/");
   if (relDir && isWatcherIgnored(relDir)) {
     return;
   }
@@ -148,8 +148,8 @@ async function watchDir(absDir: string): Promise<void> {
     if (filename === null) {
       return;
     }
-    const absFile = join(absDir, filename);
-    const relFile = relative(config.repoPath, absFile).replaceAll("\\", "/");
+    const absFile = path.join(absDir, filename);
+    const relFile = path.relative(config.repoPath, absFile).replaceAll("\\", "/");
     if (isWatcherIgnored(relFile)) {
       return;
     }
@@ -184,7 +184,7 @@ async function watchDir(absDir: string): Promise<void> {
     await Promise.all(
       entries
         .filter((entry) => entry.isDirectory())
-        .map(async (entry) => watchDir(join(absDir, entry.name))),
+        .map(async (entry) => watchDir(path.join(absDir, entry.name))),
     );
   } catch {
     // Directory removed during scan — ignore
@@ -215,7 +215,7 @@ async function runPullCycle(): Promise<void> {
       result.changed
         .filter((changedPath) => changedPath !== ".kumidocs.json")
         .map(async (changedPath) => {
-          const fullPath = join(config.repoPath, changedPath);
+          const fullPath = path.join(config.repoPath, changedPath);
           if (existsSync(fullPath)) {
             await reloadFile(changedPath, config);
             updateInIndex(changedPath);
