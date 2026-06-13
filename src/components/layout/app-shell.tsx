@@ -106,6 +106,13 @@ export default function AppShell(): JSX.Element {
     });
   });
 
+  // Clean up any pending tree reload timer on unmount
+  useMountEffect(() => {
+    return (): void => {
+      clearTimeout(treeReloadTimer.current);
+    };
+  });
+
   useMountEffect(() => {
     void loadInstanceConfig();
     void loadTree();

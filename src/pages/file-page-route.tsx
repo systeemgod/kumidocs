@@ -1,18 +1,11 @@
 import FilePage from "@/pages/file-page";
 import { useParams } from "react-router-dom";
-import { useUser } from "@/store/user";
 
 const FilePageRoute = (): JSX.Element => {
   const { "*": rawPath = "" } = useParams();
-  const { user, loading } = useUser();
-  let userKey = "anon";
-  if (loading) {
-    userKey = "loading";
-  }
-  if (!loading && user) {
-    userKey = user.id;
-  }
-  return <FilePage key={`${rawPath}-${userKey}`} />;
+  // Key only on rawPath so user state transitions (loading → authenticated)
+  // don't remount the editor and trigger a wasteful WS leave/join dance.
+  return <FilePage key={rawPath} />;
 };
 
 export default FilePageRoute;

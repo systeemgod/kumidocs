@@ -21,6 +21,22 @@ import { removeFromIndex, updateInIndex } from "./search";
 import type { Config } from "./config";
 import type { User } from "@/lib/types";
 
+/**
+ * After a git push result, broadcast the appropriate sync status:
+ * - push_failed → set push to "failing"
+ * - push succeeded while previously failing → recover to "ok"
+ */
+function handlePushResult(result: { error?: string }): void {
+  if (result.error === "push_failed") {
+    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+  } else {
+    const prev = getSyncStatus();
+    if (prev.push === "failing") {
+      broadcastSyncStatus({ ...prev, push: "ok" });
+    }
+  }
+}
+
 // GET /api/file?path=<path>
 async function apiFileGet(url: URL, config: Config): Promise<Response> {
   const path = decodeURIComponent(url.searchParams.get("path") ?? "");
@@ -94,16 +110,10 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
   }
 
   if (result.error === "push_failed") {
-    // Commit is local — content is safe, but could not sync to remote.
-    // Return 200 so the client marks the page as saved.
-    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    handlePushResult(result);
     return Response.json({ pushWarning: true, sha: result.sha });
   }
-  // Push succeeded — if we were in a failing state, recover
-  const prev = getSyncStatus();
-  if (prev.push === "failing") {
-    broadcastSyncStatus({ ...prev, push: "ok" });
-  }
+  handlePushResult(result);
   return Response.json({ sha: result.sha });
 }
 
@@ -151,14 +161,10 @@ async function apiFileCreate(req: Request, user: User, config: Config): Promise<
   broadcastPageCreated(path, path);
 
   if (result.error === "push_failed") {
-    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    handlePushResult(result);
     return Response.json({ path, pushWarning: true, sha: result.sha });
   }
-
-  const prevSync = getSyncStatus();
-  if (prevSync.push === "failing") {
-    broadcastSyncStatus({ ...prevSync, push: "ok" });
-  }
+  handlePushResult(result);
   return Response.json({ path, sha: result.sha });
 }
 
@@ -194,14 +200,10 @@ async function apiFileDelete(url: URL, user: User, config: Config): Promise<Resp
   broadcastPageDeleted(path);
 
   if (result.error === "push_failed") {
-    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    handlePushResult(result);
     return Response.json({ pushWarning: true, sha: result.sha });
   }
-
-  const prevSync = getSyncStatus();
-  if (prevSync.push === "failing") {
-    broadcastSyncStatus({ ...prevSync, push: "ok" });
-  }
+  handlePushResult(result);
   return Response.json({ sha: result.sha });
 }
 
@@ -317,16 +319,10 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
   }
 
   if (moveResult.error === "push_failed") {
-    // Commit is local — content is safe, but could not sync to remote.
-    broadcastSyncStatus({ ...getSyncStatus(), push: "failing" });
+    handlePushResult(moveResult);
     return Response.json({ from, pushWarning: true, sha: moveResult.sha, to });
   }
-
-  // Push succeeded — recover sync status if we were in a failing state
-  const prevSync = getSyncStatus();
-  if (prevSync.push === "failing") {
-    broadcastSyncStatus({ ...prevSync, push: "ok" });
-  }
+  handlePushResult(moveResult);
   return Response.json({ from, sha: moveResult.sha, to });
 }
 
