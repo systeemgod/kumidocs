@@ -27,7 +27,7 @@ import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
-import buildRoutes from "./server/router";
+import buildRoutes, { serveSPA, devIndex } from "./server/router";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -277,7 +277,17 @@ const server = serve<WsData>({
       });
       return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
     }
-    return undefined;
+
+    // Fall through to SPA for all other paths
+    // oxlint-disable-next-line no-underscore-dangle
+    if (typeof __BUNDLED__ !== "undefined") {
+      return serveSPA(req);
+    }
+    return new Response(devIndex, {
+      headers: {
+        "Content-Type": "text/html",
+      },
+    });
   },
 
   port: config.port,
