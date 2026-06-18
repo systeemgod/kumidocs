@@ -1,10 +1,9 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
+import { useEffect, useState } from "react";
 import { useWsListener, wsClient } from "@/store/ws";
 import type { PresenceUser } from "@/lib/types";
 import { toast } from "@/components/ui/toaster";
-import useMountEffect from "./use-mount-effect";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
 interface UsePagePresenceReturn {
   editLocked: PresenceUser | undefined;
@@ -25,7 +24,7 @@ export default function usePagePresence(
   const [viewers, setViewers] = useState<PresenceUser[]>([]);
   const [remoteBanner, setRemoteBanner] = useState<string | undefined>();
 
-  useMountEffect(() => {
+  useEffect(() => {
     if (userId !== undefined && userId !== "") {
       wsClient.joinPage(filePath);
     }
@@ -35,7 +34,7 @@ export default function usePagePresence(
       }
       wsClient.leavePage();
     };
-  });
+  }, [filePath, userId]);
 
   useWsListener((msg) => {
     if (msg.type === "presence_update" && msg.pageId === filePath) {
