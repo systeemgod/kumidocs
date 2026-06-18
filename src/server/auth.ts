@@ -45,10 +45,13 @@ interface JWTPayload {
   preferred_username?: string;
 }
 
-/** Regex matching a valid JWT (three base64url segments separated by dots).
- * Base64url uses [A-Za-z0-9_-] — notably NOT containing '@', so dotted
- * email local-parts (e.g. "some.name@example.com") won't be mistaken for JWTs. */
-const JWT_REGEX = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
+/** Regex matching a valid JWT (three base64url/base64 segments separated by dots).
+ * Base64url uses [A-Za-z0-9_-] and may include '=' padding.
+ * Notably does NOT contain '@', so dotted email local-parts
+ * (e.g. "some.name@example.com") won't be mistaken for JWTs.
+ * ALB OIDC identity/data headers use base64 with '=' padding,
+ * so we allow optional '=' at the end of each segment. */
+const JWT_REGEX = /^[A-Za-z0-9_-]+=*\.[A-Za-z0-9_-]+=*\.[A-Za-z0-9_-]+=*$/u;
 
 /** Decode an email string from a raw auth header value (JWT or plain string). Returns undefined if JWT has no email claim. */
 const resolveEmail = (value: string): string | undefined => {
