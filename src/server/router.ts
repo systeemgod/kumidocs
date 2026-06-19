@@ -19,6 +19,7 @@ import {
   serveRepoAsset,
 } from "./api";
 import { makeUser } from "./auth";
+import devIndex from "@/index.html";
 import path from "node:path";
 import RateLimiter from "./rate-limit";
 import type { Config } from "./config";
@@ -63,6 +64,8 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
   const mutationLimiter = new RateLimiter(config.rateLimit.count, config.rateLimit.windowMs);
   mutationLimiter.startCleanup();
   return {
+    "/*": isBundled ? serveSPA : devIndex,
+
     "/api/auth/email": {
       async POST(req: Request) {
         let body: unknown;
@@ -281,4 +284,3 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
 }
 
 export default buildRoutes;
-export { serveSPA };

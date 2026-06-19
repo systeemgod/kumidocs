@@ -2,27 +2,23 @@
 
 // Make React's JSX.Element available as a global type (React 19 removed global JSX namespace)
 declare namespace JSX {
-  type Element = import("react").JSX.Element;
+	type Element = import('react').JSX.Element;
 }
 
-declare module "*.css" {}
+declare module '*.css' {}
 
-declare module "*.svg" {
-  /**
-   * A path to the SVG file
-   */
-  const path: `${string}.svg`;
-  export = path;
+declare module '*.svg' {
+	/**
+	 * A path to the SVG file
+	 */
+	const path: `${string}.svg`;
+	export = path;
 }
 
-declare module "*.module.css" {
-  /**
-   * A record of class names to their corresponding CSS module classes
-   */
-  const classes: Readonly<Record<string, string>>;
-  export = classes;
+declare module '*.module.css' {
+	/**
+	 * A record of class names to their corresponding CSS module classes
+	 */
+	const classes: Readonly<Record<string, string>>;
+	export = classes;
 }
-
-
-/** Injected by Bun's bundler — set to `true` in production builds, undefined in dev */
-declare const __BUNDLED__: boolean | undefined;

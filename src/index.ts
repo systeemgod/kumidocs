@@ -27,7 +27,7 @@ import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
-import buildRoutes, { serveSPA } from "./server/router";
+import buildRoutes from "./server/router";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -65,7 +65,7 @@ async function loadPermissions(): Promise<void> {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       const defaultConfig = {
         editors: [],
-        instanceName: "KumiDocs",
+        instanceName: config.instanceName,
       };
       await Bun.write(configPath, JSON.stringify(defaultConfig, undefined, 2));
       setPermissions(defaultConfig);
@@ -258,7 +258,7 @@ const server = serve<WsData>({
     hmr: true,
   },
 
-  async fetch(req, srv): Promise<Response | undefined> {
+  fetch(req, srv) {
     const url = new URL(req.url);
 
     // WebSocket upgrade
@@ -277,21 +277,7 @@ const server = serve<WsData>({
       });
       return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
     }
-
-    // oxlint-disable-next-line no-underscore-dangle
-    if (typeof __BUNDLED__ !== "undefined") {
-      return serveSPA(req);
-    }
-    // Dev mode: serve source files from src/ or fall back to index.html (SPA).
-    const devPath = path.join(import.meta.dir, url.pathname);
-    if (devPath.startsWith(import.meta.dir) && devPath !== path.join(import.meta.dir, "index.html")) {
-      if (await Bun.file(devPath).exists()) {
-        return new Response(Bun.file(devPath));
-      }
-    }
-    return new Response(Bun.file(path.join(import.meta.dir, "index.html")), {
-      headers: { "Content-Type": "text/html" },
-    });
+    return undefined;
   },
 
   port: config.port,
@@ -305,5 +291,5 @@ const server = serve<WsData>({
   },
 });
 
-console.log(`🚀 KumiDocs running at ${server.url}`);
+console.log(`🚀 KumiDocs (${config.instanceName}) running at ${server.url}`);
 console.log(`📁 Repo: ${config.repoPath}`);
