@@ -36,15 +36,13 @@ bunx kumidocs --repo /path/to/repo --port 8080
 
 All options are also available as environment variables:
 
-| Flag | Env variable | Default | Description |
-|---|---|---|---|
-| `--repo` | `KUMIDOCS_REPO_PATH` | `cwd` | Path to the git repository |
-| `--port` | `KUMIDOCS_PORT` | `5864` | HTTP/WS listen port |
-| `--name` | `KUMIDOCS_INSTANCE_NAME` | `KumiDocs` | Name shown in the top bar |
-| `--auth-header` | `KUMIDOCS_AUTH_HEADER` | `X-Auth-Request-User` | Header carrying the user identity |
-| `--auto-save-delay` | `KUMIDOCS_AUTO_SAVE_DELAY` | `5000` | Auto-save debounce in ms |
-| `--pull-interval` | `KUMIDOCS_PULL_INTERVAL` | `60000` | Background git pull interval in ms |
-| `--git-impl` | `KUMIDOCS_GIT_IMPL` | `native` | Git backend: `native` (system git) or `builtin` (isomorphic-git) |
+| Flag                | Env variable               | Default               | Description                        |
+| ------------------- | -------------------------- | --------------------- | ---------------------------------- |
+| `--repo`            | `KUMIDOCS_REPO_PATH`       | `cwd`                 | Path to the git repository         |
+| `--port`            | `KUMIDOCS_PORT`            | `5864`                | HTTP/WS listen port                |
+| `--auth-header`     | `KUMIDOCS_AUTH_HEADER`     | `X-Auth-Request-User` | Header carrying the user identity  |
+| `--auto-save-delay` | `KUMIDOCS_AUTO_SAVE_DELAY` | `5000`                | Auto-save debounce in ms           |
+| `--pull-interval`   | `KUMIDOCS_PULL_INTERVAL`   | `60000`               | Background git pull interval in ms |
 
 ## Production (Docker Compose)
 
@@ -109,9 +107,9 @@ If `editors` is set, only those users can write. Everyone else is read-only. Omi
 ---
 emoji: 📄
 description: Shown in search results
-slides: true      # treat as slide deck
-theme: corporate  # built-in or custom theme name
-paginate: true    # show slide N/total badge
+slides: true # treat as slide deck
+theme: corporate # built-in or custom theme name
+paginate: true # show slide N/total badge
 ---
 ```
 
