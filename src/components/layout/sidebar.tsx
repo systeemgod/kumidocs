@@ -109,7 +109,7 @@ export default function Sidebar({
   reloadTree,
 }: SidebarProps): JSX.Element {
   const pages = buildPageTree(tree);
-  const { user: currentUser } = useUser();
+  const { user: currentUser, sidebarDefaultDepth } = useUser();
   const navigate = useNavigate();
   const { openMove, openDelete, dialogs: pageActionDialogs } = usePageActions(reloadTree);
 
@@ -178,6 +178,7 @@ export default function Sidebar({
                     key={node.path}
                     node={node}
                     depth={0}
+                    defaultDepth={sidebarDefaultDepth}
                     presenceByPage={presenceByPage}
                     currentUser={currentUser}
                     onNewSubPage={onNewSubPage}

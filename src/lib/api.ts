@@ -28,6 +28,7 @@ interface MeResponse {
   headSha?: string;
   instanceName?: string;
   autoSaveDelay?: number;
+  sidebarDefaultDepth?: number;
   slideThemes?: SlideThemeMap;
 }
 

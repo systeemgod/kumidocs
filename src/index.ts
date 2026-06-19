@@ -65,7 +65,7 @@ async function loadPermissions(): Promise<void> {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       const defaultConfig = {
         editors: [],
-        instanceName: config.instanceName,
+        instanceName: "KumiDocs",
       };
       await Bun.write(configPath, JSON.stringify(defaultConfig, undefined, 2));
       setPermissions(defaultConfig);
@@ -258,7 +258,7 @@ const server = serve<WsData>({
     hmr: true,
   },
 
-  fetch(req, srv) {
+  fetch(req, srv): Response | undefined {
     const url = new URL(req.url);
 
     // WebSocket upgrade
@@ -301,5 +301,5 @@ const server = serve<WsData>({
   },
 });
 
-console.log(`🚀 KumiDocs (${config.instanceName}) running at ${server.url}`);
+console.log(`🚀 KumiDocs running at ${server.url}`);
 console.log(`📁 Repo: ${config.repoPath}`);

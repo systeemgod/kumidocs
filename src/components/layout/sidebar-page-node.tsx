@@ -23,6 +23,7 @@ import { useState } from "react";
 function PageNodeRow({
   node,
   depth,
+  defaultDepth,
   presenceByPage,
   currentUser,
   onNewSubPage,
@@ -31,6 +32,7 @@ function PageNodeRow({
 }: {
   node: PageNode;
   depth: number;
+  defaultDepth: number;
   presenceByPage: Map<string, PresenceUser[]>;
   currentUser: User | undefined;
   onNewSubPage: (parentDir: string) => void;
@@ -40,7 +42,7 @@ function PageNodeRow({
   const location = useLocation();
   const navigate = useNavigate();
   const hasChildren = node.children.length > 0;
-  const [open, setOpen] = useState(depth <= 1);
+  const [open, setOpen] = useState(depth < defaultDepth);
   const [dotsHovered, setDotsHovered] = useState(false);
   const [dotsOpen, setDotsOpen] = useState(false);
 
@@ -220,6 +222,7 @@ function PageNodeRow({
               key={child.path}
               node={child}
               depth={depth + 1}
+              defaultDepth={defaultDepth}
               presenceByPage={presenceByPage}
               currentUser={currentUser}
               onNewSubPage={onNewSubPage}

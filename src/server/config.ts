@@ -17,7 +17,6 @@ interface Config {
   authHeader: string;
   autoSaveDelay: number;
   gitImpl: "native" | "builtin";
-  instanceName: string;
   pullInterval: number;
   rateLimit: { count: number; windowMs: number };
   readonly: boolean;
@@ -105,14 +104,6 @@ const OPTIONS: OptionDef[] = [
     env: "KUMIDOCS_PORT",
     flags: ["--port", "-p"],
     key: "port",
-  },
-  {
-    coerce: String,
-    default: "KumiDocs",
-    description: "Instance display name",
-    env: "KUMIDOCS_INSTANCE_NAME",
-    flags: ["--name"],
-    key: "instanceName",
   },
   {
     coerce: String,

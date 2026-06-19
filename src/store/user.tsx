@@ -11,6 +11,7 @@ interface UserContextValue {
   user?: User;
   loading: boolean;
   needsEmailSetup: boolean;
+  sidebarDefaultDepth: number;
   slideThemes: SlideThemeMap;
   setEmailAndRefetch: (email: string) => void;
 }
@@ -21,11 +22,13 @@ const UserContext = createContext<UserContextValue>({
   setEmailAndRefetch: () => {
     globalThis.location.reload();
   },
+  sidebarDefaultDepth: 2,
   slideThemes: {},
 });
 
 interface FetchMeResult {
   user?: User;
+  sidebarDefaultDepth: number;
   slideThemes: SlideThemeMap;
   needs401: boolean;
 }
@@ -33,12 +36,25 @@ interface FetchMeResult {
 const fetchMe = async (): Promise<FetchMeResult> => {
   try {
     const data = await getMe();
-    const { id, email, name, displayName, canEdit, slideThemes: themeData } = data;
+    const {
+      id,
+      email,
+      name,
+      displayName,
+      canEdit,
+      slideThemes: themeData,
+      sidebarDefaultDepth,
+    } = data;
     const user: User = { canEdit, displayName, email, id, name };
-    return { needs401: false, slideThemes: themeData ?? {}, user };
+    return {
+      needs401: false,
+      sidebarDefaultDepth: sidebarDefaultDepth ?? 2,
+      slideThemes: themeData ?? {},
+      user,
+    };
   } catch (error: unknown) {
     const needs401 = error instanceof ApiError && error.status === HTTP_UNAUTHORIZED;
-    return { needs401, slideThemes: {} };
+    return { needs401, sidebarDefaultDepth: 2, slideThemes: {} };
   }
 };
 
@@ -48,13 +64,20 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   const [loading, setLoading] = useState(true);
   const [needsEmailSetup, setNeedsEmailSetup] = useState(false);
   const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
+  const [sidebarDefaultDepth, setSidebarDefaultDepth] = useState(2);
 
   useMountEffect(() => {
     void (async (): Promise<void> => {
       try {
-        const { user: fetchedUser, slideThemes: fetchedThemes, needs401 } = await fetchMe();
+        const {
+          user: fetchedUser,
+          slideThemes: fetchedThemes,
+          needs401,
+          sidebarDefaultDepth: fetchedDepth,
+        } = await fetchMe();
         setUser(fetchedUser);
         setSlideThemes(fetchedThemes);
+        setSidebarDefaultDepth(fetchedDepth);
         setNeedsEmailSetup(needs401);
         setLoading(false);
       } catch {
@@ -73,10 +96,19 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
     }
     try {
       const data = await setAuthEmail(trimmed);
-      const { id, email: userEmail, name, displayName, canEdit, slideThemes: themeData } = data;
+      const {
+        id,
+        email: userEmail,
+        name,
+        displayName,
+        canEdit,
+        slideThemes: themeData,
+        sidebarDefaultDepth: fetchedDepth,
+      } = data;
       const parsedUser: User = { canEdit, displayName, email: userEmail, id, name };
       setUser(parsedUser);
       setSlideThemes(themeData ?? {});
+      setSidebarDefaultDepth(fetchedDepth ?? 2);
       setNeedsEmailSetup(false);
     } catch {
       // Server rejected the email — keep the dialog open
@@ -85,7 +117,14 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
 
   return (
     <UserContext.Provider
-      value={{ loading, needsEmailSetup, setEmailAndRefetch, slideThemes, user }}
+      value={{
+        loading,
+        needsEmailSetup,
+        setEmailAndRefetch,
+        sidebarDefaultDepth,
+        slideThemes,
+        user,
+      }}
     >
       {children}
     </UserContext.Provider>

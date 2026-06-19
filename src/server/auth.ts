@@ -6,6 +6,7 @@ interface KumiDocsPermissions {
   instanceName?: string;
   editors?: string[];
   slideThemes?: SlideThemeMap;
+  sidebarDefaultDepth?: number;
 }
 
 let perms: KumiDocsPermissions = {};
