@@ -42,17 +42,22 @@ function PageNodeRow({
   const location = useLocation();
   const navigate = useNavigate();
   const hasChildren = node.children.length > 0;
-  const [open, setOpen] = useState(depth < defaultDepth);
-
-  // Sync open state when defaultDepth changes (e.g. loaded from server after mount)
-  useEffect(() => {
-    setOpen(depth < defaultDepth);
-  }, [defaultDepth, depth]);
-  const [dotsHovered, setDotsHovered] = useState(false);
-  const [dotsOpen, setDotsOpen] = useState(false);
-
   const href = `/p/${node.path}`.replace(/\.md$/iu, "");
   const isActive = location.pathname === href;
+  const isAncestor = hasChildren && location.pathname.startsWith(href + "/");
+
+  const [open, setOpen] = useState(depth < defaultDepth || isAncestor);
+
+  // Sync open state when defaultDepth changes or when navigating to a different page
+  useEffect(() => {
+    if (isAncestor) {
+      setOpen(true);
+    } else {
+      setOpen(depth < defaultDepth);
+    }
+  }, [defaultDepth, depth, isAncestor]);
+  const [dotsHovered, setDotsHovered] = useState(false);
+  const [dotsOpen, setDotsOpen] = useState(false);
   const othersOnPage = presenceByPage.get(node.path) ?? [];
   const presenceUsers =
     isActive && currentUser
