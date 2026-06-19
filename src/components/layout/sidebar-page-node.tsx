@@ -24,6 +24,52 @@ function getParentDir(path: string): string {
   return path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
 }
 
+/** Overlapping presence avatars shown in the sidebar next to a page node. */
+function PresenceAvatars({
+  presenceByPage,
+  nodePath,
+  isActive,
+  currentUser,
+}: {
+  presenceByPage: Map<string, PresenceUser[]>;
+  nodePath: string;
+  isActive: boolean;
+  currentUser: User | undefined;
+}): JSX.Element | false {
+  const othersOnPage = presenceByPage.get(nodePath) ?? [];
+  const selfPresence =
+    isActive && currentUser
+      ? [{ email: currentUser.email, id: currentUser.id, name: currentUser.displayName }]
+      : [];
+  const presenceUsers = [...selfPresence, ...othersOnPage];
+  const slice = presenceUsers.slice(0, 3);
+  if (slice.length === 0) {
+    return false;
+  }
+  return (
+    <div className="flex items-center shrink-0 -space-x-1">
+      {slice.map((user) => (
+        <Tooltip key={user.id}>
+          <TooltipTrigger asChild>
+            <UserAvatar
+              name={user.name}
+              email={user.email}
+              size="xs"
+              className="ring-1 ring-sidebar cursor-default"
+            />
+          </TooltipTrigger>
+          <TooltipContent>{user.id === currentUser?.id ? "You" : user.name}</TooltipContent>
+        </Tooltip>
+      ))}
+      {presenceUsers.length > 3 && (
+        <div className="w-[18px] h-[18px] rounded-full bg-muted flex items-center justify-center text-[7px] font-bold ring-1 ring-sidebar text-muted-foreground cursor-default shrink-0">
+          +{presenceUsers.length - 3}
+        </div>
+      )}
+    </div>
+  );
+}
+
 async function handleDuplicatePage(path: string, navigate: (to: string) => void): Promise<void> {
   try {
     const data = await getFile(path);
@@ -68,18 +114,16 @@ function PageNodeRow({
 
   const [open, setOpen] = useState(depth < defaultDepth || isAncestor);
 
-  // Sync open state when defaultDepth changes or when navigating to a different page
+  // When navigating to a child of this node, auto-open this ancestor.
+  // defaultDepth is intentionally excluded — it only sets the initial default;
+  // reapplying it would override manual toggles and make it act as a max depth.
   useEffect(() => {
-    setOpen(isAncestor || depth < defaultDepth);
-  }, [defaultDepth, depth, isAncestor]);
+    if (isAncestor) {
+      setOpen(true);
+    }
+  }, [isAncestor]);
   const [dotsHovered, setDotsHovered] = useState(false);
   const [dotsOpen, setDotsOpen] = useState(false);
-  const othersOnPage = presenceByPage.get(node.path) ?? [];
-  const selfPresence =
-    isActive && currentUser
-      ? [{ email: currentUser.email, id: currentUser.id, name: currentUser.displayName }]
-      : [];
-  const presenceUsers = [...selfPresence, ...othersOnPage];
   const indent = 8 + depth * 14;
   const parentDir = getParentDir(node.path);
   const rowClassName = `group flex items-center gap-1 px-2 py-[3px] rounded text-sm select-none min-w-0 ${
@@ -105,44 +149,22 @@ function PageNodeRow({
       <MoreHorizontalRegular className="w-4 h-4" />
     );
 
-  const chevron = hasChildren && (
-    <span
-      className="shrink-0 w-3 h-3 flex items-center justify-center cursor-pointer"
-      onClick={(ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        setOpen((prev) => !prev);
-      }}
-    >
-      {open ? (
-        <ChevronDownRegular className="w-3 h-3" />
-      ) : (
-        <ChevronRightRegular className="w-3 h-3" />
-      )}
-    </span>
-  );
+  const toggleOpen = (ev: React.MouseEvent): void => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    setOpen((prev) => !prev);
+  };
 
-  const presenceEl = presenceUsers.slice(0, 3).length > 0 && (
-    <div className="flex items-center shrink-0 -space-x-1">
-      {presenceUsers.slice(0, 3).map((user) => (
-        <Tooltip key={user.id}>
-          <TooltipTrigger asChild>
-            <UserAvatar
-              name={user.name}
-              email={user.email}
-              size="xs"
-              className="ring-1 ring-sidebar cursor-default"
-            />
-          </TooltipTrigger>
-          <TooltipContent>{user.id === currentUser?.id ? "You" : user.name}</TooltipContent>
-        </Tooltip>
-      ))}
-      {presenceUsers.length > 3 && (
-        <div className="w-[18px] h-[18px] rounded-full bg-muted flex items-center justify-center text-[7px] font-bold ring-1 ring-sidebar text-muted-foreground cursor-default shrink-0">
-          +{presenceUsers.length - 3}
-        </div>
-      )}
-    </div>
+  const chevron = (
+    <span
+      className={`shrink-0 w-3 h-3 flex items-center justify-center ${
+        hasChildren ? "cursor-pointer" : "pointer-events-none opacity-0"
+      }`}
+      onClick={hasChildren ? toggleOpen : undefined}
+    >
+      {hasChildren && open && <ChevronDownRegular className="w-3 h-3" />}
+      {hasChildren && !open && <ChevronRightRegular className="w-3 h-3" />}
+    </span>
   );
 
   return (
@@ -162,7 +184,12 @@ function PageNodeRow({
               <TitleWithEmoji title={node.displayTitle} />
             </Link>
 
-            {presenceEl}
+            <PresenceAvatars
+              presenceByPage={presenceByPage}
+              nodePath={node.path}
+              isActive={isActive}
+              currentUser={currentUser}
+            />
 
             {/* 3-dot menu — visible on hover, same actions as right-click */}
             <DropdownMenu onOpenChange={setDotsOpen}>
