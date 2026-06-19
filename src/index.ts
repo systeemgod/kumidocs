@@ -27,7 +27,7 @@ import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
-import buildRoutes, { routeRequest, serveSPA } from "./server/router";
+import buildRoutes, { serveSPA } from "./server/router";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -251,10 +251,6 @@ setTimeout(() => {
 // Prune dead WS sessions every 30s
 setInterval(pruneDeadSessions, 30_000);
 
-// Build the route table once; used for both Bun's native routes (production)
-// and the manual dispatch fallback in fetch (dev mode).
-const routeTable = buildRoutes(config, requireUser);
-
 const server = serve<WsData>({
   // oxlint-disable-next-line node/no-process-env
   development: process.env.NODE_ENV !== "production" && {
@@ -284,38 +280,23 @@ const server = serve<WsData>({
 
     // oxlint-disable-next-line no-underscore-dangle
     if (typeof __BUNDLED__ !== "undefined") {
-      // Production: Bun's native routes handle API calls, fetch only serves SPA
       return serveSPA(req);
     }
-
-    // Dev mode: Bun's native routes may not work with --hot + hmr,
-    // so dispatch API routes manually via the route table.
-    const apiResult = routeRequest(routeTable, req);
-    if (apiResult !== undefined) {
-      return apiResult;
-    }
-
-    // Serve source files directly (frontend.tsx, index.css, logo.png, etc.)
-    // so the browser can load the React app from src/ in dev mode.
-    const devFilePath = path.join(import.meta.dir, url.pathname);
-    if (devFilePath.startsWith(import.meta.dir + path.sep)) {
-      const devFile = Bun.file(devFilePath);
-      if (await devFile.exists()) {
-        return new Response(devFile);
+    // Dev mode: serve source files from src/ or fall back to index.html (SPA).
+    const devPath = path.join(import.meta.dir, url.pathname);
+    if (devPath.startsWith(import.meta.dir) && devPath !== path.join(import.meta.dir, "index.html")) {
+      if (await Bun.file(devPath).exists()) {
+        return new Response(Bun.file(devPath));
       }
     }
-
-    // SPA fallback — return index.html for all other paths
     return new Response(Bun.file(path.join(import.meta.dir, "index.html")), {
-      headers: {
-        "Content-Type": "text/html",
-      },
+      headers: { "Content-Type": "text/html" },
     });
   },
 
   port: config.port,
 
-  routes: routeTable,
+  routes: buildRoutes(config, requireUser),
 
   websocket: {
     close: wsClose,

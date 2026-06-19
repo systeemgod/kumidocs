@@ -280,53 +280,5 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
   };
 }
 
-type RouteTable = Record<
-  string,
-  Record<string, (req: Request) => Response | Promise<Response>>
->;
-
-/**
- * Match a request against a route table and dispatch to the handler if found.
- * Supports exact paths and `:param` placeholders (e.g. `/api/images/:filename`).
- * Returns the handler's Response on match, or undefined to fall through.
- */
-function routeRequest(routes: RouteTable, req: Request): Response | Promise<Response> | undefined {
-  const url = new URL(req.url);
-  const method = req.method;
-
-  // 1. Exact match
-  const exact = routes[url.pathname];
-  if (exact && typeof exact === "object" && method in exact) {
-    return exact[method](req);
-  }
-
-  // 2. Parameterised match (routes with :param segments)
-  const urlParts = url.pathname.split("/");
-  for (const [pattern, handlers] of Object.entries(routes)) {
-    if (!pattern.includes(":")) {
-      continue;
-    }
-    const patternParts = pattern.split("/");
-    if (patternParts.length !== urlParts.length) {
-      continue;
-    }
-    let matched = true;
-    for (let i = 0; i < patternParts.length; i++) {
-      if (patternParts[i].startsWith(":")) {
-        continue;
-      }
-      if (patternParts[i] !== urlParts[i]) {
-        matched = false;
-        break;
-      }
-    }
-    if (matched && typeof handlers === "object" && method in handlers) {
-      return handlers[method](req);
-    }
-  }
-
-  return undefined;
-}
-
 export default buildRoutes;
-export { routeRequest, serveSPA };
+export { serveSPA };

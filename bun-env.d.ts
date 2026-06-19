@@ -23,5 +23,6 @@ declare module "*.module.css" {
   export = classes;
 }
 
+
 /** Injected by Bun's bundler — set to `true` in production builds, undefined in dev */
 declare const __BUNDLED__: boolean | undefined;
