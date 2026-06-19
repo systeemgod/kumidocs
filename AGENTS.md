@@ -49,24 +49,39 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 **UI rendering practices** (CRITICAL — violations will be rejected):
 
 - **NEVER render emoji as raw JSX text or `<span>` elements** (e.g. `🌙`, `☀️`)
-- **ALWAYS use `<EmojiIcon emoji="..." size={N} />` from `src/components/ui/EmojiIcon.tsx`**
+- **ALWAYS use `<EmojiIcon emoji="..." size={N} />` from `src/components/ui/emoji-icon.tsx`**
 - This applies to ALL emojis everywhere: theme toggles, status icons, page icons, etc.
+  > **Note**: This rule applies to React components only. Markdown documentation may use raw emoji freely.
 
 **React `useEffect` practices** (CRITICAL — violations will be rejected):
 
 - **NEVER call `useEffect` directly in components**
 - For the rare case of syncing with an external system on mount, use `useMountEffect` instead:
-    ```ts
-    export function useMountEffect(effect: () => void | (() => void)) {
-    	useEffect(effect, []);
-    }
-    ```
+
+  ```ts
+  import { useEffect } from "react";
+  import type { EffectCallback } from "react";
+
+  const useMountEffect = (effect: EffectCallback): void => {
+    useEffect(effect, []);
+  };
+  export default useMountEffect;
+  ```
+
+  This hook lives at `src/hooks/use-mount-effect.ts` — import it via `import useMountEffect from "@/hooks/use-mount-effect"`.
+
 - Most `useEffect` usage should be replaced with one of these patterns:
-    1. **Derive state inline** — never use `useEffect(() => setX(f(y)), [y])`; compute directly in render
-    2. **Data-fetching libraries** — use React Query or similar; never fetch inside effects
-    3. **Event handlers** — if triggered by a user action, do the work in the handler, not an effect
-    4. **`useMountEffect`** — for DOM integration, third-party widgets, and browser API subscriptions on mount; use conditional mounting (`key` prop or conditional render) instead of guards inside effects
-    5. **`key` prop for resets** — use `<Component key={id} />` to force a clean remount instead of choreographing resets via dependency arrays
+  1. **Derive state inline** — never use `useEffect(() => setX(f(y)), [y])`; compute directly in render
+  2. **Data-fetching libraries** — use React Query or similar; never fetch inside effects
+  3. **Event handlers** — if triggered by a user action, do the work in the handler, not an effect
+  4. **`useMountEffect`** — for DOM integration, third-party widgets, and browser API subscriptions on mount; use conditional mounting (`key` prop or conditional render) instead of guards inside effects
+  5. **`key` prop for resets** — use `<Component key={id} />` to force a clean remount instead of choreographing resets via dependency arrays
+
+**Testing practices**:
+
+- No test framework is configured yet. When one is introduced (vitest recommended for Bun projects), follow its conventions.
+- Test files live next to the source file they test (e.g., `src/lib/utils.test.ts`).
+- Prioritize integration tests for data flow and route handlers; unit tests for pure utility functions.
 
 ---
 
@@ -88,6 +103,12 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 - Error handling strategies
 - Performance optimizations
 
+**SPEC/TASKS workflow**:
+
+- Update `SPEC.md` with finalized technical decisions before starting implementation of a new feature.
+- Keep `TASKS.md` updated as the canonical backlog — add tasks as they're discovered, mark them done as they're completed.
+- Significant deviations from the spec during implementation must be documented back into `SPEC.md`.
+
 ### Requires Discussion:
 
 - Breaking changes to public APIs
@@ -101,9 +122,9 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 **Owner**: User (Project Manager)  
 **Developer**: AI Agent (Lead Developer)
 
-**Active Sprint**: Phase 1-3 implementation (Editor Core + UI Polish)  
+**Active Sprint**: Phase 3 (UI Polish & Editor Core)  
 **Deployment**: Docker Compose + GitHub OAuth SSO  
-**Current Task**: SSO integration complete, continuing Phase 3 features
+**Current Task**: Iterating on editor experience, slide viewer, and page management features
 
 ---
 
@@ -121,4 +142,4 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 
 ---
 
-_Last updated: 2026-03-05_
+_Last updated: 2026-06-19_
