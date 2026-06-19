@@ -115,13 +115,21 @@ function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
     return;
   }
 
-  pageViewers.get(pageId)?.delete(sid);
+  const viewers = pageViewers.get(pageId);
+  if (viewers) {
+    viewers.delete(sid);
+    if (viewers.size === 0) {
+      pageViewers.delete(pageId);
+    }
+  }
   if (pageEditors.get(pageId) === sid) {
     pageEditors.delete(pageId);
   }
-  // Broadcast to ALL sessions so every client's sidebar updates immediately,
-  // not just viewers of this page (who may not include the user who navigated away).
-  broadcastToAll(presenceUpdate(pageId));
+  // Only broadcast an update if there are still viewers (or editors) on this page,
+  // otherwise the entry is gone and there's nothing to update.
+  if (pageViewers.has(pageId) || pageEditors.has(pageId)) {
+    broadcastToAll(presenceUpdate(pageId));
+  }
   ws.data.pageId = undefined;
 }
 
