@@ -47,6 +47,7 @@ export default function NewPageDialog({
   const [slugEdited, setSlugEdited] = useState(false);
   const [pageType, setPageType] = useState<MarkdownType>("doc");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | undefined>();
 
   // Auto-derive slug from title unless user has manually edited it (derived state, no effect needed)
   const effectiveSlug = slugEdited ? slug : slugify(title);
@@ -61,6 +62,7 @@ export default function NewPageDialog({
       return;
     }
     setCreating(true);
+    setCreateError(undefined);
 
     const slidesHeader = pageType === "slide" ? "---\nslides: true\n---\n\n" : "";
     const stub = `${slidesHeader}# ${title.trim()}\n`;
@@ -73,9 +75,9 @@ export default function NewPageDialog({
       void navigate(`/p/${finalPath}`);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 409) {
-        toast.error("A page at that path already exists.");
+        setCreateError("A page at that path already exists.");
       } else {
-        toast.error("Failed to create page");
+        setCreateError("Failed to create page");
       }
     } finally {
       setCreating(false);
@@ -102,6 +104,7 @@ export default function NewPageDialog({
           setSlugEdited(false);
           setPageType("doc");
           setCreating(false);
+          setCreateError(undefined);
         } else {
           onClose();
         }
@@ -184,6 +187,10 @@ export default function NewPageDialog({
             </p>
           )}
         </div>
+
+        {createError && (
+          <p className="text-xs text-red-600 dark:text-red-400 text-center">{createError}</p>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={creating}>

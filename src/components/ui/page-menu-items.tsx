@@ -158,9 +158,9 @@ const PageMenuItems = (allProps: PageMenuItemsProps): JSX.Element => {
               void navigate(href);
             } catch (error: unknown) {
               if (error instanceof ApiError && error.status === 409) {
-                toast.error("A page at that path already exists.");
+                console.warn("A page at that path already exists.");
               } else {
-                toast.error("Failed to create page");
+                console.warn("Failed to create page");
               }
             }
           })();
@@ -200,7 +200,7 @@ const PageMenuItems = (allProps: PageMenuItemsProps): JSX.Element => {
             await navigator.clipboard.writeText(globalThis.location.origin + href);
             toast.success("Link copied");
           } catch {
-            toast.error("Failed to copy link");
+            console.warn("Failed to copy link");
           }
         }}
       >

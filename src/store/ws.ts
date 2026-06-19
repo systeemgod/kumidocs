@@ -1,11 +1,42 @@
 import type { WsClientMessage, WsServerMessage } from "@/lib/types";
 import useMountEffect from "@/hooks/use-mount-effect";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 type WsListener = (msg: WsServerMessage) => void;
 
 const RECONNECT_DELAY_MS = 3000;
 const HEARTBEAT_INTERVAL_MS = 30_000;
+
+// ── Connection state (global, module-level) ───────────────────────────────────
+
+type ConnectionState = "connecting" | "connected" | "disconnected";
+
+let _connectionState: ConnectionState = "disconnected";
+const _stateSubscribers = new Set<(state: ConnectionState) => void>();
+
+const notifyState = (state: ConnectionState): void => {
+  _connectionState = state;
+  for (const fn of _stateSubscribers) {
+    fn(state);
+  }
+};
+
+const getConnectionState = (): ConnectionState => _connectionState;
+
+const useWsConnectionState = (): ConnectionState => {
+  const [state, setState] = useState<ConnectionState>(_connectionState);
+  useMountEffect(() => {
+    _stateSubscribers.add(setState);
+    // Sync in case state changed between render and mount
+    if (_connectionState !== state) {
+      setState(_connectionState);
+    }
+    return (): void => {
+      _stateSubscribers.delete(setState);
+    };
+  });
+  return state;
+};
 
 class WsClient {
   private ws?: WebSocket;
@@ -33,6 +64,7 @@ class WsClient {
   }
 
   private doConnect(): void {
+    notifyState("connecting");
     let proto = "ws:";
     if (location.protocol === "https:") {
       proto = "wss:";
@@ -40,6 +72,7 @@ class WsClient {
     this.ws = new WebSocket(`${proto}//${location.host}/ws`);
 
     this.ws.addEventListener("open", (): void => {
+      notifyState("connected");
       if (
         this.currentPageId !== undefined &&
         this.currentPageId !== "" &&
@@ -74,6 +107,7 @@ class WsClient {
     });
 
     this.ws.addEventListener("close", (): void => {
+      notifyState("disconnected");
       this.stopHeartbeat();
       this.reconnectTimer = setTimeout((): void => {
         this.doConnect();
@@ -81,6 +115,7 @@ class WsClient {
     });
 
     this.ws.addEventListener("error", (): void => {
+      notifyState("disconnected");
       if (this.ws) {
         this.ws.close();
       }
@@ -172,4 +207,5 @@ const useWsListener = (handler: WsListener): void => {
   });
 };
 
-export { wsClient, useWsListener };
+export { getConnectionState, useWsConnectionState, useWsListener, wsClient };
+export type { ConnectionState };

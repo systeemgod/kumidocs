@@ -28,7 +28,10 @@ interface OutletCtx {
 }
 interface UseFilePageReturn {
   breadcrumb: string[];
+  conflictBanner: string | undefined;
+  setConflictBanner: Dispatch<SetStateAction<string | undefined>>;
   content: string;
+  duplicateError: string | undefined;
   editLocked: PresenceUser | undefined;
   editMode: boolean;
   enterEdit: () => void;
@@ -46,6 +49,7 @@ interface UseFilePageReturn {
   tocOpen: boolean;
   loadDoc: (path: string) => Promise<void>;
   loading: boolean;
+  loadError: string | undefined;
   meta: DocMeta;
   metaRef: RefObject<DocMeta>;
   notFound: boolean;
@@ -58,6 +62,7 @@ interface UseFilePageReturn {
   rawPath: string;
   remoteBanner: string | undefined;
   resolvedContent: string;
+  saveError: string | undefined;
   saveStatus: SaveStatus;
   setInfoOpen: Dispatch<SetStateAction<boolean>>;
   setMeta: Dispatch<SetStateAction<DocMeta>>;
@@ -85,11 +90,13 @@ function useFilePage(): UseFilePageReturn {
     lastSha,
     loadDoc,
     loading,
+    loadError,
     meta,
     metaRef,
     notFound,
     rawContent,
     rawContentRef,
+    saveError,
     savePromiseRef,
     saveStatus,
     setMeta,
@@ -103,13 +110,8 @@ function useFilePage(): UseFilePageReturn {
   );
   const editModeRef = useRef(editMode);
   editModeRef.current = editMode;
-  const { editLocked, viewers, remoteBanner, setRemoteBanner } = usePagePresence(
-    filePath,
-    user?.id,
-    editModeRef,
-    isDirtyRef,
-    loadDoc,
-  );
+  const { conflictBanner, editLocked, setConflictBanner, viewers, remoteBanner, setRemoteBanner } =
+    usePagePresence(filePath, user?.id, editModeRef, isDirtyRef, loadDoc);
   const rawExt = pathExtension(filePath);
   const fileType = resolveFileType(rawExt, meta.slides);
   const title = computeTitle(fileType, content, filePath);
@@ -190,7 +192,9 @@ function useFilePage(): UseFilePageReturn {
     [doSave, metaRef, rawContentRef, setMeta, setRawContent],
   );
 
+  const [duplicateError, setDuplicateError] = useState<string | undefined>();
   const handlePageDuplicate = useCallback(async () => {
+    setDuplicateError(undefined);
     try {
       const data = await getFile(filePath);
       const newPath = `${filePath.replace(/\.md$/iu, "")}-copy.md`;
@@ -200,16 +204,19 @@ function useFilePage(): UseFilePageReturn {
       void navigate(`/p/${newPath}`);
     } catch (error: unknown) {
       if (error instanceof ApiError && error.status === 409) {
-        toast.error("A copy already exists at that path");
+        setDuplicateError("A copy already exists at that path");
       } else {
-        toast.error("Duplicate failed");
+        setDuplicateError("Duplicate failed");
       }
     }
   }, [filePath, navigate, reloadTree]);
 
   return {
     breadcrumb,
+    conflictBanner,
     content,
+    duplicateError,
+    setConflictBanner,
     editLocked,
     editMode,
     enterEdit,
@@ -225,6 +232,7 @@ function useFilePage(): UseFilePageReturn {
     lastSha,
     loadDoc,
     loading,
+    loadError,
     meta,
     metaRef,
     notFound,
@@ -237,6 +245,7 @@ function useFilePage(): UseFilePageReturn {
     rawPath,
     remoteBanner,
     resolvedContent,
+    saveError,
     saveStatus,
     setInfoOpen,
     setMeta,

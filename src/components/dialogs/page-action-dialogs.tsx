@@ -43,12 +43,14 @@ interface PageActionDialogsProps {
   closeParentDropdown: () => void;
   openParentDropdown: () => void;
   confirmMove: () => Promise<void>;
+  moveError?: string;
   previewPath: string;
   deleteOpen: boolean;
   setDeleteOpen: (open: boolean) => void;
   deleteTitle: string;
   deleteTarget: string;
   confirmDelete: () => Promise<void>;
+  deleteError?: string;
 }
 
 function PageActionDialogs({
@@ -66,12 +68,14 @@ function PageActionDialogs({
   closeParentDropdown,
   openParentDropdown,
   confirmMove,
+  moveError,
   previewPath,
   deleteOpen,
   setDeleteOpen,
   deleteTitle,
   deleteTarget,
   confirmDelete,
+  deleteError,
 }: PageActionDialogsProps): JSX.Element {
   return (
     <>
@@ -183,6 +187,9 @@ function PageActionDialogs({
               <p className="text-xs text-muted-foreground">→ {previewPath}</p>
             </div>
           </div>
+          {moveError && (
+            <p className="text-xs text-red-600 dark:text-red-400 text-center">{moveError}</p>
+          )}
           <DialogFooter>
             <Button
               variant="outline"
@@ -217,6 +224,9 @@ function PageActionDialogs({
               commit the change to git. This cannot be undone from the UI.
             </DialogDescription>
           </DialogHeader>
+          {deleteError && (
+            <p className="text-xs text-red-600 dark:text-red-400 text-center">{deleteError}</p>
+          )}
           <DialogFooter>
             <Button
               variant="outline"

@@ -26,11 +26,13 @@ interface UseFilePageSaveReturn {
   lastSha: string | undefined;
   loadDoc: (path: string) => Promise<void>;
   loading: boolean;
+  loadError: string | undefined;
   meta: DocMeta;
   metaRef: RefObject<DocMeta>;
   notFound: boolean;
   rawContent: string;
   rawContentRef: RefObject<string>;
+  saveError: string | undefined;
   savedContent: string;
   savePromiseRef: RefObject<Promise<void>>;
   saveStatus: SaveStatus;
@@ -54,6 +56,8 @@ function useFilePageSave({
   const [lastSha, setLastSha] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [saveError, setSaveError] = useState<string | undefined>();
+  const [loadError, setLoadError] = useState<string | undefined>();
 
   const autoSaveTimer = useRef(undefined as ReturnType<typeof setTimeout> | undefined);
   useMountEffect(() => (): void => {
@@ -77,6 +81,7 @@ function useFilePageSave({
     async (path: string) => {
       setLoading(true);
       setNotFound(false);
+      setLoadError(undefined);
       try {
         // Extensionless files (e.g. LICENSE, Makefile) get ".md" appended by the
         // routing heuristic. If that 404s and the bare name has no extension,
@@ -111,7 +116,11 @@ function useFilePageSave({
         if (error instanceof ApiError && error.status === 404) {
           setNotFound(true);
         } else {
-          throw error;
+          const msg =
+            error instanceof ApiError
+              ? `Failed to load page (${String(error.status)}).`
+              : "Failed to load page: network error.";
+          setLoadError(msg);
         }
       } finally {
         setLoading(false);
@@ -164,6 +173,7 @@ function useFilePageSave({
           }
           isDirtyRef.current = false;
           setSaveStatus("saved");
+          setSaveError(undefined);
           setLastSha(data.sha);
           reloadTree();
           if (data.pushWarning === true) {
@@ -171,7 +181,7 @@ function useFilePageSave({
           }
         } catch (error: unknown) {
           setSaveStatus("error");
-          toast.error(error instanceof ApiError ? "Save failed." : "Save failed: network error.");
+          setSaveError(error instanceof ApiError ? "Save failed." : "Save failed: network error.");
         }
       })();
       savePromiseRef.current = next;
@@ -218,11 +228,13 @@ function useFilePageSave({
     lastSha,
     loadDoc,
     loading,
+    loadError,
     meta,
     metaRef,
     notFound,
     rawContent,
     rawContentRef,
+    saveError,
     savePromiseRef,
     saveStatus,
     savedContent,

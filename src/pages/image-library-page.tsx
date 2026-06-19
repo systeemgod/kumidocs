@@ -44,9 +44,11 @@ function ImageDetailPanel({
   const navigate = useNavigate();
   const { user } = useUser();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | undefined>();
 
   const handleDelete = useCallback(async () => {
     setConfirmOpen(false);
+    setDeleteError(undefined);
     try {
       await deleteImage(image.filename);
       toast.success("Image deleted");
@@ -57,12 +59,12 @@ function ImageDetailPanel({
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         const body = error.body as { error?: string; usedIn?: string[] } | undefined;
         if (body?.usedIn && body.usedIn.length > 0) {
-          toast.error(`In use by: ${body.usedIn.join(", ")}`);
+          setDeleteError(`In use by: ${body.usedIn.join(", ")}`);
         } else {
-          toast.error(body?.error ?? "Delete failed");
+          setDeleteError(body?.error ?? "Delete failed");
         }
       } else {
-        toast.error("Delete failed");
+        setDeleteError("Delete failed");
       }
     }
   }, [image.filename, onDeleted, navigate]);
@@ -120,6 +122,13 @@ function ImageDetailPanel({
           )}
         </div>
       </div>
+
+      {/* Delete error banner */}
+      {deleteError && (
+        <div className="px-4 py-2 bg-red-50 dark:bg-red-950 border-t border-red-200 dark:border-red-800">
+          <p className="text-xs text-red-800 dark:text-red-200">{deleteError}</p>
+        </div>
+      )}
 
       {/* Actions */}
       {user?.canEdit === true && (
@@ -184,18 +193,20 @@ export default function ImageLibraryPage(): JSX.Element {
   const { instanceName } = useOutletContext<OutletCtx>();
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imageLoadError, setImageLoadError] = useState<string | undefined>();
 
   useMountEffect(() => {
     document.title = `Image Library | ${instanceName}`;
   });
 
   const fetchImages = useCallback(async () => {
+    setImageLoadError(undefined);
     try {
       const data = await getImages();
       setImages(data);
       setLoading(false);
     } catch {
-      toast.error("Failed to load images");
+      setImageLoadError("Failed to load images");
       setLoading(false);
     }
   }, []);
@@ -275,6 +286,13 @@ export default function ImageLibraryPage(): JSX.Element {
           {images.length} {images.length === 1 ? "image" : "images"}
         </span>
       </div>
+
+      {/* Error banner */}
+      {imageLoadError && (
+        <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200 shrink-0">
+          <span className="flex-1">{imageLoadError}</span>
+        </div>
+      )}
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Grid */}

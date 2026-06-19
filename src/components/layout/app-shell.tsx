@@ -1,7 +1,7 @@
 import type { PresenceUser, SyncStatus, TreeNode } from "@/lib/types";
 import { getMe, getTree } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
-import { useWsListener, wsClient } from "@/store/ws";
+import { useWsConnectionState, useWsListener, wsClient } from "@/store/ws";
 import NewPageDialog from "@/components/dialogs/new-page-dialog";
 import { Outlet } from "react-router-dom";
 import SearchPalette from "@/components/search/search-palette";
@@ -43,6 +43,8 @@ export default function AppShell(): JSX.Element {
   const [newPageOpen, setNewPageOpen] = useState(false);
   const [newPageParentDir, setNewPageParentDir] = useState<string | undefined>();
   const [syncStatus, setSyncStatus] = useState<SyncStatus | undefined>();
+  const [treeError, setTreeError] = useState<string | undefined>();
+  const [configError, setConfigError] = useState<string | undefined>();
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     if (stored === null || stored === "") {
@@ -66,8 +68,10 @@ export default function AppShell(): JSX.Element {
     try {
       const data = await getTree();
       setTree(data);
+      setTreeError(undefined);
     } catch (error: unknown) {
       console.error("Failed to load file tree:", error);
+      setTreeError("Failed to load file tree. The sidebar may be empty.");
     }
   }, []);
 
@@ -93,8 +97,10 @@ export default function AppShell(): JSX.Element {
       if (data.headSha !== undefined && data.headSha !== "") {
         setHeadSha(data.headSha);
       }
+      setConfigError(undefined);
     } catch (error: unknown) {
       console.error("Failed to load instance info:", error);
+      setConfigError("Failed to connect to the server. Some features may be unavailable.");
     }
   }, []);
 
@@ -212,6 +218,58 @@ export default function AppShell(): JSX.Element {
     [sidebarWidth],
   );
 
+  // ── Connection state ──────────────────────────────────────────────────
+  const wsConnectionState = useWsConnectionState();
+  const isWsOffline = wsConnectionState !== "connected";
+
+  // ── Error banners ─────────────────────────────────────────────────────
+
+  const errorBanners = ((): JSX.Element[] => {
+    const banners: JSX.Element[] = [];
+
+    // WebSocket disconnected
+    if (isWsOffline) {
+      banners.push(
+        <div
+          key="ws"
+          className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-1.5 flex items-center gap-2 text-sm text-red-800 dark:text-red-200 shrink-0"
+        >
+          <span className="flex-1">
+            {wsConnectionState === "connecting"
+              ? "Connecting to server…"
+              : "Disconnected from server. Real-time features (collaboration, live updates) are unavailable."}
+          </span>
+        </div>,
+      );
+    }
+
+    // Config load error
+    if (configError) {
+      banners.push(
+        <div
+          key="config"
+          className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-1.5 flex items-center gap-2 text-sm text-red-800 dark:text-red-200 shrink-0"
+        >
+          <span className="flex-1">{configError}</span>
+        </div>,
+      );
+    }
+
+    // Tree load error
+    if (treeError) {
+      banners.push(
+        <div
+          key="tree"
+          className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-1.5 flex items-center gap-2 text-sm text-red-800 dark:text-red-200 shrink-0"
+        >
+          <span className="flex-1">{treeError}</span>
+        </div>,
+      );
+    }
+
+    return banners;
+  })();
+
   const syncBanner = ((): JSX.Element | undefined => {
     if (!syncStatus || (syncStatus.pull === "ok" && syncStatus.push === "ok")) {
       return undefined;
@@ -235,6 +293,7 @@ export default function AppShell(): JSX.Element {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background text-foreground">
       {user && <WsConnector userId={user.id} onConnected={loadTree} />}
+      {errorBanners}
       {syncBanner}
       <TopBar
         instanceName={instanceName}

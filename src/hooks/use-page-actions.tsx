@@ -97,6 +97,8 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     setMoveOpen(true);
   }, []);
 
+  const [moveError, setMoveError] = useState<string | undefined>();
+
   const confirmMove = useCallback(async () => {
     const slug = moveSlug.trim().replace(/\.md$/u, "");
     if (!slug) {
@@ -104,13 +106,15 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     }
     const parent = moveParent === ROOT ? "" : moveParent;
     const toPath = parent ? `${parent}/${slug}.md` : `${slug}.md`;
+    setMoveError(undefined);
     try {
       await renameFile(moveFrom, toPath);
       toast.success("Page moved");
       reloadTree();
       void navigate(`/p/${toPath}`);
     } catch {
-      toast.error("Move failed");
+      setMoveError("Move failed");
+      return; // keep dialog open
     }
     setMoveOpen(false);
   }, [moveFrom, moveParent, moveSlug, navigate, reloadTree]);
@@ -126,14 +130,18 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     setDeleteOpen(true);
   }, []);
 
+  const [deleteError, setDeleteError] = useState<string | undefined>();
+
   const confirmDelete = useCallback(async () => {
+    setDeleteError(undefined);
     try {
       await deleteFile(deleteTarget);
       toast.success("Page deleted");
       reloadTree();
       void navigate("/p/README.md");
     } catch {
-      toast.error("Delete failed");
+      setDeleteError("Delete failed");
+      return; // keep dialog open
     }
     setDeleteOpen(false);
   }, [deleteTarget, navigate, reloadTree]);
@@ -147,7 +155,12 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
   const dialogs = (
     <PageActionDialogs
       moveOpen={moveOpen}
-      setMoveOpen={setMoveOpen}
+      setMoveOpen={(open) => {
+        setMoveOpen(open);
+        if (!open) {
+          setMoveError(undefined);
+        }
+      }}
       movePages={movePages}
       moveParent={moveParent}
       setMoveParent={setMoveParent}
@@ -160,12 +173,19 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
       closeParentDropdown={closeParentDropdown}
       openParentDropdown={openParentDropdown}
       confirmMove={confirmMove}
+      moveError={moveError}
       previewPath={previewPath}
       deleteOpen={deleteOpen}
-      setDeleteOpen={setDeleteOpen}
+      setDeleteOpen={(open) => {
+        setDeleteOpen(open);
+        if (!open) {
+          setDeleteError(undefined);
+        }
+      }}
       deleteTitle={deleteTitle}
       deleteTarget={deleteTarget}
       confirmDelete={confirmDelete}
+      deleteError={deleteError}
     />
   );
   return { dialogs, openDelete, openMove };

@@ -1,5 +1,4 @@
 import { ApiError, uploadImage } from "@/lib/api";
-import { toast } from "@/components/ui/toaster";
 
 function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): void {
   const start = ta.selectionStart;
@@ -124,7 +123,7 @@ async function uploadImageFile(file: File): Promise<string | undefined> {
     const body =
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       error instanceof ApiError ? (error.body as { error?: string } | undefined) : undefined;
-    toast.error(body?.error ?? "Upload failed");
+    console.warn("Image upload failed:", body?.error ?? "unknown error");
     return undefined;
   }
 }

@@ -70,19 +70,22 @@ function PresenceAvatars({
   );
 }
 
-async function handleDuplicatePage(path: string, navigate: (to: string) => void): Promise<void> {
+async function handleDuplicatePage(
+  path: string,
+  navigate: (to: string) => void,
+): Promise<string | undefined> {
   try {
     const data = await getFile(path);
     const newPath = `${path.replace(/\.md$/iu, "")}-copy.md`;
     await createFile(newPath, data.content);
     toast.success("Page duplicated");
     navigate(`/p/${newPath}`);
+    return undefined;
   } catch (error: unknown) {
     if (error instanceof ApiError && error.status === 409) {
-      toast.error("A copy already exists at that path");
-    } else {
-      toast.error("Duplicate failed");
+      return "A copy already exists at that path";
     }
+    return "Duplicate failed";
   }
 }
 
@@ -132,9 +135,15 @@ function PageNodeRow({
       : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
   }`;
   const iconClassName = `flex items-center justify-center ${node.isVirtual ? "opacity-40 shrink-0" : "shrink-0"}`;
+  const [sidebarDuplicateError, setSidebarDuplicateError] = useState<string | undefined>();
 
   const handleDuplicate = useCallback(() => {
-    void handleDuplicatePage(node.path, navigate);
+    void (async (): Promise<void> => {
+      const err = await handleDuplicatePage(node.path, navigate);
+      if (err !== undefined) {
+        setSidebarDuplicateError(err);
+      }
+    })();
   }, [node.path, navigate]);
 
   const entry = node.fileEntry;
@@ -248,6 +257,17 @@ function PageNodeRow({
           />
         </ContextMenuContent>
       </ContextMenu>
+
+      {sidebarDuplicateError && (
+        <p
+          className="text-xs text-red-600 dark:text-red-400 px-3 pt-0.5 pb-1 cursor-pointer"
+          onClick={() => {
+            setSidebarDuplicateError(undefined);
+          }}
+        >
+          {sidebarDuplicateError}
+        </p>
+      )}
 
       {/* Children rendered outside ContextMenu so right-click doesn't bubble */}
       {hasChildren && open && (

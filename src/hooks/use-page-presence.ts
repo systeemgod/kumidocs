@@ -6,9 +6,11 @@ import { toast } from "@/components/ui/toaster";
 import { useNavigate } from "react-router-dom";
 
 interface UsePagePresenceReturn {
+  conflictBanner: string | undefined;
   editLocked: PresenceUser | undefined;
   remoteBanner: string | undefined;
   setRemoteBanner: Dispatch<SetStateAction<string | undefined>>;
+  setConflictBanner: Dispatch<SetStateAction<string | undefined>>;
   viewers: PresenceUser[];
 }
 
@@ -23,6 +25,7 @@ export default function usePagePresence(
   const [editLocked, setEditLocked] = useState<PresenceUser | undefined>();
   const [viewers, setViewers] = useState<PresenceUser[]>([]);
   const [remoteBanner, setRemoteBanner] = useState<string | undefined>();
+  const [conflictBanner, setConflictBanner] = useState<string | undefined>();
 
   useEffect(() => {
     if (userId !== undefined && userId !== "") {
@@ -68,7 +71,7 @@ export default function usePagePresence(
       void navigate("/p/README.md");
     }
     if (msg.type === "save_conflict_lost" && msg.pageId === filePath) {
-      toast.error("Your changes were lost due to a remote conflict.");
+      setConflictBanner("Your changes were lost due to a remote conflict.");
       // Release the edit lock; the server kicked us out, make sure the WS
       // message is sent so other editors can claim the lock immediately.
       if (editModeRef.current) {
@@ -84,5 +87,5 @@ export default function usePagePresence(
     }
   });
 
-  return { editLocked, remoteBanner, setRemoteBanner, viewers };
+  return { conflictBanner, editLocked, remoteBanner, setConflictBanner, setRemoteBanner, viewers };
 }
