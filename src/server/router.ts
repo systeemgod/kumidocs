@@ -59,13 +59,24 @@ async function serveSPA(req: Request): Promise<Response> {
 
 type RequireUser = (req: Request) => User | undefined;
 
+/** Serves the SPA entry point in both dev and bundled modes. */
+async function serveCatchAll(req: Request): Promise<Response> {
+  if (isBundled) {
+    return serveSPA(req);
+  }
+  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  return new Response(devIndex as unknown as string, {
+    headers: { "Content-Type": "text/html" },
+  });
+}
+
+export { serveCatchAll, serveSPA };
+
 function buildRoutes(config: Config, requireUser: RequireUser): Record<string, unknown> {
   /** Per-user rate limiter with configurable limits. */
   const mutationLimiter = new RateLimiter(config.rateLimit.count, config.rateLimit.windowMs);
   mutationLimiter.startCleanup();
   return {
-    "/*": isBundled ? serveSPA : devIndex,
-
     "/api/auth/email": {
       async POST(req: Request) {
         let body: unknown;
