@@ -262,7 +262,7 @@ const server = serve<WsData>({
     hmr: true,
   },
 
-  fetch(req, srv): Response | Promise<Response> | undefined {
+  async fetch(req, srv): Promise<Response | undefined> {
     const url = new URL(req.url);
 
     // WebSocket upgrade
@@ -295,7 +295,17 @@ const server = serve<WsData>({
       return apiResult;
     }
 
-    // Everything else → SPA fallback
+    // Serve source files directly (frontend.tsx, index.css, logo.png, etc.)
+    // so the browser can load the React app from src/ in dev mode.
+    const devFilePath = path.join(import.meta.dir, url.pathname);
+    if (devFilePath.startsWith(import.meta.dir + path.sep)) {
+      const devFile = Bun.file(devFilePath);
+      if (await devFile.exists()) {
+        return new Response(devFile);
+      }
+    }
+
+    // SPA fallback — return index.html for all other paths
     return new Response(Bun.file(path.join(import.meta.dir, "index.html")), {
       headers: {
         "Content-Type": "text/html",
