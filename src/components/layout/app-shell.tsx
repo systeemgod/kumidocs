@@ -116,6 +116,8 @@ export default function AppShell(): JSX.Element {
     void loadTree();
   });
 
+  const { refreshUser } = useUser();
+
   // Update per-page presence map from WS presence updates
   useWsListener((msg) => {
     if (msg.type === "presence_update") {
@@ -149,6 +151,7 @@ export default function AppShell(): JSX.Element {
     }
     if (msg.type === "config_changed") {
       void loadInstanceConfig();
+      void refreshUser();
     }
   });
 

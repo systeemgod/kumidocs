@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { PageMenuItems } from "@/components/ui/page-menu-items";
 import { UserAvatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function PageNodeRow({
   node,
@@ -43,6 +43,11 @@ function PageNodeRow({
   const navigate = useNavigate();
   const hasChildren = node.children.length > 0;
   const [open, setOpen] = useState(depth < defaultDepth);
+
+  // Sync open state when defaultDepth changes (e.g. loaded from server after mount)
+  useEffect(() => {
+    setOpen(depth < defaultDepth);
+  }, [defaultDepth, depth]);
   const [dotsHovered, setDotsHovered] = useState(false);
   const [dotsOpen, setDotsOpen] = useState(false);
 

@@ -13,12 +13,16 @@ interface UserContextValue {
   needsEmailSetup: boolean;
   sidebarDefaultDepth: number;
   slideThemes: SlideThemeMap;
+  refreshUser: () => Promise<void>;
   setEmailAndRefetch: (email: string) => void;
 }
 
 const UserContext = createContext<UserContextValue>({
   loading: true,
   needsEmailSetup: false,
+  refreshUser: async () => {
+    /* noop until provider mounts */
+  },
   setEmailAndRefetch: () => {
     globalThis.location.reload();
   },
@@ -86,6 +90,23 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
     })();
   });
 
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      const {
+        user: fetchedUser,
+        slideThemes: fetchedThemes,
+        needs401,
+        sidebarDefaultDepth: fetchedDepth,
+      } = await fetchMe();
+      setUser(fetchedUser);
+      setSlideThemes(fetchedThemes);
+      setSidebarDefaultDepth(fetchedDepth);
+      setNeedsEmailSetup(needs401);
+    } catch {
+      // keep current state
+    }
+  }, []);
+
   const setEmailAndRefetch = useCallback(async (email: string): Promise<void> => {
     const trimmed = email.trim().toLowerCase();
     // Basic validation: must look like an email address.
@@ -120,6 +141,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
       value={{
         loading,
         needsEmailSetup,
+        refreshUser,
         setEmailAndRefetch,
         sidebarDefaultDepth,
         slideThemes,
