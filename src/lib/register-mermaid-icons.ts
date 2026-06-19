@@ -3,13 +3,13 @@
  *
  * Registers Iconify icon packs with Mermaid so architecture diagrams
  * can use icon prefixes like `logos:*`, `devicon:*`, `flag:*`,
- * `fluent-color:*`, and `glyphs-poly:*` — all embedded at build time.
+ * `fluent-color:*`, and `glyphs-poly:*`: all embedded at build time.
  *
  * Usage: call once at app startup (client-side only):
  *   import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
  *   registerMermaidIcons();
  *
- * No CDN fetches — icons are bundled via npm packages.
+ * No CDN fetches; icons are bundled via npm packages.
  */
 
 // ── Icon pack imports (bundled at build time) ───────────────────────────
@@ -29,12 +29,12 @@ interface IconifyJSON {
 
 /**
  * Register all icon packs with Mermaid.
- * Safe to call multiple times — Mermaid deduplicates by prefix.
+ * Safe to call multiple times; Mermaid deduplicates by prefix.
  * Must be called on the client (browser) only.
  */
 // oxlint-disable-next-line import/prefer-default-export
 export async function registerMermaidIcons(): Promise<void> {
-  // Mermaid's module only exports `default` — dynamic import gives us
+  // Mermaid's module only exports `default`; dynamic import gives us
   // { default: mermaid }, so we need `.default.registerIconPacks`.
   // We also try `registerIconPacks` directly in case the bundler
   // flattens the module differently (dev vs production).

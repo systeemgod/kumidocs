@@ -197,7 +197,7 @@ export default function SlideOverlay({
           );
         }
 
-        // el.type === 'image' — only remaining union member
+        // el.type === 'image': only remaining union member
         return (
           <img
             key={idx}

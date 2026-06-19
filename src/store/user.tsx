@@ -132,7 +132,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
       setSidebarDefaultDepth(fetchedDepth ?? 2);
       setNeedsEmailSetup(false);
     } catch {
-      // Server rejected the email — keep the dialog open
+      // Server rejected the email; keep the dialog open
     }
   }, []);
 

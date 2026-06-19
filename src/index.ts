@@ -141,7 +141,7 @@ async function watchDir(absDir: string): Promise<void> {
   }
   watchedDirs.add(absDir);
 
-  // Watch this single directory (non-recursive) — avoids creating inotify
+  // Watch this single directory (non-recursive) to avoid creating inotify
   // watches for every subdirectory in the tree (which exhausts the OS limit
   // when node_modules or similar large directories are present).
   watch(absDir, {}, async (_event, filename) => {
@@ -162,7 +162,7 @@ async function watchDir(absDir: string): Promise<void> {
         return;
       }
     } catch {
-      // Deleted or inaccessible — treat as file change
+      // Deleted or inaccessible; treat as file change
     }
 
     const prev = debounceMap.get(relFile);
@@ -187,7 +187,7 @@ async function watchDir(absDir: string): Promise<void> {
         .map(async (entry) => watchDir(path.join(absDir, entry.name))),
     );
   } catch {
-    // Directory removed during scan — ignore
+    // Directory removed during scan; ignore
   }
 }
 
@@ -202,7 +202,7 @@ function requireUser(req: Request): User | undefined {
   return parseUser(req.headers, config.authHeader);
 }
 
-// Background tasks — adaptive pull loop with exponential backoff
+// Background tasks: adaptive pull loop with exponential backoff
 let pullBackoff = config.pullInterval;
 
 async function runPullCycle(): Promise<void> {

@@ -181,7 +181,7 @@ function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
         existingSid !== sid &&
         sessions.has(existingSid)
       ) {
-        // Already locked by another active session — reject, send back current state
+        // Already locked by another active session; reject and send back current state
         send(ws, presenceUpdate(msg.pageId));
         return;
       }
@@ -233,7 +233,7 @@ function broadcastPageChanged(
     pageId,
     type: "page_changed",
   };
-  // Broadcast to all sessions — the client suppresses echoes of its own saves
+  // Broadcast to all sessions; the client suppresses echoes of its own saves
   // via the `if (msg.changedBy === user?.id) return;` check in the WS listener.
   for (const ws of sessions.values()) {
     send(ws, msg);

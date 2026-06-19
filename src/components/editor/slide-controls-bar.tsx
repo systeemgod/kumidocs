@@ -135,7 +135,7 @@ function SlideControlsBar({
           size="icon"
           className="h-7 w-7"
           onClick={enterSpotlight}
-          title="Spotlight — slide only fullscreen"
+          title="Spotlight: slide only fullscreen"
         >
           <Spotlight className="w-4 h-4" />
         </Button>

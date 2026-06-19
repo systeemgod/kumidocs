@@ -12,29 +12,29 @@ emoji: 💬
 HTML comments that control individual slides.
 Stripped from the rendered output.
 
-_This deck uses the **minimal** theme — directives override individual slides._
+_This deck uses the **minimal** theme; directives override individual slides._
 
 ---
 
 ## What are directives?
 
 Add `<!-- key: value -->` comments anywhere in a slide.
-The parser strips them before rendering — they never appear in output.
+The parser strips them before rendering; they never appear in output.
 
 | Directive            | Aliases | Effect                                                                 |
 | -------------------- | ------- | ---------------------------------------------------------------------- |
-| `class`              | —       | Layout class: `title`, `section`, `split`, `center`, `blank`, `invert` |
-| `background`         | `bg`    | CSS background shorthand — colour, gradient, or image URL              |
-| `backgroundColor`    | —       | Individual `background-color`                                          |
-| `backgroundImage`    | —       | Individual `background-image`                                          |
-| `backgroundPosition` | —       | Individual `background-position`                                       |
-| `backgroundRepeat`   | —       | Individual `background-repeat`                                         |
-| `backgroundSize`     | —       | Individual `background-size`                                           |
-| `backgroundFilter`   | —       | CSS filter applied to the background (e.g. `brightness(0.5)`)          |
-| `color`              | —       | Override text colour                                                   |
+| `class`              |         | Layout class: `title`, `section`, `split`, `center`, `blank`, `invert` |
+| `background`         | `bg`    | CSS background shorthand: colour, gradient, or image URL               |
+| `backgroundColor`    |         | Individual `background-color`                                          |
+| `backgroundImage`    |         | Individual `background-image`                                          |
+| `backgroundPosition` |         | Individual `background-position`                                       |
+| `backgroundRepeat`   |         | Individual `background-repeat`                                         |
+| `backgroundSize`     |         | Individual `background-size`                                           |
+| `backgroundFilter`   |         | CSS filter applied to the background (e.g. `brightness(0.5)`)          |
+| `color`              |         | Override text colour                                                   |
 
 All directives accept the Marp-style `_` prefix (e.g. `_class`, `_background`)
-to limit the effect to a single slide — though in KumiDocs everything is
+to limit the effect to a single slide, though in KumiDocs everything is
 already per-slide, so the prefix is optional.
 
 ---
@@ -49,7 +49,7 @@ Apply a layout class to one slide without affecting others.
 # This slide uses the title layout
 ```
 
-Multiple classes are not stacked — the last `class` directive wins.
+Multiple classes are not stacked; the last `class` directive wins.
 Place directives anywhere in the slide: top, middle, or bottom.
 
 ---
@@ -74,7 +74,7 @@ This slide uses `<!-- class: section -->` while the deck theme stays `minimal`.
 ## background + color
 
 This slide has a **navy background** and **soft blue-white text**
-set via directives — the deck theme is still `minimal`.
+set via directives; the deck theme is still `minimal`.
 
 ```markdown
 <!-- background: #1a2744 -->
@@ -83,7 +83,7 @@ set via directives — the deck theme is still `minimal`.
 ## Your heading
 ```
 
-The shorthand `bg` also works — it's an alias for `background`.
+The shorthand `bg` also works; it's an alias for `background`.
 
 ---
 
@@ -107,7 +107,7 @@ solid colours, `linear-gradient()`, `radial-gradient()`, and image URLs.
 
 ## oklch colours
 
-Modern `oklch()` colours work too —
+Modern `oklch()` colours work too:
 perceptually uniform and great for accessible contrast.
 
 ```markdown
@@ -150,7 +150,7 @@ background. Use `background` (or `bg`) when you want to replace everything.
 ## Background filter
 
 `backgroundFilter` applies a CSS filter to the background layer
-— useful for toning down a photo behind text:
+Useful for toning down a photo behind text:
 
 ```markdown
 <!-- backgroundImage: url(/images/hero.jpg) -->
@@ -166,7 +166,7 @@ works: `brightness()`, `contrast()`, `blur()`, `sepia()`, `grayscale()`, etc.
 
 ## Directive placement
 
-Directives can appear anywhere in a slide — top, bottom, or inline.
+Directives can appear anywhere in a slide: top, bottom, or inline.
 All directives on the slide are applied together.
 
 ```markdown
@@ -207,14 +207,14 @@ A quote, a metric, or a call to action.
 
 # Summary
 
-| Directive            | Aliases | Purpose                                        |
-| -------------------- | ------- | ---------------------------------------------- |
-| `class`              | —       | Layout override                                |
-| `background`         | `bg`    | Shorthand — replaces all background properties |
-| `backgroundColor`    | —       | Individual colour override                     |
-| `backgroundImage`    | —       | Individual image override                      |
-| `backgroundPosition` | —       | Position override                              |
-| `backgroundRepeat`   | —       | Repeat override                                |
-| `backgroundSize`     | —       | Size override                                  |
-| `backgroundFilter`   | —       | CSS filter on background                       |
-| `color`              | —       | Text colour override                           |
+| Directive            | Aliases | Purpose                                       |
+| -------------------- | ------- | --------------------------------------------- |
+| `class`              |         | Layout override                               |
+| `background`         | `bg`    | Shorthand: replaces all background properties |
+| `backgroundColor`    |         | Individual colour override                    |
+| `backgroundImage`    |         | Individual image override                     |
+| `backgroundPosition` |         | Position override                             |
+| `backgroundRepeat`   |         | Repeat override                               |
+| `backgroundSize`     |         | Size override                                 |
+| `backgroundFilter`   |         | CSS filter on background                      |
+| `color`              |         | Text colour override                          |

@@ -33,7 +33,7 @@ const REHYPE_PLUGINS: PluggableList = [
   [
     harden,
     {
-      // Restrict to safe URL prefixes — "*" would allow javascript: URLs.
+      // Restrict to safe URL prefixes; "*" would allow javascript: URLs.
       allowedImagePrefixes: ["/images/", "https://", "http://", "data:image/", "./", "../"],
       allowedLinkPrefixes: ["https://", "http://", "mailto:", "#", "/", "./", "../"],
       defaultOrigin: DEFAULT_ORIGIN,

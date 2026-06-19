@@ -4,7 +4,7 @@ emoji: 📊
 
 # Mermaid Diagrams
 
-KumiDocs supports [Mermaid](https://mermaid.js.org) diagrams — simply wrap any diagram definition in a ` ```mermaid ` fenced code block and it renders as an interactive diagram inline in your page.
+KumiDocs supports [Mermaid](https://mermaid.js.org) diagrams. Simply wrap any diagram definition in a ` ```mermaid ` fenced code block and it renders as an interactive diagram inline in your page.
 
 ## Overview
 
@@ -307,7 +307,7 @@ flowchart LR
 
 ## Custom Icon Packs
 
-Architecture diagrams support **icon packs** via the `prefix:icon-name` syntax. KumiDocs ships with **5 embedded icon packs** — no CDN required:
+Architecture diagrams support **icon packs** via the `prefix:icon-name` syntax. KumiDocs ships with **5 embedded icon packs**; no CDN required:
 
 | Prefix | Pack | Example |
 |--------|------|---------|
@@ -334,12 +334,12 @@ architecture-beta
     api:T -- B:cache
 ````
 
-> Icons are bundled at build time — zero external network requests.
+> Icons are bundled at build time; zero external network requests.
 
 ## Tips
 
-- **Keep diagrams focused** — one concept per diagram
+- **Keep diagrams focused**: one concept per diagram
 - **Use subgraphs** in flowcharts to group related nodes
 - **Label edges clearly** with meaningful text
 - **Architecture diagrams** benefit from icon prefixes for realistic service icons
-- **Large diagrams** may take a moment to render — Mermaid runs entirely in the browser
+- **Large diagrams** may take a moment to render; Mermaid runs entirely in the browser

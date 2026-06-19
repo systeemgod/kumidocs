@@ -58,9 +58,9 @@ bun run build   # production build
 ## Your First Page
 
 1. Start KumiDocs pointing at a Git repo.
-2. Open [http://localhost:5864](http://localhost:5864) — you'll see `README.md` as the home page.
+2. Open [http://localhost:5864](http://localhost:5864). You'll see `README.md` as the home page.
 3. Click **Edit** to enter the split-pane editor.
-4. Make changes — press **Ctrl+S** to save. KumiDocs commits and pushes automatically.
+4. Make changes, then press **Ctrl+S** to save. KumiDocs commits and pushes automatically.
 
 ### Creating Pages
 

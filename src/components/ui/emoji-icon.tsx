@@ -1,16 +1,16 @@
 // oxlint-disable typescript/no-deprecated
 /**
- * EmojiIcon — unified icon/emoji renderer.
+ * EmojiIcon: unified icon/emoji renderer.
  *
  * Two distinct icon libraries serve different purposes:
  *
- *   @fluentui/react-icons  — SYSTEM ICONS
+ *   @fluentui/react-icons: SYSTEM ICONS
  *     UI chrome: file-type indicators, buttons, toolbar actions, etc.
  *     Use the `icon` prop to render one of these directly.
  *
- *   Microsoft Fluent Emoji (emojis.ts)  — SELECTABLE PAGE ICONS
+ *   Microsoft Fluent Emoji (emojis.ts): SELECTABLE PAGE ICONS
  *     User-chosen emoji on pages/documents (Microsoft 3D Fluent style).
- *     SVGs are baked into the bundle — zero HTTP requests.
+ *     SVGs are baked into the bundle; zero HTTP requests.
  *     Use the `emoji` prop to render a character from this set.
  *
  * The `size` prop controls pixel dimensions for both paths, working around
@@ -28,7 +28,7 @@ import EMOJI_SVGS from "./emoji/emojis";
 import type { FileType } from "@/lib/types";
 import { Fragment } from "react";
 
-// File type strings for EmojiIcon — well-known values listed for autocomplete, open to any string
+// File type strings for EmojiIcon: well-known values listed for autocomplete, open to any string
 const FILE_TYPE_ICONS: Record<string, FC<{ style?: CSSProperties; className?: string }>> = {
   code: Code24Color,
   doc: TextBulletListSquare24Color,
@@ -39,7 +39,7 @@ const FILE_TYPE_ICONS: Record<string, FC<{ style?: CSSProperties; className?: st
 interface EmojiIconProps {
   /** Emoji character to render (may be overridden to a Color icon). */
   emoji?: string;
-  /** File type string — rendered when no emoji is set. */
+  /** File type string rendered when no emoji is set. */
   fileType?: FileType;
   /** Fluent React Icon component to render directly (lowest priority). */
   icon?: FC<{ style?: CSSProperties; className?: string }>;
@@ -60,7 +60,7 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
   // overriding any hardcoded width/height attributes.
   const innerStyle: CSSProperties = { height: "100%", width: "100%" };
 
-  // Emoji path — check for overrides first
+  // Emoji path: check for overrides first
   if (emoji !== undefined && emoji !== "") {
     // oxlint-disable-next-line typescript/no-unsafe-assignment
     const svgDataUri = EMOJI_SVGS[emoji];
@@ -96,7 +96,7 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
     );
   }
 
-  // File-type path — resolve icon from central map, fall back to DocumentRegular
+  // File-type path: resolve icon from central map, fall back to DocumentRegular
   if (fileType) {
     const TypeIcon = FILE_TYPE_ICONS[fileType] ?? QuestionCircle24Color;
     const isMuted = fileType === "code" || fileType === "image";
@@ -120,7 +120,7 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
   return <span style={wrapStyle} className={className} />;
 }
 
-// Same emoji regex as rehypeEmojiPlugin — kept here to avoid ui → editor imports.
+// Same emoji regex as rehypeEmojiPlugin; kept here to avoid ui → editor imports.
 const TITLE_EMOJI_RE =
   /(?:[*#0-9]\uFE0F?\u20E3|[\u{1F1E6}-\u{1F1FF}]{2}|\p{Extended_Pictographic}[\p{Emoji_Modifier}\uFE0F]?(?:\u200D(?:\p{Extended_Pictographic}|\u2640\uFE0F?|\u2642\uFE0F?)[\p{Emoji_Modifier}\uFE0F]?)*)/gu;
 

@@ -1,7 +1,7 @@
 {
 	"name": "kumidocs",
 	"version": "0.0.0",
-	"description": "A developer-focused wiki/docs platform with zero database — all content stored in Git.",
+	"description": "A developer-focused wiki/docs platform with zero database: all content stored in Git.",
 	"license": "MIT",
 	"repository": {
 		"type": "git",

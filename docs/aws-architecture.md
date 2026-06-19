@@ -5,7 +5,7 @@ description: Real-world AWS architecture diagrams using Mermaid with embedded ic
 
 # AWS Architecture Examples
 
-This page demonstrates real-world AWS architecture diagrams using Mermaid's `architecture-beta` syntax with embedded Iconify icon packs — no CDN, no image files.
+This page demonstrates real-world AWS architecture diagrams using Mermaid's `architecture-beta` syntax with embedded Iconify icon packs; no CDN, no image files.
 
 See [[Mermaid Diagrams]] for the full Mermaid reference and diagram type reference.
 
@@ -13,7 +13,7 @@ See [[Mermaid Diagrams]] for the full Mermaid reference and diagram type referen
 
 ---
 
-## Web Application — Three-Tier
+## Web Application: Three-Tier
 
 A classic three-tier web application with load balancer, application servers, and a managed database.
 

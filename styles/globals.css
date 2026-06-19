@@ -112,7 +112,7 @@
   --sidebar-ring: oklch(0.75 0.16 264);
 }
 
-/* Explicit light-mode token reset — applied to .slide-canvas when the slide
+/* Explicit light-mode token reset applied to .slide-canvas when the slide
    theme is light, so it overrides any parent .dark class from the site. */
 .light {
   --background: oklch(1 0 0);
@@ -155,7 +155,7 @@
   }
 }
 
-/* react-diff-view dark mode — :root.dark beats the library's :root declarations */
+/* react-diff-view dark mode: :root.dark beats the library's :root declarations */
 :root.dark {
   --diff-background-color: transparent;
   --diff-text-color: #d1d5db;

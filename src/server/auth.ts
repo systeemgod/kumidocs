@@ -77,7 +77,7 @@ const resolveEmail = (value: string): string | undefined => {
       }
       return raw.trim().toLowerCase();
     } catch {
-      // Malformed JWT payload — not a valid JSON. Treat as plain string.
+      // Malformed JWT payload: not a valid JSON. Treat as plain string.
     }
   }
   return value.trim().toLowerCase();

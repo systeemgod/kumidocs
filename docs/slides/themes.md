@@ -9,7 +9,7 @@ emoji: 🎨
 
 # Slide Themes
 
-Five built-in themes — set once in frontmatter,
+Five built-in themes set once in frontmatter,
 applied to every slide in the deck.
 
 _This deck uses the **default** theme._
@@ -44,7 +44,7 @@ theme: default
 - Slides look at home inside KumiDocs
 - Best for everyday wiki-style content
 
-_Tip: slide canvases are isolated from the site's dark mode toggle — a `dark` deck stays dark even if the site is in light mode._
+_Tip: slide canvases are isolated from the site's dark mode toggle; a `dark` deck stays dark even if the site is in light mode._
 
 ---
 
@@ -85,7 +85,7 @@ theme: corporate
 - Deep navy background: `#1a2744`
 - Soft blue-white foreground: `#e8edf8`
 - Professional, boardroom-ready look
-- Pair with a custom logo overlay — see [Custom Themes](docs/slides/custom-themes)
+- Pair with a custom logo overlay. See [Custom Themes](docs/slides/custom-themes)
 
 ---
 
@@ -122,7 +122,7 @@ theme: gradient
 
 Cyan → yellow-green diagonal gradient (`72.44deg`).
 
-- Fixed dark foreground `#1a2020` — always readable
+- Fixed dark foreground `#1a2020`: always readable
 - Eye-catching for pitch decks and demos
 - Works well with the `title` and `section` layouts
 
@@ -132,14 +132,14 @@ Cyan → yellow-green diagonal gradient (`72.44deg`).
 
 Slide canvases are fully isolated from the site's light/dark toggle.
 
-| Theme | Behaviour |
-| --- | --- |
-| `default` | Follows site dark mode |
-| `dark` | Always dark |
-| `corporate` | Always dark (navy) |
-| `minimal` | Always light (off-white) |
-| `gradient` | Always has gradient |
-| custom | Determined by `isBgDark(bg)` heuristic |
+| Theme       | Behaviour                              |
+| ----------- | -------------------------------------- |
+| `default`   | Follows site dark mode                 |
+| `dark`      | Always dark                            |
+| `corporate` | Always dark (navy)                     |
+| `minimal`   | Always light (off-white)               |
+| `gradient`  | Always has gradient                    |
+| custom      | Determined by `isBgDark(bg)` heuristic |
 
 This means a `corporate` deck looks the same for every viewer regardless of their OS preference.
 
@@ -149,12 +149,12 @@ This means a `corporate` deck looks the same for every viewer regardless of thei
 
 # Theme Reference
 
-| Name | Background | Foreground |
-| --- | --- | --- |
-| `default` | App bg | App fg |
-| `dark` | Near-black | Light grey |
-| `corporate` | Navy `#1a2744` | `#e8edf8` |
-| `minimal` | Off-white | Near-black |
-| `gradient` | Indigo→pink | Dark `#1a2020` |
+| Name        | Background     | Foreground     |
+| ----------- | -------------- | -------------- |
+| `default`   | App bg         | App fg         |
+| `dark`      | Near-black     | Light grey     |
+| `corporate` | Navy `#1a2744` | `#e8edf8`      |
+| `minimal`   | Off-white      | Near-black     |
+| `gradient`  | Indigo→pink    | Dark `#1a2020` |
 
 **Next:** [Per-Slide Directives](docs/slides/directives) · [Custom Themes](docs/slides/custom-themes)

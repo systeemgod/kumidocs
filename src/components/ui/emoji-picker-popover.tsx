@@ -1,5 +1,5 @@
 /**
- * EmojiPickerPopover — wraps the custom EmojiPicker in a Radix Popover.
+ * EmojiPickerPopover wraps the custom EmojiPicker in a Radix Popover.
  *
  * Renders the trigger as a button (visible only in edit mode) around a EmojiIcon.
  * The picker renders all emojis via EmojiIcon (bundled Fluent Emoji SVGs).

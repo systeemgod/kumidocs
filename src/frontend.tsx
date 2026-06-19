@@ -4,7 +4,7 @@
 //   TypeError: import_khroma5.adjust is not a function
 // oxlint-disable-next-line import/no-duplicates, import/no-unassigned-import
 import "khroma";
-// Named import variant — some bundler versions need this to trigger proper
+// Named import variant: some bundler versions need this to trigger proper
 // ESM re-export tracing through khroma's chain (khroma → methods → adjust).
 // oxlint-disable-next-line @typescript-eslint/no-unused-vars, import/no-duplicates
 import "./index.css";
@@ -26,7 +26,7 @@ const app = (
 );
 
 // Import.meta.hot is available in Bun dev (HMR) mode; undefined after production bundling
-// Note: import.meta.hot.data must be accessed directly (Bun restriction — no aliasing via variable)
+// Note: import.meta.hot.data must be accessed directly (Bun restriction: no aliasing via variable)
 interface HotData {
   root?: ReturnType<typeof createRoot>;
 }

@@ -115,7 +115,7 @@ function PageNodeRow({
   const [open, setOpen] = useState(depth < defaultDepth || isAncestor);
 
   // When navigating to a child of this node, auto-open this ancestor.
-  // defaultDepth is intentionally excluded — it only sets the initial default;
+  // defaultDepth is intentionally excluded; it only sets the initial default;
   // reapplying it would override manual toggles and make it act as a max depth.
   useEffect(() => {
     if (isAncestor) {
@@ -191,7 +191,7 @@ function PageNodeRow({
               currentUser={currentUser}
             />
 
-            {/* 3-dot menu — visible on hover, same actions as right-click */}
+            {/* 3-dot menu: visible on hover, same actions as right-click */}
             <DropdownMenu onOpenChange={setDotsOpen}>
               <DropdownMenuTrigger asChild>
                 <button

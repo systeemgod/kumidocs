@@ -29,7 +29,7 @@ interface SlideDirectives {
    */
   classes: string[];
   /**
-   * CSS background shorthand value — set by `bg` or `background` directive.
+   * CSS background shorthand value, set by `bg` or `background` directive.
    * Overrides all individual background-* properties when set.
    * Accepts colours, gradients, and image URLs.
    */
@@ -42,9 +42,9 @@ interface SlideDirectives {
   backgroundSize?: string;
   /** CSS filter applied to the background layer (KumiDocs extension, not in Marp) */
   backgroundFilter?: string;
-  /** Per-slide header text — overrides the deck-level frontmatter header for this slide */
+  /** Per-slide header text that overrides the deck-level frontmatter header for this slide */
   header?: string;
-  /** Per-slide footer text — overrides the deck-level frontmatter footer for this slide */
+  /** Per-slide footer text that overrides the deck-level frontmatter footer for this slide */
   footer?: string;
   /** CSS color override for all text on this slide */
   color?: string;
@@ -60,17 +60,17 @@ interface ParsedSlide {
  * Parse <!-- key: value --> directives from a single slide's markdown.
  *
  * Supported keys (all may be prefixed with `_` for Marp spot-directive compatibility):
- *   class       — layout class (title, section, split, center, blank, invert)
- *   bg / background          — CSS background shorthand (colours, gradients, image URLs)
- *   backgroundColor          — individual background-color
- *   backgroundImage          — individual background-image
- *   backgroundPosition       — individual background-position
- *   backgroundRepeat         — individual background-repeat
- *   backgroundSize           — individual background-size
- *   backgroundFilter         — CSS filter for the background (KumiDocs extension)
- *   header                   — per-slide header text (overrides deck-level frontmatter)
- *   footer                   — per-slide footer text (overrides deck-level frontmatter)
- *   color                    — text colour override
+ *   class: layout class (title, section, split, center, blank, invert)
+ *   bg / background: CSS background shorthand (colours, gradients, image URLs)
+ *   backgroundColor: individual background-color
+ *   backgroundImage: individual background-image
+ *   backgroundPosition: individual background-position
+ *   backgroundRepeat: individual background-repeat
+ *   backgroundSize: individual background-size
+ *   backgroundFilter: CSS filter for the background (KumiDocs extension)
+ *   header: per-slide header text (overrides deck-level frontmatter)
+ *   footer: per-slide footer text (overrides deck-level frontmatter)
+ *   color: text colour override
  *
  * URL values in `background*` directives are validated against the allowed prefix
  * allowlist. Disallowed URLs are silently discarded.
@@ -80,7 +80,7 @@ const parseSlideDirectives = (raw: string): ParsedSlide => {
   const content = raw.replaceAll(
     /<!--\s*(?<key>[\w-]+)\s*:\s*(?<value>[\s\S]*?)\s*-->/giu,
     (_match: string, key: string, value: string) => {
-      // Strip leading _ (Marp spot-directive prefix) — all our directives are already per-slide
+      // Strip leading _ (Marp spot-directive prefix); all our directives are already per-slide
       const directiveKey = key.trim().toLowerCase().replace(/^_/u, "");
       const directiveValue = value.trim();
 
@@ -236,7 +236,7 @@ const isBgDark = (color: string): boolean => {
   return false;
 };
 
-/** Built-in slide themes expressed as code. 'default' is intentionally absent — it inherits app tokens via .slide-canvas CSS. */
+/** Built-in slide themes expressed as code. 'default' is intentionally absent; it inherits app tokens via .slide-canvas CSS. */
 const BUILTIN_SLIDE_THEMES: SlideThemeMap = {
   corporate: {
     bg: "#ffffff",

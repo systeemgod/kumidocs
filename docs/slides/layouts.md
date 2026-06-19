@@ -9,9 +9,9 @@ emoji: 🗂️
 
 # Slide Layouts
 
-Six layout classes — add `<!-- class: NAME -->` to any slide.
+Six layout classes. Add `<!-- class: NAME -->` to any slide.
 
-_This page is itself a slide deck — click through to see each layout._
+_This page is itself a slide deck. Click through to see each layout._
 
 ---
 
@@ -75,7 +75,7 @@ Use `section` before a group of related slides.
 ## The Slide System
 ```
 
-The heading is the only content — keep it short and punchy.
+The heading is the only content: keep it short and punchy.
 
 ---
 
@@ -102,7 +102,7 @@ Great for quotes, key metrics, or calls to action.
 
 ## split layout
 
-Two equal columns — content splits at the **second** `##`.
+Two equal columns: content splits at the **second** `##`.
 
 ## Right column
 
@@ -144,7 +144,7 @@ Right content here.
 
 <!-- class: blank -->
 
-Zero padding — content fills edge to edge.
+Zero padding: content fills edge to edge.
 
 ```markdown
 <!-- class: blank -->
@@ -179,14 +179,14 @@ Works with all built-in themes.
 
 # Layout Reference
 
-| Class | Height | Alignment | Heading size |
-| --- | --- | --- | --- |
-| _(none)_ | auto | top | normal |
-| `title` | full | centre | h1 = 3.5rem |
-| `section` | full | centre | h2 = 3.5rem |
-| `center` | full | centre | normal |
-| `split` | auto | top | normal |
-| `blank` | auto | top | normal, p-0 |
-| `invert` | auto | top | normal |
+| Class     | Height | Alignment | Heading size |
+| --------- | ------ | --------- | ------------ |
+| _(none)_  | auto   | top       | normal       |
+| `title`   | full   | centre    | h1 = 3.5rem  |
+| `section` | full   | centre    | h2 = 3.5rem  |
+| `center`  | full   | centre    | normal       |
+| `split`   | auto   | top       | normal       |
+| `blank`   | auto   | top       | normal, p-0  |
+| `invert`  | auto   | top       | normal       |
 
 **Next:** [Themes Demo](docs/slides/themes)

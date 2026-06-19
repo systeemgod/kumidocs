@@ -126,7 +126,7 @@ function ImageDetailPanel({
         <div className="px-4 py-3 border-t border-border">
           {image.usedIn.length > 0 && (
             <p className="text-xs text-destructive mb-2">
-              Cannot delete — referenced by {image.usedIn.length}{" "}
+              Cannot delete: referenced by {image.usedIn.length}{" "}
               {image.usedIn.length === 1 ? "page" : "pages"}. Remove all references first.
             </p>
           )}
@@ -136,7 +136,7 @@ function ImageDetailPanel({
             className="w-full gap-1.5"
             disabled={image.usedIn.length > 0}
             title={
-              image.usedIn.length > 0 ? "Cannot delete — image is still in use" : "Delete image"
+              image.usedIn.length > 0 ? "Cannot delete: image is still in use" : "Delete image"
             }
             onClick={() => {
               setConfirmOpen(true);

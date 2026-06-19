@@ -34,7 +34,7 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 - Research technical solutions and libraries
 - Handle error cases, edge cases, and validation
 - Write documentation (inline comments, README, technical specs)
-- Ask clarifying questions **only when blocked** — otherwise, make reasonable engineering decisions and proceed
+- Ask clarifying questions **only when blocked**; otherwise, make reasonable engineering decisions and proceed
 - Test implementations and fix bugs
 - Maintain SPEC.md with all finalized technical decisions
 
@@ -42,18 +42,18 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 
 **Security practices**:
 
-- Never commit secrets to `.env.example` — use placeholders only
+- Never commit secrets to `.env.example`; use placeholders only
 - Real credentials belong in `.env` (gitignored)
 - Validate configurations before restart/deployment
 
-**UI rendering practices** (CRITICAL — violations will be rejected):
+**UI rendering practices** (CRITICAL: violations will be rejected):
 
 - **NEVER render emoji as raw JSX text or `<span>` elements** (e.g. `🌙`, `☀️`)
 - **ALWAYS use `<EmojiIcon emoji="..." size={N} />` from `src/components/ui/emoji-icon.tsx`**
 - This applies to ALL emojis everywhere: theme toggles, status icons, page icons, etc.
   > **Note**: This rule applies to React components only. Markdown documentation may use raw emoji freely.
 
-**React `useEffect` practices** (CRITICAL — violations will be rejected):
+**React `useEffect` practices** (CRITICAL: violations will be rejected):
 
 - **NEVER call `useEffect` directly in components**
 - For the rare case of syncing with an external system on mount, use `useMountEffect` instead:
@@ -68,14 +68,14 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
   export default useMountEffect;
   ```
 
-  This hook lives at `src/hooks/use-mount-effect.ts` — import it via `import useMountEffect from "@/hooks/use-mount-effect"`.
+  This hook lives at `src/hooks/use-mount-effect.ts`. Import it via `import useMountEffect from "@/hooks/use-mount-effect"`.
 
 - Most `useEffect` usage should be replaced with one of these patterns:
-  1. **Derive state inline** — never use `useEffect(() => setX(f(y)), [y])`; compute directly in render
-  2. **Data-fetching libraries** — use React Query or similar; never fetch inside effects
-  3. **Event handlers** — if triggered by a user action, do the work in the handler, not an effect
-  4. **`useMountEffect`** — for DOM integration, third-party widgets, and browser API subscriptions on mount; use conditional mounting (`key` prop or conditional render) instead of guards inside effects
-  5. **`key` prop for resets** — use `<Component key={id} />` to force a clean remount instead of choreographing resets via dependency arrays
+  1. **Derive state inline**: never use `useEffect(() => setX(f(y)), [y])`; compute directly in render
+  2. **Data-fetching libraries**: use React Query or similar; never fetch inside effects
+  3. **Event handlers**: if triggered by a user action, do the work in the handler, not an effect
+  4. **`useMountEffect`**: for DOM integration, third-party widgets, and browser API subscriptions on mount; use conditional mounting (`key` prop or conditional render) instead of guards inside effects
+  5. **`key` prop for resets**: use `<Component key={id} />` to force a clean remount instead of choreographing resets via dependency arrays
 
 **Testing practices**:
 
@@ -106,7 +106,7 @@ This project follows a **Project Owner + Lead Developer** model for AI-assisted 
 **SPEC/TASKS workflow**:
 
 - Update `SPEC.md` with finalized technical decisions before starting implementation of a new feature.
-- Keep `TASKS.md` updated as the canonical backlog — add tasks as they're discovered, mark them done as they're completed.
+- Keep `TASKS.md` updated as the canonical backlog: add tasks as they're discovered, mark them done as they're completed.
 - Significant deviations from the spec during implementation must be documented back into `SPEC.md`.
 
 ### Requires Discussion:

@@ -58,7 +58,7 @@ async function gitFileLogNative(
 
 /**
  * Like `gitFileLogNative` but uses `--numstat` to get added/removed line
- * counts directly from git — avoids reading the full blob at every revision.
+ * counts directly from git, avoiding reading the full blob at every revision.
  */
 async function gitFileLogNativeWithStats(
   config: Config,
@@ -106,7 +106,7 @@ async function gitFileLogNativeWithStats(
 
   for (const line of result.stdout.trim().split("\n")) {
     if (line.includes("\u001F")) {
-      // Commit header line — flush previous entry
+      // Commit header line; flush previous entry
       flushEntry();
       const [fullSha = "", message = "", author = "", authorEmail = "", date = ""] =
         line.split("\u001F");
@@ -150,7 +150,7 @@ async function gitPullNative(config: Config): Promise<void> {
   if (result.exitCode === 0) {
     console.log("Git: pulled from remote");
   } else if (result.stderr.trim()) {
-    console.warn("Git: pull failed (offline or no remote?) —", result.stderr.trim());
+    console.warn("Git: pull failed (offline or no remote?):", result.stderr.trim());
   }
 }
 
@@ -163,7 +163,7 @@ async function pushWithRetryNative(
     return { sha };
   }
 
-  // Push failed (non-fast-forward) — fetch + rebase, then retry
+  // Push failed (non-fast-forward); fetch + rebase, then retry
   await runGit(config.repoPath, ["fetch", "origin"]);
   const rebase = await runGit(config.repoPath, ["rebase", "FETCH_HEAD"]);
   if (rebase.exitCode !== 0) {
@@ -230,7 +230,7 @@ async function gitRemoveAndCommitNative(
   authorName: string,
   authorEmail: string,
 ): Promise<{ sha: string; error?: string }> {
-  // File is already deleted from disk — remove from index only
+  // File is already deleted from disk; remove from index only
   await runGit(config.repoPath, ["rm", "--cached", "--", filePath]);
   return gitStageAndCommitNative(config, [], message, authorName, authorEmail);
 }
@@ -244,7 +244,7 @@ async function gitMoveAndCommitNative(
   authorEmail: string,
   extraMoves?: { from: string; to: string }[],
 ): Promise<{ sha: string; error?: string }> {
-  // Files are already moved on disk — stage each pair: add new path, rm old from index.
+  // Files are already moved on disk; stage each pair: add new path, rm old from index.
   // Sequential execution is required: git locks .git/index between operations.
   const allMoves = [{ from, to }, ...(extraMoves ?? [])];
   for (const move of allMoves) {
@@ -265,7 +265,7 @@ async function gitFetchAndRebaseNative(
   }
   const before = beforeResult.stdout.trim();
 
-  // Fetch — ignore errors (offline / no remote)
+  // Fetch; ignore errors (offline / no remote)
   await runGit(config.repoPath, ["fetch", "origin"]);
 
   // Only rebase if FETCH_HEAD exists
@@ -273,7 +273,7 @@ async function gitFetchAndRebaseNative(
   if (fetchHead.exitCode === 0) {
     const rebase = await runGit(config.repoPath, ["rebase", "FETCH_HEAD"]);
     if (rebase.exitCode !== 0) {
-      console.warn("Git: rebase failed, aborting —", rebase.stderr.trim());
+      console.warn("Git: rebase failed, aborting:", rebase.stderr.trim());
       await runGit(config.repoPath, ["rebase", "--abort"]);
       return { advanced: false, changed: [], pullFailed: true, sha: before.slice(0, 7) };
     }

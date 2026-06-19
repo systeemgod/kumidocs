@@ -101,7 +101,7 @@ function SlideSpotlightOverlay({
           }}
         />
       )}
-      {/* Right-click menu — rendered inside fullscreen element so it's visible */}
+      {/* Right-click menu rendered inside fullscreen element so it's visible */}
       {spotlightMenu && (
         <div
           style={{

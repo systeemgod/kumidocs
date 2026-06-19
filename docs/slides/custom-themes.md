@@ -32,16 +32,17 @@ theme: my-brand
 
 ```typescript
 interface SlideThemeDef {
-  bg?: string;              // CSS background value for the canvas
-  fg?: string;              // Sets --slide-fg (text colour)
-  contentPadding?: {        // Reserve space for overlay elements (px on 960×540)
+  bg?: string; // CSS background value for the canvas
+  fg?: string; // Sets --slide-fg (text colour)
+  contentPadding?: {
+    // Reserve space for overlay elements (px on 960×540)
     top?: number;
     right?: number;
     bottom?: number;
     left?: number;
   };
-  elements?: SlideThemeElement[];   // Overlay elements, rendered in z-order
-  layouts?: Record<string, SlideThemeDef>;  // Per-layout-class overrides
+  elements?: SlideThemeElement[]; // Overlay elements, rendered in z-order
+  layouts?: Record<string, SlideThemeDef>; // Per-layout-class overrides
 }
 ```
 
@@ -64,11 +65,11 @@ The `elements` array lets you place rectangles, text, and images over every slid
 }
 ```
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `fill` | string | CSS colour |
+| Field                            | Type   | Description                                  |
+| -------------------------------- | ------ | -------------------------------------------- |
+| `fill`                           | string | CSS colour                                   |
 | `left`, `right`, `top`, `bottom` | number | Distance from edge in px (on 960×540 canvas) |
-| `width`, `height` | number | Size in px |
+| `width`, `height`                | number | Size in px                                   |
 
 Setting both `left: 0` and `right: 0` spans the full width. Setting both `top: 0` and `bottom: 0` spans the full height.
 
@@ -85,15 +86,15 @@ Setting both `left: 0` and `right: 0` spans the full width. Setting both `top: 0
 }
 ```
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `content` | string | Text content — supports template variables |
-| `color` | string | CSS colour |
-| `fontSize` | number | Font size in px |
-| `bold` | boolean | Bold text |
-| `align` | `"left"` \| `"center"` \| `"right"` | Text alignment |
-| `left`, `right`, `top`, `bottom` | number | Distance from edge |
-| `centerX`, `centerY` | boolean | Centre on that axis |
+| Field                            | Type                                | Description                               |
+| -------------------------------- | ----------------------------------- | ----------------------------------------- |
+| `content`                        | string                              | Text content; supports template variables |
+| `color`                          | string                              | CSS colour                                |
+| `fontSize`                       | number                              | Font size in px                           |
+| `bold`                           | boolean                             | Bold text                                 |
+| `align`                          | `"left"` \| `"center"` \| `"right"` | Text alignment                            |
+| `left`, `right`, `top`, `bottom` | number                              | Distance from edge                        |
+| `centerX`, `centerY`             | boolean                             | Centre on that axis                       |
 
 ### Image
 
@@ -108,25 +109,25 @@ Setting both `left: 0` and `right: 0` spans the full width. Setting both `top: 0
 }
 ```
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `src` | string | Image URL (use `/images/…` for uploaded images) |
-| `opacity` | number | 0–1 opacity |
-| `width`, `height` | number | Size in px |
-| `left`, `right`, `top`, `bottom` | number | Distance from edge |
-| `centerX`, `centerY` | boolean | Centre on that axis |
+| Field                            | Type    | Description                                     |
+| -------------------------------- | ------- | ----------------------------------------------- |
+| `src`                            | string  | Image URL (use `/images/…` for uploaded images) |
+| `opacity`                        | number  | 0–1 opacity                                     |
+| `width`, `height`                | number  | Size in px                                      |
+| `left`, `right`, `top`, `bottom` | number  | Distance from edge                              |
+| `centerX`, `centerY`             | boolean | Centre on that axis                             |
 
 ## Template Variables
 
 Use these in `text.content`:
 
-| Variable | Output |
-| --- | --- |
-| `{{slideNum}}` | Current slide number |
-| `{{slideTotal}}` | Total slide count |
-| `{{title}}` | First `#` heading on the slide |
-| `{{date}}` | Today's date in `YYYY-MM-DD` |
-| `{{date:DD/MM/YYYY}}` | Date in custom format |
+| Variable              | Output                         |
+| --------------------- | ------------------------------ |
+| `{{slideNum}}`        | Current slide number           |
+| `{{slideTotal}}`      | Total slide count              |
+| `{{title}}`           | First `#` heading on the slide |
+| `{{date}}`            | Today's date in `YYYY-MM-DD`   |
+| `{{date:DD/MM/YYYY}}` | Date in custom format          |
 
 ## contentPadding
 
@@ -139,7 +140,14 @@ When you have a footer bar, set `contentPadding.bottom` to prevent slide content
   "contentPadding": { "bottom": 40 },
   "elements": [
     { "type": "rect", "fill": "#1a2744", "left": 0, "right": 0, "bottom": 0, "height": 40 },
-    { "type": "text", "content": "{{slideNum}} / {{slideTotal}}", "centerX": true, "bottom": 12, "color": "#fff", "fontSize": 13 }
+    {
+      "type": "text",
+      "content": "{{slideNum}} / {{slideTotal}}",
+      "centerX": true,
+      "bottom": 12,
+      "color": "#fff",
+      "fontSize": 13
+    }
   ]
 }
 ```
@@ -183,13 +191,17 @@ The `"default"` key in `layouts` matches slides with no `<!-- class -->` directi
         {
           "type": "rect",
           "fill": "#003087",
-          "left": 0, "right": 0, "top": 0,
+          "left": 0,
+          "right": 0,
+          "top": 0,
           "height": 6
         },
         {
           "type": "rect",
           "fill": "#f5f5f5",
-          "left": 0, "right": 0, "bottom": 0,
+          "left": 0,
+          "right": 0,
+          "bottom": 0,
           "height": 48
         },
         {
@@ -217,7 +229,9 @@ The `"default"` key in `layouts` matches slides with no `<!-- class -->` directi
             {
               "type": "rect",
               "fill": "#e8002d",
-              "left": 0, "right": 0, "bottom": 0,
+              "left": 0,
+              "right": 0,
+              "bottom": 0,
               "height": 8
             }
           ]
@@ -230,6 +244,6 @@ The `"default"` key in `layouts` matches slides with no `<!-- class -->` directi
 
 ## Dark / Light Detection
 
-KumiDocs automatically determines whether slide text should be dark or light based on the `bg` value. It uses `isBgDark(bg)` — a luminance heuristic. If your custom background is dark, the `.dark` CSS class is applied to the canvas, triggering dark-mode typography tokens.
+KumiDocs automatically determines whether slide text should be dark or light based on the `bg` value. It uses `isBgDark(bg)`, a luminance heuristic. If your custom background is dark, the `.dark` CSS class is applied to the canvas, triggering dark-mode typography tokens.
 
-You don't need to do anything special — just set `fg` to the appropriate text colour for your background.
+You don't need to do anything special: just set `fg` to the appropriate text colour for your background.

@@ -104,7 +104,7 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
     user.email || "kumidocs@localhost",
   );
 
-  // Only broadcast if a new commit was actually made — skip no-op saves
+  // Only broadcast if a new commit was actually made; skip no-op saves
   if (result.committed !== false) {
     broadcastPageChanged(filePath, result.sha, user.id, user.displayName);
   }
@@ -285,7 +285,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
     return Response.json({ error: "Failed to rename files" }, { status: 500 });
   }
 
-  // All fs operations succeeded — update in-memory state
+  // All fs operations succeeded; update in-memory state
   for (const op of renameOps) {
     moveInCache(op.relFrom, op.relTo);
     removeFromIndex(op.relFrom);
@@ -310,7 +310,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
     extraMoves,
   );
 
-  // Broadcast regardless of push status — files are safely on disk and in cache.
+  // Broadcast regardless of push status; files are safely on disk and in cache.
   for (const old of movedPaths) {
     broadcastPageDeleted(old);
   }

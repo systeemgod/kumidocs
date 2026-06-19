@@ -1,6 +1,6 @@
 # KumiDocs
 
-A wiki and docs platform for small dev teams. No database — all content is stored in Git.
+A wiki and docs platform for small dev teams. No database: all content is stored in Git.
 
 ## Try it now
 
@@ -17,14 +17,14 @@ KumiDocs serves the current directory as its content store. Every save becomes a
 
 ## Features
 
-- **Markdown editor** — live split-pane, frontmatter, full history
-- **Slide decks** — set `slides: true` in frontmatter; scroll, paginate, spotlight, fullscreen
-- **Code files** — syntax highlighting via CodeMirror with language auto-detection
-- **Full-text search** — fuzzy, Ctrl+K palette
-- **Real-time presence** — edit lock, viewer avatars, live reload via WebSocket
-- **Image library** — drag-and-drop upload, usage tracking, safe delete
-- **PDF export** — pages (A4) and slide decks (landscape)
-- **SSO** — any reverse proxy that forwards an email header (oauth2-proxy, Authelia, etc.)
+- **Markdown editor**: live split-pane, frontmatter, full history
+- **Slide decks**: set `slides: true` in frontmatter; scroll, paginate, spotlight, fullscreen
+- **Code files**: syntax highlighting via CodeMirror with language auto-detection
+- **Full-text search**: fuzzy, Ctrl+K palette
+- **Real-time presence**: edit lock, viewer avatars, live reload via WebSocket
+- **Image library**: drag-and-drop upload, usage tracking, safe delete
+- **PDF export**: pages (A4) and slide decks (landscape)
+- **SSO**: any reverse proxy that forwards an email header (oauth2-proxy, Authelia, etc.)
 
 ## Options
 

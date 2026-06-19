@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-Developer-focused wiki/docs platform. Zero database — all content in a single Git repo. Inspired by Docmost (layout reference). Target: developers, 3–20 concurrent users.
+Developer-focused wiki/docs platform. Zero database: all content in a single Git repo. Inspired by Docmost (layout reference). Target: developers, 3–20 concurrent users.
 
 - Primary content: Markdown pages (YAML frontmatter)
 - Secondary content: Slide decks (`slides: true`), Code files
@@ -91,13 +91,13 @@ paginate: true # show N/total badge on each slide
 
 - Any authenticated user can VIEW. Only `editors` can EDIT.
 - Re-read after every background pull.
-- `slideThemes` included in `/api/me` response — no extra round-trips needed.
+- `slideThemes` included in `/api/me` response; no extra round-trips needed.
 
 ---
 
 ## 5. Authentication & Authorization
 
-Header value = email address or JWT (detected by exactly two `.` separators — no signature validation).
+Header value = email address or JWT (detected by exactly two `.` separators; no signature validation).
 
 **JWT email resolution** (first non-empty wins):
 
@@ -109,7 +109,7 @@ If neither present → HTTP 401.
 **User:** `{ id (= lowercased email), email, name, displayName, canEdit }`
 `displayName` = email local part split by `.`, each word capitalised. (`max.foo@x.com` → `Max Foo`)
 
-**Avatars:** `avatarColor(name)` — djb2 hash → HSL hue → `hsl(hue, 60%, 42%)`. Gravatar primary (SHA-256 proxied via `/api/avatar/:sha256hash`). `avatarInitials` fallback.
+**Avatars:** `avatarColor(name)` uses djb2 hash to HSL hue: `hsl(hue, 60%, 42%)`. Gravatar primary (SHA-256 proxied via `/api/avatar/:sha256hash`). `avatarInitials` fallback.
 
 **Git commit identity:** `displayName` + `email`.
 
@@ -150,13 +150,13 @@ Top `⋯` dropdown: **Image library** (`/images`), **Theme library** (`/t`).
 
 ### 7.1 Split-Pane Editor
 
-Toolbar spanning both panes: heading selector, Bold, Italic, Blockquote (left) + Cheatsheet (right). Left = textarea. Right = live Streamdown preview. Ctrl+S saves. Default mode is **view** — click Edit to enter edit mode.
+Toolbar spanning both panes: heading selector, Bold, Italic, Blockquote (left) + Cheatsheet (right). Left = textarea. Right = live Streamdown preview. Ctrl+S saves. Default mode is **view**; click Edit to enter edit mode.
 
 ### 7.2 View Mode
 
 Read-only Streamdown render → React DOM. XSS via `rehype-harden`. `prose prose-sm dark:prose-invert` typography.
 
-**Image syntax:** `![alt](url){width=300px}` — `{key=value}` after image applies inline CSS. Keys: `width`, `height`, `max-width`, `min-width`, `max-height`, `min-height`. Via `rehypeImageAttrsPlugin`.
+**Image syntax:** `![alt](url){width=300px}` adds `{key=value}` after the image to apply inline CSS. Keys: `width`, `height`, `max-width`, `min-width`, `max-height`, `min-height`. Via `rehypeImageAttrsPlugin`.
 
 ### 7.3 Save Behavior
 
@@ -190,7 +190,7 @@ Grid of all `images/*` files. Detail panel: preview, size, "Used in" links, dire
 
 ### 7.7 Theme Library (`/t`)
 
-Grid of all built-in + custom themes. Each card shows a real `ScaledSlide` thumbnail (title layout). Click opens a demo dialog (`SlideViewer`, 85vh) showing Title, Content, Section, Split layouts — plus any non-standard custom layout keys. Card size: 320px wide. Accessible from sidebar `⋯` → "Theme library".
+Grid of all built-in + custom themes. Each card shows a real `ScaledSlide` thumbnail (title layout). Click opens a demo dialog (`SlideViewer`, 85vh) showing Title, Content, Section, Split layouts, plus any non-standard custom layout keys. Card size: 320px wide. Accessible from sidebar `⋯` → "Theme library".
 
 ### 7.8 PDF Export
 
@@ -255,7 +255,7 @@ Controls bar: slide count / prev·counter·next; `Maximize`/`Minimize`, `Spotlig
 
 ### 11.2 Per-slide Directives
 
-`<!-- key: value -->` — parsed and stripped before rendering.
+`<!-- key: value -->` is parsed and stripped before rendering.
 
 | Directive               | Effect                                           |
 | ----------------------- | ------------------------------------------------ |
@@ -272,7 +272,7 @@ Controls bar: slide count / prev·counter·next; `Maximize`/`Minimize`, `Spotlig
 | `section` | Full-height flex centre, `text-center`, h2 = 3.5rem / 800 weight |
 | `center`  | Full-height flex centre, `text-center`, normal heading sizes     |
 | `split`   | Two equal columns at second `##`, vertical divider               |
-| `blank`   | `p-0` — full-bleed                                               |
+| `blank`   | `p-0`: full-bleed                                                |
 | `invert`  | Swaps `--slide-bg` / `--slide-fg`                                |
 
 ### 11.4 Slide Themes
@@ -374,7 +374,7 @@ Slim top bar (Logo, Search Ctrl+K, User avatar) + left sidebar + main content. P
 **`···` overflow menu (`PageMenuItems` component):**
 
 - Open in new tab / Copy link / Export as PDF (doc view mode only) / Move / Delete
-- New subpage, New alongside, Duplicate — shown only in sidebar menus (not FilePage header)
+- New subpage, New alongside, Duplicate: shown only in sidebar menus (not FilePage header)
 
 ### 13.3 Dark Mode
 

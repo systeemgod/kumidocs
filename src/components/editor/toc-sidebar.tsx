@@ -96,7 +96,7 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
       aria-label="Table of contents"
       className="w-72 shrink-0 border-l border-border bg-sidebar flex flex-col h-full overflow-hidden"
     >
-      {/* Header bar — matches PageInfoPanel */}
+      {/* Header bar: matches PageInfoPanel */}
       <div className="px-3 py-2 border-b border-border shrink-0">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <TextBulletListLtrRegular className="w-4 h-4 shrink-0" />

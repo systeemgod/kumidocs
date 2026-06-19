@@ -48,7 +48,7 @@ export default function usePagePresence(
       if (isDirtyRef.current) {
         setRemoteBanner(`${msg.changedByName} saved this page remotely`);
       } else {
-        // Release the edit lock before reloading — loadDoc calls
+        // Release the edit lock before reloading; loadDoc calls
         // setEditMode(false) but doesn't send the WS message to the server.
         if (editModeRef.current) {
           wsClient.stopEditing(filePath);
@@ -69,7 +69,7 @@ export default function usePagePresence(
     }
     if (msg.type === "save_conflict_lost" && msg.pageId === filePath) {
       toast.error("Your changes were lost due to a remote conflict.");
-      // Release the edit lock — the server kicked us out, make sure the WS
+      // Release the edit lock; the server kicked us out, make sure the WS
       // message is sent so other editors can claim the lock immediately.
       if (editModeRef.current) {
         wsClient.stopEditing(filePath);

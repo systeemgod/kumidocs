@@ -25,7 +25,7 @@ const EmailSetupDialog = (): JSX.Element => {
         <DialogHeader>
           <DialogTitle>Enter your email</DialogTitle>
           <p className="text-sm text-foreground">
-            No identity provider was detected. Enter your email to continue — it will be stored as a
+            No identity provider was detected. Enter your email to continue; it will be stored as a
             local cookie.
           </p>
         </DialogHeader>

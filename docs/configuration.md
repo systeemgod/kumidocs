@@ -31,7 +31,7 @@ See [[Getting Started]] for the Docker Compose SSO setup example.
 
 ## .kumidocs.json
 
-Place this file in the root of your repository. KumiDocs re-reads it after every background pull — changes take effect without restarting.
+Place this file in the root of your repository. KumiDocs re-reads it after every background pull; changes take effect without restarting.
 
 ```json
 {
@@ -46,11 +46,11 @@ Place this file in the root of your repository. KumiDocs re-reads it after every
 }
 ```
 
-| Key            | Type     | Description                                                                     |
-| -------------- | -------- | ------------------------------------------------------------------------------- |
-| `instanceName` | string   | Instance display name shown in the top bar                                      |
-| `editors`      | string[] | Email addresses allowed to edit. All authenticated users can view.              |
-| `slideThemes`  | object   | Custom slide theme definitions — see [Custom Themes](docs/slides/custom-themes) |
+| Key            | Type     | Description                                                                    |
+| -------------- | -------- | ------------------------------------------------------------------------------ |
+| `instanceName` | string   | Instance display name shown in the top bar                                     |
+| `editors`      | string[] | Email addresses allowed to edit. All authenticated users can view.             |
+| `slideThemes`  | object   | Custom slide theme definitions. See [Custom Themes](docs/slides/custom-themes) |
 
 ### editors
 
@@ -100,7 +100,7 @@ services:
     volumes:
       - /path/to/your/repo:/repo
       - /path/to/your/ssh:/root/.ssh:ro
-    # No external port — only reachable via the proxy
+    # No external port; only reachable via the proxy
 
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:latest
@@ -137,7 +137,7 @@ Files named `.kumidocs.json` and `_sidebar.md` are hidden from the sidebar. The 
 
 ## Git Remote
 
-KumiDocs does not configure the Git remote — it uses whatever is already in `.git/config`. Make sure your repo has a remote configured and that the server process has credentials to push to it (SSH key or credential helper).
+KumiDocs does not configure the Git remote; it uses whatever is already in `.git/config`. Make sure your repo has a remote configured and that the server process has credentials to push to it (SSH key or credential helper).
 
 ### SSH Keys
 

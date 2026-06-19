@@ -2,8 +2,8 @@
  * Wiki-link (`[[Page Name]]`) resolution for KumiDocs.
  *
  * Two parts:
- * 1. **Lookup map** — maps page titles and partial paths to real file paths
- * 2. **resolveWikilinks** — pre-processes raw markdown, replacing `[[target]]`
+ * 1. **Lookup map**: maps page titles and partial paths to real file paths
+ * 2. **resolveWikilinks**: pre-processes raw markdown, replacing `[[target]]`
  *    and `[[target|display text]]` with standard markdown links
  */
 
@@ -19,8 +19,8 @@ interface WikilinkLookup {
  * Regex to match wiki-link patterns: `[[target]]` or `[[target|display text]]`.
  *
  * Capture groups:
- * - `$1` — the link target (page name, path, etc.)
- * - `$2` — optional display text (when using `[[target|text]]`)
+ * - `$1`: the link target (page name, path, etc.)
+ * - `$2`: optional display text (when using `[[target|text]]`)
  */
 const WIKILINK_RE = /\[\[(?<target>[^\]]+?)(?:\|(?<display>[^\]]+))?\]\]/gu;
 
@@ -71,7 +71,7 @@ function resolveWikilinks(markdown: string, lookup: WikilinkLookup): string {
       return `[${display}](/p/${resolved.replace(/\.md$/u, "")})`;
     }
 
-    // Dead link — slugify target and link to create page
+    // Dead link: slugify target and link to create page
     const slug = trimmed
       .toLowerCase()
       .replaceAll(/[^\w\s-]/gu, "")

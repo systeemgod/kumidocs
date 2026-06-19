@@ -1,5 +1,5 @@
 /**
- * rehypeImageAttrs — rehype plugin that parses `{key=value …}` attribute blocks
+ * rehypeImageAttrs: rehype plugin that parses `{key=value ...}` attribute blocks
  * written immediately after an image in Markdown, and applies them as inline CSS.
  *
  * Supported syntax (no spaces inside the braces):
@@ -14,7 +14,7 @@
  */
 import type { Element, ElementContent, Root } from "hast";
 
-// Matches a {key=value …} block — no nested braces.
+// Matches a {key=value ...} block; no nested braces.
 const ATTRS_RE = /^\{(?<block>[^}]+)\}/u;
 // Matches individual key=value pairs. Values: alphanumeric chars plus - . % (no spaces).
 const PAIR_RE = /(?<key>[a-zA-Z-]+)=(?<value>[\w.%]+)/gu;
@@ -101,7 +101,7 @@ function walk(node: Root | Element): void {
       continue;
     }
 
-    // child is an <img> — look for an immediately following attribute block
+    // child is an <img>; look for an immediately following attribute block
     const sibling = children[idx + 1];
     const match =
       sibling?.type === "text" ? (ATTRS_RE.exec(sibling.value) ?? undefined) : undefined;
@@ -115,7 +115,7 @@ function walk(node: Root | Element): void {
 
     const hash = applyAttrs(child, attrs);
     // Also bust the parent element's memo (MemoParagraph wraps MemoImg
-    // and has its own sameClassAndNode comparator — if the paragraph's
+    // and has its own sameClassAndNode comparator; if the paragraph's
     // className doesn't change, MemoParagraph skips re-rendering entirely
     // and MemoImg never gets the updated props).
     if (node.type === "element") {

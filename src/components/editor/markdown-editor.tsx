@@ -154,7 +154,7 @@ export default function MarkdownEditor({
       </Dialog>
       {/* ── Two-pane content ── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left — editor */}
+        {/* Left: editor */}
         <div
           className={`flex-1 min-w-0 flex flex-col overflow-hidden${showPreview ? " border-r border-border" : ""}`}
         >
@@ -176,7 +176,7 @@ export default function MarkdownEditor({
           />
         </div>
 
-        {/* Right — live preview */}
+        {/* Right: live preview */}
         {showPreview && (
           <div className="flex-1 min-w-0 overflow-hidden">
             {fileType === "slide" ? (

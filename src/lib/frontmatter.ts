@@ -1,7 +1,7 @@
 /**
  * Minimal client-side frontmatter parser for KumiDocs metadata.
  * Only reads the fields KumiDocs manages; all other YAML fields are intentionally
- * discarded — KumiDocs does not attempt to round-trip arbitrary frontmatter.
+ * discarded; KumiDocs does not attempt to round-trip arbitrary frontmatter.
  *
  * Server-side code (filestore.ts, search.ts) uses gray-matter for full parsing.
  * This module exists to avoid a gray-matter browser-compatibility dependency.

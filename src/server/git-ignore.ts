@@ -24,7 +24,7 @@ function loadGlobalGitignore(): string | undefined {
       }
     }
   } catch {
-    // git not on PATH or config query failed — fall through to candidates
+    // git not on PATH or config query failed; fall through to candidates
   }
 
   // Common fallback locations
@@ -37,7 +37,7 @@ function loadGlobalGitignore(): string | undefined {
       try {
         return readFileSync(candidate, "utf8");
       } catch {
-        // unreadable — skip
+        // unreadable; skip
       }
     }
   }

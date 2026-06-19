@@ -74,7 +74,7 @@ function updateInIndex(path: string): void {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     index.remove({ id: path } as DocEntry);
   } catch {
-    // Document was not in the index yet (e.g. brand-new file) — nothing to remove
+    // Document was not in the index yet (e.g. brand-new file); nothing to remove
   }
   const docs = buildDocs([path]);
   const doc = docs[0];
@@ -95,7 +95,7 @@ function removeFromIndex(path: string): void {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     index.remove({ id: path } as DocEntry);
   } catch {
-    // Document was not in the index — nothing to remove
+    // Document was not in the index; nothing to remove
   }
 }
 

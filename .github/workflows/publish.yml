@@ -5,7 +5,7 @@ on:
         branches: [main]
     workflow_dispatch:
 
-# Minimal permissions — id-token is the only addition required for OIDC.
+# Minimal permissions: id-token is the only addition required for OIDC.
 permissions:
     contents: read
     id-token: write
@@ -20,7 +20,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            # Node 24 is required — npm 11.5.1+ is needed for OIDC Trusted Publishing.
+            # Node 24 is required; npm 11.5.1+ is needed for OIDC Trusted Publishing.
             # (Node 22 ships with npm 10 which does not support it.)
             - uses: actions/setup-node@v4
               with:
@@ -42,7 +42,7 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
-            # OIDC Trusted Publishing — no secrets required.
+            # OIDC Trusted Publishing: no secrets required.
             # Provenance attestation is generated automatically by npm when
             # publishing via trusted publishing from a public repository.
             - name: Publish

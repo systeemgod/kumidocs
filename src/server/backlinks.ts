@@ -3,7 +3,7 @@ import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import type { WikilinkLookup } from "@/lib/wikilinks";
 import matter from "gray-matter";
 
-/** A single backlink reference — another page that links to the current page. */
+/** A single backlink reference: another page that links to the current page. */
 interface BacklinkEntry {
   path: string;
   title: string;
@@ -25,7 +25,7 @@ function buildLookup(): WikilinkLookup {
     }
 
     const entry = parseFileEntry(filePath);
-    // byTitle: map display title to path (skip duplicates — first wins)
+    // byTitle: map display title to path (skip duplicates; first wins)
     if (entry.title && !(entry.title in byTitle)) {
       byTitle[entry.title] = filePath;
     }

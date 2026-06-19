@@ -1,5 +1,5 @@
 /**
- * Shared avatar utilities — used by both client components and server auth.
+ * Shared avatar utilities used by both client components and server auth.
  *
  * These functions are imported by:
  *   - src/server/auth.ts                       (emailToDisplayName for User.displayName)

@@ -17,7 +17,7 @@
  * individual method file, eliminating the methods/index.js intermediary.
  *
  * The production build (scripts/build.ts → Bun.build()) does NOT need this
- * patch — Bun.build() traces exports correctly.
+ * patch: Bun.build() traces exports correctly.
  */
 
 import { join } from "node:path";
@@ -25,7 +25,7 @@ import { writeFileSync } from "node:fs";
 
 const KHROMA_INDEX = join(import.meta.dir, "..", "node_modules", "khroma", "dist", "index.js");
 
-const PATCHED = `/* PATCHED by scripts/postinstall.js — Bun dev bundler compat.
+const PATCHED = `/* PATCHED by scripts/postinstall.js: Bun dev bundler compat.
  * Original: export * from './methods/index.js'
  * Bun's HMR bundler cannot trace deep ESM re-exports through
  * the methods/index.js intermediary (default imports → named re-exports). */
@@ -69,7 +69,7 @@ try {
   console.log("[postinstall] Patched khroma/dist/index.js for Bun dev bundler compatibility");
 } catch (error: unknown) {
   if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-    console.warn("[postinstall] khroma not installed — skipping patch");
+    console.warn("[postinstall] khroma not installed; skipping patch");
   } else {
     console.error("[postinstall] Failed to patch khroma:", error);
   }

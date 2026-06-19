@@ -10,7 +10,7 @@ import path from "node:path";
 const fileCache = new Map<string, string>(); // relPath -> content
 let treeCache: TreeNode[] | undefined; // invalidated on every write/delete/move
 
-// Paths written by this server process — watcher should not re-broadcast these.
+// Paths written by this server process; watcher should not re-broadcast these.
 const recentlyWritten = new Set<string>();
 function markWritten(relPath: string): void {
   recentlyWritten.add(relPath);
@@ -74,7 +74,7 @@ async function scanDir(basePath: string, dirPath: string, ig: IgnoreChecker): Pr
             fileCache.set(relPath, "");
           }
         } else {
-          // binary / image — register path but store empty string
+          // binary / image: register path but store empty string
           fileCache.set(relPath, "");
         }
       }
@@ -143,7 +143,7 @@ function moveInCache(from: string, to: string): void {
 }
 
 /** Return the text of the first `# Heading` line in a markdown body, or null.
- * Imported from @/lib/frontmatter — re-exported here for convenience.
+ * Imported from @/lib/frontmatter; re-exported here for convenience.
  */
 function parseFileEntry(filePath: string): FileEntry {
   const ext = pathExtension(filePath);

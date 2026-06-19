@@ -37,7 +37,7 @@ interface OptionDef {
   default: Config[keyof Config] | (() => Config[keyof Config]);
   /** One-line description used in --help output. */
   description: string;
-  /** When false, the flag takes no value — presence alone sets it to true. */
+  /** When false, the flag takes no value; presence alone sets it to true. */
   needsValue?: boolean;
 }
 
@@ -171,7 +171,7 @@ const FLAG_COLUMN_WIDTH = 22;
 
 const printHelp = (): void => {
   const lines = [
-    `kumidocs v${pkg.version} — ${pkg.description}`,
+    `kumidocs v${pkg.version}: ${pkg.description}`,
     "",
     "Usage:",
     "  bunx kumidocs [repo] [options]",
@@ -231,7 +231,7 @@ const loadConfig = (): Config => {
     const opt = OPTIONS.find((option) => option.flags.includes(arg ?? ""));
     if (opt) {
       if (opt.needsValue === false) {
-        // Boolean flags — presence alone sets the value to true
+        // Boolean flags: presence alone sets the value to true
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         (cliOverrides as Record<keyof Config, Config[keyof Config]>)[opt.key] =
           true as Config[keyof Config];

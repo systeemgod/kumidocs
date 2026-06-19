@@ -4,7 +4,7 @@ emoji: 👥
 
 # Collaboration
 
-KumiDocs supports real-time collaboration for up to ~20 concurrent users. All coordination happens over a persistent WebSocket connection — no polling.
+KumiDocs supports real-time collaboration for up to ~20 concurrent users. All coordination happens over a persistent WebSocket connection with no polling.
 
 See [[Getting Started]] for installation instructions and [[Writing Pages]] for the Markdown editor reference.
 
@@ -24,8 +24,8 @@ If your browser closes unexpectedly, the server auto-releases the lock after 90 
 
 Sidebar and page header show avatar stacks of who is viewing each page.
 
-- **Sidebar** — small avatars on the right of each page name.
-- **Page header** — avatar group showing all viewers of the current page.
+- **Sidebar**: small avatars on the right of each page name.
+- **Page header**: avatar group showing all viewers of the current page.
 
 Avatars use a colour derived from the user's name (djb2 hash → HSL) with Gravatar as the primary source and initials as fallback.
 
@@ -33,10 +33,10 @@ Avatars use a colour derived from the user's name (djb2 hash → HSL) with Grava
 
 When another user saves a page you have open:
 
-| Your state         | Behaviour                                            |
-| ------------------ | ---------------------------------------------------- |
-| No unsaved changes | Silent reload — content updates automatically        |
-| Unsaved changes    | Conflict banner appears — your changes are preserved |
+| Your state         | Behaviour                                           |
+| ------------------ | --------------------------------------------------- |
+| No unsaved changes | Silent reload: content updates automatically        |
+| Unsaved changes    | Conflict banner appears; your changes are preserved |
 
 The conflict banner lets you decide: discard your changes and reload, or continue editing and resolve the conflict manually.
 
@@ -71,7 +71,7 @@ If `git push` fails (another user pushed first), KumiDocs automatically:
 1. Runs `git fetch`
 2. Rebases local changes: `git rebase origin/<branch>`
 3. If rebase succeeds: force-pushes with lease
-4. If rebase fails: aborts the rebase, resets in-memory state to remote HEAD, and sends `save_conflict_lost` — you see an error toast and the page reloads to the latest remote version
+4. If rebase fails: aborts the rebase, resets in-memory state to remote HEAD, and sends `save_conflict_lost`. You see an error toast and the page reloads to the latest remote version
 
 This is a last resort. In practice, the edit lock prevents two users from writing the same file simultaneously.
 
@@ -111,14 +111,14 @@ For reference, the full WebSocket message protocol:
 
 ### Server → Client
 
-| Message              | Payload                                           | Description                        |
-| -------------------- | ------------------------------------------------- | ---------------------------------- |
-| `presence_update`    | `{ pageId, viewers[], editor }`                   | Presence changed on a page         |
-| `page_changed`       | `{ pageId, commitSha, changedBy, changedByName }` | Page saved by another user         |
-| `page_deleted`       | `{ pageId }`                                      | Page deleted                       |
-| `page_created`       | `{ pageId, path }`                                | New page created                   |
-| `save_conflict_lost` | `{ pageId, message }`                             | Rebase failed — local changes lost |
-| `heartbeat_ack`      | _(none)_                                          | Heartbeat acknowledged             |
+| Message              | Payload                                           | Description                       |
+| -------------------- | ------------------------------------------------- | --------------------------------- |
+| `presence_update`    | `{ pageId, viewers[], editor }`                   | Presence changed on a page        |
+| `page_changed`       | `{ pageId, commitSha, changedBy, changedByName }` | Page saved by another user        |
+| `page_deleted`       | `{ pageId }`                                      | Page deleted                      |
+| `page_created`       | `{ pageId, path }`                                | New page created                  |
+| `save_conflict_lost` | `{ pageId, message }`                             | Rebase failed; local changes lost |
+| `heartbeat_ack`      | _(none)_                                          | Heartbeat acknowledged            |
 
 ## Limits
 

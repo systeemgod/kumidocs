@@ -1,9 +1,9 @@
 /**
- * EmojiPicker — custom emoji grid using bundled Microsoft Fluent Emoji SVGs.
+ * EmojiPicker: custom emoji grid using bundled Microsoft Fluent Emoji SVGs.
  *
  * Uses the local emojimart-data-all-15.json for category + keyword metadata.
  * Every emoji cell is rendered by <EmojiIcon> for visual consistency with the rest
- * of the app. SVGs are baked into the JS bundle — zero HTTP requests.
+ * of the app. SVGs are baked into the JS bundle; zero HTTP requests.
  */
 import { memo, useMemo, useState } from "react";
 import EMOJI_SVGS from "./emoji/emojis";

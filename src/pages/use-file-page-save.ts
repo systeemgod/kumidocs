@@ -141,7 +141,7 @@ function useFilePageSave({
         try {
           await prev;
         } catch {
-          /* intentionally empty — previous save errors must not block the queue */
+          /* intentionally empty; previous save errors must not block the queue */
         }
         setSaveStatus("saving");
 
@@ -167,11 +167,11 @@ function useFilePageSave({
           setLastSha(data.sha);
           reloadTree();
           if (data.pushWarning === true) {
-            toast.warning("Saved locally. Remote push failed — check git remote config.");
+            toast.warning("Saved locally. Remote push failed: check git remote config.");
           }
         } catch (error: unknown) {
           setSaveStatus("error");
-          toast.error(error instanceof ApiError ? "Save failed." : "Save failed — network error.");
+          toast.error(error instanceof ApiError ? "Save failed." : "Save failed: network error.");
         }
       })();
       savePromiseRef.current = next;

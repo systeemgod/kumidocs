@@ -121,7 +121,7 @@ function SlideViewer({
           standalone ? "h-screen w-screen" : "h-full",
         )}
       >
-        {/* ── Spotlight overlay — bare fullscreen, slide only ── */}
+        {/* ── Spotlight overlay: bare fullscreen, slide only ── */}
         {isSpotlight && (
           <SlideSpotlightOverlay
             currentSlide={currentSlide}

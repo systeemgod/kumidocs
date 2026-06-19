@@ -151,10 +151,10 @@ function sanitizeSvg(raw: string): string {
       .replaceAll(/<script[^>]*\/>/giu, "")
       // <foreignObject> blocks (can embed arbitrary HTML/JS)
       .replaceAll(/<foreignObject[\s\S]*?<\/foreignObject\s*>/giu, "")
-      // <use> elements (blocks + self-closing) — can reference external SVGs with scripts
+      // <use> elements (blocks + self-closing) can reference external SVGs with scripts
       .replaceAll(/<use[\s\S]*?<\/use\s*>/giu, "")
       .replaceAll(/<use[^>]*\/>/giu, "")
-      // <animate>, <animateTransform>, <animateMotion>, <set> elements — animation-based XSS
+      // <animate>, <animateTransform>, <animateMotion>, <set> elements target animation-based XSS
       .replaceAll(
         /<(?:animate(?:Transform|Motion)?|set)[\s\S]*?<\/(?:animate(?:Transform|Motion)?|set)\s*>/giu,
         "",
@@ -174,7 +174,7 @@ function sanitizeSvg(raw: string): string {
 async function serveRepoAsset(assetPath: string, config: Config): Promise<Response> {
   const imagesDir = path.resolve(config.repoPath, "images");
   const fullPath = path.resolve(config.repoPath, assetPath);
-  // Restrict to the images/ subdirectory — isSafePath alone only prevents escaping
+  // Restrict to the images/ subdirectory; isSafePath alone only prevents escaping
   // repoPath, so a crafted path like 'images/../.env' would otherwise be served.
   const imagesDirPrefix = `${imagesDir}/`;
   if (!fullPath.startsWith(imagesDirPrefix) || fullPath === imagesDir) {
@@ -219,7 +219,7 @@ async function serveRepoAsset(assetPath: string, config: Config): Promise<Respon
   });
 }
 
-// GET /api/avatar/:hash — proxies Gravatar so the client never contacts Gravatar directly.
+// GET /api/avatar/:hash proxies Gravatar so the client never contacts Gravatar directly.
 // The hash must be a 64-char lowercase hex string (SHA-256).
 async function apiAvatarProxy(hash: string): Promise<Response> {
   if (!/^[0-9a-f]{64}$/u.test(hash)) {

@@ -158,7 +158,7 @@ function FilePageHeader({
 
       {/* Right: viewers + info + dropdown */}
       <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-        {/* Viewers — deduplicated by id (same user may have multiple tabs open) */}
+        {/* Viewers deduplicated by id (same user may have multiple tabs open) */}
         <div className="flex -space-x-1">
           {[...new Map(viewers.map((viewer) => [viewer.id, viewer])).values()]
             .slice(0, 5)
@@ -177,7 +177,7 @@ function FilePageHeader({
             ))}
         </div>
 
-        {/* TOC toggle — only for doc pages in view mode */}
+        {/* TOC toggle: only for doc pages in view mode */}
         {!editMode && fileType === "doc" && (
           <Button
             size="sm"

@@ -17,14 +17,14 @@ const sizeMap: Record<AvatarSize, { circle: string; text: string }> = {
 const HEX_RADIX = 16;
 
 interface UserAvatarProps extends ComponentProps<typeof AvatarPrimitive.Root> {
-  /** Display name — used for initials fallback and background color. */
+  /** Display name used for initials fallback and background color. */
   name: string;
-  /** User email — Gravatar SHA-256 hash is computed internally. */
+  /** User email; Gravatar SHA-256 hash is computed internally. */
   email?: string;
   size?: AvatarSize;
 }
 
-/** Compute a SHA-256 hex digest of a string — works in any context (no secure origin required). */
+/** Compute a SHA-256 hex digest of a string; works in any context (no secure origin required). */
 const sha256hex = (input: string): string => {
   const bytes = sha256(new TextEncoder().encode(input.trim().toLowerCase()));
   return [...bytes].map((byte) => byte.toString(HEX_RADIX).padStart(2, "0")).join("");
@@ -34,7 +34,7 @@ const sha256hex = (input: string): string => {
  * A self-contained user avatar.
  * Shows a Gravatar photo when `email` is provided and a matching Gravatar exists;
  * otherwise shows coloured initials derived deterministically from `name`.
- * The Gravatar hash is computed client-side via SHA-256 — never sent over the network.
+ * The Gravatar hash is computed client-side via SHA-256; never sent over the network.
  *
  * Usage:
  *   <UserAvatar name="Jane Doe" size="sm" />

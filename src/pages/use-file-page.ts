@@ -136,7 +136,7 @@ function useFilePage(): UseFilePageReturn {
         const lookup = await getPagesLookup();
         setPagesLookup(lookup);
       } catch {
-        // lookup unavailable — wikilinks render as dead links
+        // lookup unavailable; wikilinks render as dead links
       }
     })();
   });

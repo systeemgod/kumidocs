@@ -156,7 +156,7 @@ const wsClient = new WsClient();
 
 const useWsListener = (handler: WsListener): void => {
   // Keep a mutable ref so the WS listener always calls the latest handler
-  // without needing to re-register. Assigning in render is safe — refs are
+  // without needing to re-register. Assigning in render is safe; refs are
   // plain mutable containers and don't cause side effects.
   const handlerRef = useRef(handler);
   handlerRef.current = handler;

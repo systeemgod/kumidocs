@@ -89,7 +89,7 @@ function ScaledSlide({
   origin?: string;
   shadow?: boolean;
   rounded?: boolean;
-  /** Position absolute top-0 left-0 — used inside the scroll-mode tile wrapper */
+  /** Position absolute top-0 left-0, used inside the scroll-mode tile wrapper */
   absolute?: boolean;
 }): JSX.Element {
   const { directives } = slide;

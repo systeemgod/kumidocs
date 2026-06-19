@@ -34,11 +34,11 @@ paginate: true # show "N / Total" badge
 ---
 ```
 
-| Key        | Default   | Description                                       |
-| ---------- | --------- | ------------------------------------------------- | --------------- |
-| `slides`   | `false`   | Enable slide deck rendering                       |
-| `theme`    | `default` | Deck-wide theme — see [[Slide Decks#Custom Themes | custom themes]] |
-| `paginate` | `false`   | Show slide number badge                           |
+| Key        | Default   | Description                                      |
+| ---------- | --------- | ------------------------------------------------ | --------------- |
+| `slides`   | `false`   | Enable slide deck rendering                      |
+| `theme`    | `default` | Deck-wide theme. See [[Slide Decks#Custom Themes | custom themes]] |
+| `paginate` | `false`   | Show slide number badge                          |
 
 ## Canvas
 
@@ -104,15 +104,15 @@ Add `<!-- class: NAME -->` anywhere in a slide to apply a layout:
 
 | Class | Description |
 | --- | --- |
-| _(none)_ | Default flow layout — content stacks top to bottom |
+| _(none)_ | Default flow layout: content stacks top to bottom |
 | `title` | Full-height centred, `h1` at 3.5 rem |
 | `section` | Full-height centred, `h2` at 3.5 rem / bold |
 | `center` | Full-height centred, normal heading sizes |
 | `split` | Two equal columns split at the second `##` |
-| `blank` | Zero padding — full-bleed content |
+| `blank` | Zero padding: full-bleed content |
 | `invert` | Swaps background and foreground colours |
 
-See the [Layouts Demo](docs/slides/layouts) — a live slide deck showing every layout.
+See the [Layouts Demo](docs/slides/layouts), a live slide deck showing every layout.
 
 ## Per-Slide Directives
 
@@ -126,7 +126,7 @@ Override individual slides with HTML comment directives:
 
 The `bg` directive accepts any CSS `background` value: hex colours, `oklch()`, `linear-gradient()`, image URLs.
 
-See the [Directives Demo](docs/slides/directives) — a live slide deck showing every directive.
+See the [Directives Demo](docs/slides/directives), a live slide deck showing every directive.
 
 ## Themes
 

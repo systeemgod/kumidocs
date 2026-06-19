@@ -68,7 +68,7 @@ async function request<TResponse>(url: string, init?: RequestInit): Promise<TRes
     try {
       body = await res.json();
     } catch {
-      // body may not be JSON — ignore parse error
+      // body may not be JSON; ignore parse error
     }
     throw new ApiError(res.status, body);
   }

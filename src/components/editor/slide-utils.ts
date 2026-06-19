@@ -74,7 +74,7 @@ function splitSlides(content: string): string[] {
     if (fence === undefined) {
       const match = /^(?<fence>`{3,}|~{3,})/u.exec(trimmed);
       if (match) {
-        // Opening a fenced code block — capture the fence character string
+        // Opening a fenced code block; capture the fence character string
         fence = match[1] ?? "```";
         current.push(line);
         continue;
@@ -86,7 +86,7 @@ function splitSlides(content: string): string[] {
         continue;
       }
     } else {
-      // Inside a fence — check if this line closes it
+      // Inside a fence; check if this line closes it
       const closeRe = new RegExp(`^${fence[0] ?? "`"}{${String(fence.length)},}\\s*$`, "u");
       if (closeRe.test(trimmed)) {
         fence = undefined;

@@ -71,7 +71,7 @@ export default function AppShell(): JSX.Element {
     }
   }, []);
 
-  // Debounced variant — coalesces burst WS events (e.g. multi-file git pull)
+  // Debounced variant coalesces burst WS events (e.g. multi-file git pull)
   // into a single /api/tree fetch 200 ms after the last event.
   const scheduleTreeReload = useCallback((): void => {
     clearTimeout(treeReloadTimer.current);
@@ -221,9 +221,9 @@ export default function AppShell(): JSX.Element {
       message = "Remote sync is unreachable. Changes are saved locally.";
     } else if (syncStatus.push === "failing") {
       message =
-        "Remote sync is degraded — saves are local-only. Changes will be pushed when the remote is reachable again.";
+        "Remote sync is degraded: saves are local-only. Changes will be pushed when the remote is reachable again.";
     } else {
-      message = "Remote sync is degraded — pull from remote failed.";
+      message = "Remote sync is degraded: pull from remote failed.";
     }
     return (
       <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-1.5 flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200 shrink-0">
