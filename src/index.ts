@@ -27,7 +27,7 @@ import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
-import buildRoutes, { serveSPA, devIndex } from "./server/router";
+import buildRoutes, { serveSPA } from "./server/router";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -258,7 +258,7 @@ const server = serve<WsData>({
     hmr: true,
   },
 
-  fetch(req, srv): Response | undefined {
+  fetch(req, srv): Response | Promise<Response> | undefined {
     const url = new URL(req.url);
 
     // WebSocket upgrade
@@ -283,7 +283,8 @@ const server = serve<WsData>({
     if (typeof __BUNDLED__ !== "undefined") {
       return serveSPA(req);
     }
-    return new Response(devIndex, {
+    // Dev mode: serve the source index.html directly
+    return new Response(Bun.file(path.join(import.meta.dir, "index.html")), {
       headers: {
         "Content-Type": "text/html",
       },

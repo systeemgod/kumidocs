@@ -19,7 +19,6 @@ import {
   serveRepoAsset,
 } from "./api";
 import { makeUser } from "./auth";
-import devIndex from "@/index.html";
 import path from "node:path";
 import RateLimiter from "./rate-limit";
 import type { Config } from "./config";
@@ -282,4 +281,4 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
 }
 
 export default buildRoutes;
-export { serveSPA, devIndex };
+export { serveSPA };
