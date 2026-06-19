@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,10 @@ import type { ReactNode } from "react";
 import { toast } from "@/components/ui/toaster";
 import useMountEffect from "@/hooks/use-mount-effect";
 import { useUser } from "@/store/user";
+
+interface OutletCtx {
+  instanceName: string;
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
@@ -177,8 +181,13 @@ function ImageDetailPanel({
 export default function ImageLibraryPage(): JSX.Element {
   const { filename } = useParams<{ filename?: string }>();
   const navigate = useNavigate();
+  const { instanceName } = useOutletContext<OutletCtx>();
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useMountEffect(() => {
+    document.title = `Image Library | ${instanceName}`;
+  });
 
   const fetchImages = useCallback(async () => {
     try {

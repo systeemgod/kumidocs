@@ -5,7 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { parseSlideDirectives } from "@/lib/slide";
 import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { useUser } from "@/store/user";
+import useMountEffect from "@/hooks/use-mount-effect";
+
+interface OutletCtx {
+  instanceName: string;
+}
 
 const CARD_W = 320;
 const CARD_SCALE = CARD_W / SLIDE_W;
@@ -217,8 +223,13 @@ const ThemesGrid = (allProps: ThemesGridProps): JSX.Element => {
 
 const ThemeLibraryPage = (): JSX.Element => {
   const { slideThemes } = useUser();
+  const { instanceName } = useOutletContext<OutletCtx>();
   const [active, setActive] = useState<ActiveItem>();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  useMountEffect(() => {
+    document.title = `Theme Library | ${instanceName}`;
+  });
   const customEntries = Object.entries(slideThemes);
   const total = BUILTIN_THEMES.length + customEntries.length;
   let themeLabel = "themes";

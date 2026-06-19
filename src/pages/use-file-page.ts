@@ -3,7 +3,7 @@ import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { computeTitle, resolveFileType } from "./file-page-utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import type { SaveStatus } from "./use-file-page-save";
@@ -23,6 +23,7 @@ import { wsClient } from "@/store/ws";
 
 interface OutletCtx {
   autoSaveDelay: number;
+  instanceName: string;
   reloadTree: () => void;
 }
 interface UseFilePageReturn {
@@ -71,7 +72,7 @@ function useFilePage(): UseFilePageReturn {
   const { "*": rawPath = "" } = useParams();
   const [filePath, setFilePath] = useState(rawPath.includes(".") ? rawPath : `${rawPath}.md`);
   const navigate = useNavigate();
-  const { reloadTree, autoSaveDelay } = useOutletContext<OutletCtx>();
+  const { reloadTree, autoSaveDelay, instanceName } = useOutletContext<OutletCtx>();
   const { user, slideThemes } = useUser();
 
   const [editMode, setEditMode] = useState(false);
@@ -112,6 +113,18 @@ function useFilePage(): UseFilePageReturn {
   const rawExt = pathExtension(filePath);
   const fileType = resolveFileType(rawExt, meta.slides);
   const title = computeTitle(fileType, content, filePath);
+
+  // ── Document title ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (loading) {
+      document.title = "Loading…";
+    } else if (title) {
+      document.title = `${title} | ${instanceName}`;
+    } else {
+      document.title = instanceName;
+    }
+  }, [title, instanceName, loading]);
+
   const breadcrumb = filePath.replace(/\.md$/u, "").split("/").slice(0, -1);
   const { exportPagePdf, pdfContentRef } = usePagePdfExport(title);
 

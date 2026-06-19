@@ -267,7 +267,7 @@ export default function AppShell(): JSX.Element {
         />
 
         <main className="flex-1 overflow-hidden flex flex-col">
-          <Outlet context={{ autoSaveDelay, reloadTree: loadTree }} />
+          <Outlet context={{ autoSaveDelay, instanceName, reloadTree: loadTree }} />
         </main>
       </div>
 
