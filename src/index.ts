@@ -27,7 +27,7 @@ import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
-import buildRoutes, { serveSPA } from "./server/router";
+import buildRoutes, { routeRequest, serveSPA } from "./server/router";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -251,6 +251,10 @@ setTimeout(() => {
 // Prune dead WS sessions every 30s
 setInterval(pruneDeadSessions, 30_000);
 
+// Build the route table once; used for both Bun's native routes (production)
+// and the manual dispatch fallback in fetch (dev mode).
+const routeTable = buildRoutes(config, requireUser);
+
 const server = serve<WsData>({
   // oxlint-disable-next-line node/no-process-env
   development: process.env.NODE_ENV !== "production" && {
@@ -278,12 +282,20 @@ const server = serve<WsData>({
       return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
     }
 
-    // Fall through to SPA for all other paths
     // oxlint-disable-next-line no-underscore-dangle
     if (typeof __BUNDLED__ !== "undefined") {
+      // Production: Bun's native routes handle API calls, fetch only serves SPA
       return serveSPA(req);
     }
-    // Dev mode: serve the source index.html directly
+
+    // Dev mode: Bun's native routes may not work with --hot + hmr,
+    // so dispatch API routes manually via the route table.
+    const apiResult = routeRequest(routeTable, req);
+    if (apiResult !== undefined) {
+      return apiResult;
+    }
+
+    // Everything else → SPA fallback
     return new Response(Bun.file(path.join(import.meta.dir, "index.html")), {
       headers: {
         "Content-Type": "text/html",
@@ -293,7 +305,7 @@ const server = serve<WsData>({
 
   port: config.port,
 
-  routes: buildRoutes(config, requireUser),
+  routes: routeTable,
 
   websocket: {
     close: wsClose,
