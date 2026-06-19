@@ -18,7 +18,27 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { PageMenuItems } from "@/components/ui/page-menu-items";
 import { UserAvatar } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/toaster";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+function getParentDir(path: string): string {
+  return path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "";
+}
+
+async function handleDuplicatePage(path: string, navigate: (to: string) => void): Promise<void> {
+  try {
+    const data = await getFile(path);
+    const newPath = `${path.replace(/\.md$/iu, "")}-copy.md`;
+    await createFile(newPath, data.content);
+    toast.success("Page duplicated");
+    navigate(`/p/${newPath}`);
+  } catch (error: unknown) {
+    if (error instanceof ApiError && error.status === 409) {
+      toast.error("A copy already exists at that path");
+    } else {
+      toast.error("Duplicate failed");
+    }
+  }
+}
 
 function PageNodeRow({
   node,
@@ -44,123 +64,105 @@ function PageNodeRow({
   const hasChildren = node.children.length > 0;
   const href = `/p/${node.path}`.replace(/\.md$/iu, "");
   const isActive = location.pathname === href;
-  const isAncestor = hasChildren && location.pathname.startsWith(href + "/");
+  const isAncestor = hasChildren && location.pathname.startsWith(`${href}/`);
 
   const [open, setOpen] = useState(depth < defaultDepth || isAncestor);
 
   // Sync open state when defaultDepth changes or when navigating to a different page
   useEffect(() => {
-    if (isAncestor) {
-      setOpen(true);
-    } else {
-      setOpen(depth < defaultDepth);
-    }
+    setOpen(isAncestor || depth < defaultDepth);
   }, [defaultDepth, depth, isAncestor]);
   const [dotsHovered, setDotsHovered] = useState(false);
   const [dotsOpen, setDotsOpen] = useState(false);
   const othersOnPage = presenceByPage.get(node.path) ?? [];
-  const presenceUsers =
+  const selfPresence =
     isActive && currentUser
-      ? [
-          { email: currentUser.email, id: currentUser.id, name: currentUser.displayName },
-          ...othersOnPage,
-        ]
-      : othersOnPage;
+      ? [{ email: currentUser.email, id: currentUser.id, name: currentUser.displayName }]
+      : [];
+  const presenceUsers = [...selfPresence, ...othersOnPage];
   const indent = 8 + depth * 14;
-  const parentDir = node.path.includes("/") ? node.path.slice(0, node.path.lastIndexOf("/")) : "";
+  const parentDir = getParentDir(node.path);
+  const rowClassName = `group flex items-center gap-1 px-2 py-[3px] rounded text-sm select-none min-w-0 ${
+    isActive
+      ? "bg-accent text-accent-foreground font-medium"
+      : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+  }`;
+  const iconClassName = `flex items-center justify-center ${node.isVirtual ? "opacity-40 shrink-0" : "shrink-0"}`;
 
-  const handleDuplicate = async (): Promise<void> => {
-    try {
-      const data = await getFile(node.path);
-      const newPath = `${node.path.replace(/\.md$/iu, "")}-copy.md`;
-      await createFile(newPath, data.content);
-      toast.success("Page duplicated");
-      void navigate(`/p/${newPath}`);
-    } catch (error: unknown) {
-      if (error instanceof ApiError && error.status === 409) {
-        toast.error("A copy already exists at that path");
-      } else {
-        toast.error("Duplicate failed");
-      }
-    }
-  };
+  const handleDuplicate = useCallback(() => {
+    void handleDuplicatePage(node.path, navigate);
+  }, [node.path, navigate]);
+
+  const entry = node.fileEntry;
+  const entryEmoji = entry?.emoji;
+  const entryType = entry?.type ?? "doc";
+  const linkClass = `truncate flex-1 min-w-0${node.isVirtual ? " italic opacity-50" : ""}`;
+
+  const dotsIcon =
+    dotsHovered || dotsOpen ? (
+      <MoreHorizontalFilled className="w-4 h-4" />
+    ) : (
+      <MoreHorizontalRegular className="w-4 h-4" />
+    );
+
+  const chevron = hasChildren && (
+    <span
+      className="shrink-0 w-3 h-3 flex items-center justify-center cursor-pointer"
+      onClick={(ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        setOpen((prev) => !prev);
+      }}
+    >
+      {open ? (
+        <ChevronDownRegular className="w-3 h-3" />
+      ) : (
+        <ChevronRightRegular className="w-3 h-3" />
+      )}
+    </span>
+  );
+
+  const presenceEl = presenceUsers.slice(0, 3).length > 0 && (
+    <div className="flex items-center shrink-0 -space-x-1">
+      {presenceUsers.slice(0, 3).map((user) => (
+        <Tooltip key={user.id}>
+          <TooltipTrigger asChild>
+            <UserAvatar
+              name={user.name}
+              email={user.email}
+              size="xs"
+              className="ring-1 ring-sidebar cursor-default"
+            />
+          </TooltipTrigger>
+          <TooltipContent>{user.id === currentUser?.id ? "You" : user.name}</TooltipContent>
+        </Tooltip>
+      ))}
+      {presenceUsers.length > 3 && (
+        <div className="w-[18px] h-[18px] rounded-full bg-muted flex items-center justify-center text-[7px] font-bold ring-1 ring-sidebar text-muted-foreground cursor-default shrink-0">
+          +{presenceUsers.length - 3}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="w-full">
       <ContextMenu>
         <ContextMenuTrigger asChild>
-          <div
-            className={`group flex items-center gap-1 px-2 py-[3px] rounded text-sm select-none min-w-0 ${
-              isActive
-                ? "bg-accent text-accent-foreground font-medium"
-                : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
-            }`}
-            style={{ paddingLeft: `${String(indent)}px` }}
-          >
-            {/* Chevron — toggles expand without navigating */}
-            <span
-              className="shrink-0 w-3 h-3 flex items-center justify-center cursor-pointer"
-              onClick={(ev) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                if (hasChildren) {
-                  setOpen((prev) => !prev);
-                }
-              }}
-            >
-              {hasChildren &&
-                (open ? (
-                  <ChevronDownRegular className="w-3 h-3" />
-                ) : (
-                  <ChevronRightRegular className="w-3 h-3" />
-                ))}
-            </span>
+          <div className={rowClassName} style={{ paddingLeft: `${String(indent)}px` }}>
+            {chevron}
 
             {/* Page icon */}
-            <span
-              className={`flex items-center justify-center ${node.isVirtual ? "opacity-40 shrink-0" : "shrink-0"}`}
-            >
-              <EmojiIcon
-                emoji={node.fileEntry?.emoji}
-                fileType={node.fileEntry?.type ?? "doc"}
-                size={24}
-              />
+            <span className={iconClassName}>
+              <EmojiIcon emoji={entryEmoji} fileType={entryType} size={24} />
             </span>
 
             {/* Title navigates on click */}
-            <Link
-              to={href}
-              className={`truncate flex-1 min-w-0 ${node.isVirtual ? "italic opacity-50" : ""}`}
-              title={node.displayTitle}
-            >
+            <Link to={href} className={linkClass} title={node.displayTitle}>
               <TitleWithEmoji title={node.displayTitle} />
             </Link>
 
-            {/* Presence avatars — users currently on this page */}
-            {presenceUsers.length > 0 && (
-              <div className="flex items-center shrink-0 -space-x-1">
-                {presenceUsers.slice(0, 3).map((user) => (
-                  <Tooltip key={user.id}>
-                    <TooltipTrigger asChild>
-                      <UserAvatar
-                        name={user.name}
-                        email={user.email}
-                        size="xs"
-                        className="ring-1 ring-sidebar cursor-default"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {user.id === currentUser?.id ? "You" : user.name}
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-                {presenceUsers.length > 3 && (
-                  <div className="w-[18px] h-[18px] rounded-full bg-muted flex items-center justify-center text-[7px] font-bold ring-1 ring-sidebar text-muted-foreground cursor-default shrink-0">
-                    +{presenceUsers.length - 3}
-                  </div>
-                )}
-              </div>
-            )}
+            {presenceEl}
 
             {/* 3-dot menu — visible on hover, same actions as right-click */}
             <DropdownMenu onOpenChange={setDotsOpen}>
@@ -177,11 +179,7 @@ function PageNodeRow({
                     setDotsHovered(false);
                   }}
                 >
-                  {dotsHovered || dotsOpen ? (
-                    <MoreHorizontalFilled className="w-4 h-4" />
-                  ) : (
-                    <MoreHorizontalRegular className="w-4 h-4" />
-                  )}
+                  {dotsIcon}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="start">
@@ -195,7 +193,7 @@ function PageNodeRow({
                   onNewSubPage={onNewSubPage}
                   onNewPage={onNewSubPage}
                   onDuplicate={() => {
-                    void handleDuplicate();
+                    handleDuplicate();
                   }}
                   onMove={onMove}
                   onDelete={onDelete}
@@ -216,7 +214,7 @@ function PageNodeRow({
             onNewSubPage={onNewSubPage}
             onNewPage={onNewSubPage}
             onDuplicate={() => {
-              void handleDuplicate();
+              handleDuplicate();
             }}
             onMove={onMove}
             onDelete={onDelete}
