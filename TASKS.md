@@ -1,12 +1,8 @@
 # Tasks & Feature Ideas
 
-> Ordered by estimated impact, not priority — pick whatever excites you.
-
 ---
 
-## � Medium Impact
-
-### 7. Keyboard Shortcuts Reference
+### Keyboard Shortcuts Reference
 
 A `?` dialog listing all available keyboard shortcuts.
 
@@ -27,48 +23,6 @@ A `?` dialog listing all available keyboard shortcuts.
 
 - New: `src/components/dialogs/shortcuts-dialog.tsx`
 - `src/components/layout/app-shell.tsx` (global listener + dialog)
-
----
-
-### 8. Tag / Label System
-
-Frontmatter-based tags with a tag cloud page and search filtering.
-
-**Approach**:
-
-- Parse `tags: [api, reference, v2]` from frontmatter
-- Index them in MiniSearch (separate field)
-- Create `/tags` route showing all tags as a cloud/chip grid, each linking to a filtered search
-- Add tag chips to search results and page headers
-- Filter search by tag: `GET /api/search?q=&tag=api`
-
-**Files to touch**:
-
-- `src/lib/frontmatter.ts` (parse tags from frontmatter)
-- `src/server/search.ts` (index + filter tags)
-- `src/pages/tags-page.tsx` (new)
-- `src/app.tsx` (register `/tags` route)
-- `src/components/layout/sidebar.tsx` (add to overflow menu)
-
----
-
-## 🛠 Quick Fixes / Polish
-
-### 10. Configurable Rate Limit
-
-The rate limiter is hardcoded at 30 mutations per 10 seconds.
-
-**Approach**:
-
-- Add `KUMIDOCS_RATE_LIMIT` env var + `--rate-limit` flag
-- Format: `count/window_ms` (e.g. `60/10000`)
-- Fall back to current `30/10000` default
-
-**Files to touch**:
-
-- `src/server/config.ts` (add `rateLimit` option)
-- `src/server/router.ts` (pass config to `RateLimiter` constructor)
-- `src/server/rate-limit.ts` (accept configurable values)
 
 ---
 
