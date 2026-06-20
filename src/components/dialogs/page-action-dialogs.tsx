@@ -187,7 +187,7 @@ function PageActionDialogs({
               <p className="text-xs text-muted-foreground">→ {previewPath}</p>
             </div>
           </div>
-          {moveError && (
+          {moveError !== undefined && moveError !== "" && (
             <p className="text-xs text-red-600 dark:text-red-400 text-center">{moveError}</p>
           )}
           <DialogFooter>
@@ -224,7 +224,7 @@ function PageActionDialogs({
               commit the change to git. This cannot be undone from the UI.
             </DialogDescription>
           </DialogHeader>
-          {deleteError && (
+          {deleteError !== undefined && deleteError !== "" && (
             <p className="text-xs text-red-600 dark:text-red-400 text-center">{deleteError}</p>
           )}
           <DialogFooter>

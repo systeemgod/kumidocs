@@ -258,7 +258,7 @@ const server = serve<WsData>({
     hmr: true,
   },
 
-  fetch(req, srv) {
+  async fetch(req, srv) {
     const url = new URL(req.url);
 
     // WebSocket upgrade (checked before API/SPA fallthrough)

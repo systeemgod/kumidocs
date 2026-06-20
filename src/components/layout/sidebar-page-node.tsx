@@ -89,6 +89,7 @@ async function handleDuplicatePage(
   }
 }
 
+// oxlint-disable-next-line complexity
 function PageNodeRow({
   node,
   depth,
@@ -258,7 +259,7 @@ function PageNodeRow({
         </ContextMenuContent>
       </ContextMenu>
 
-      {sidebarDuplicateError && (
+      {sidebarDuplicateError !== undefined && sidebarDuplicateError !== "" && (
         <p
           className="text-xs text-red-600 dark:text-red-400 px-3 pt-0.5 pb-1 cursor-pointer"
           onClick={() => {

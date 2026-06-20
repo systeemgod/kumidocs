@@ -11,7 +11,9 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 
 type ConnectionState = "connecting" | "connected" | "disconnected";
 
+// oxlint-disable-next-line eslint/no-underscore-dangle
 let _connectionState: ConnectionState = "disconnected";
+// oxlint-disable-next-line eslint/no-underscore-dangle
 const _stateSubscribers = new Set<(state: ConnectionState) => void>();
 
 const notifyState = (state: ConnectionState): void => {

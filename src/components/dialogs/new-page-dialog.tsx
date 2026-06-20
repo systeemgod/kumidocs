@@ -188,7 +188,7 @@ export default function NewPageDialog({
           )}
         </div>
 
-        {createError && (
+        {createError !== undefined && createError !== "" && (
           <p className="text-xs text-red-600 dark:text-red-400 text-center">{createError}</p>
         )}
 

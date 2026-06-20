@@ -86,7 +86,7 @@ export default function FilePage(): JSX.Element {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Error banners */}
-      {loadError && (
+      {loadError !== undefined && loadError !== "" && (
         <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
           <span className="flex-1">{loadError}</span>
           <Button
@@ -105,7 +105,7 @@ export default function FilePage(): JSX.Element {
           </Button>
         </div>
       )}
-      {saveError && (
+      {saveError !== undefined && saveError !== "" && (
         <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
           <span className="flex-1">{saveError}</span>
           <Button
@@ -120,7 +120,7 @@ export default function FilePage(): JSX.Element {
           </Button>
         </div>
       )}
-      {duplicateError && (
+      {duplicateError !== undefined && duplicateError !== "" && (
         <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
           <span className="flex-1">{duplicateError}</span>
           <Button
@@ -145,7 +145,7 @@ export default function FilePage(): JSX.Element {
           </Button>
         </div>
       )}
-      {conflictBanner && (
+      {conflictBanner !== undefined && conflictBanner !== "" && (
         <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
           <span className="flex-1">{conflictBanner}</span>
           <Button

@@ -245,7 +245,7 @@ export default function AppShell(): JSX.Element {
     }
 
     // Config load error
-    if (configError) {
+    if (configError !== undefined && configError !== "") {
       banners.push(
         <div
           key="config"
@@ -267,7 +267,7 @@ export default function AppShell(): JSX.Element {
     }
 
     // Tree load error
-    if (treeError) {
+    if (treeError !== undefined && treeError !== "") {
       banners.push(
         <div
           key="tree"

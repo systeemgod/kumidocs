@@ -19,7 +19,6 @@ import {
   serveRepoAsset,
 } from "./api";
 import { makeUser } from "./auth";
-import devIndex from "@/index.html";
 import path from "node:path";
 import RateLimiter from "./rate-limit";
 import type { Config } from "./config";
@@ -64,12 +63,14 @@ async function serveCatchAll(req: Request): Promise<Response> {
   if (isBundled) {
     return serveSPA(req);
   }
-  return new Response(String(devIndex), {
+  // In dev mode, serve the raw index.html for Vite/Bun HMR.
+  const html = await Bun.file(
+    path.join(import.meta.dir, "..", "index.html"),
+  ).text();
+  return new Response(html, {
     headers: { "Content-Type": "text/html" },
   });
 }
-
-export { serveCatchAll, serveSPA };
 
 function buildRoutes(config: Config, requireUser: RequireUser): Record<string, unknown> {
   /** Per-user rate limiter with configurable limits. */
@@ -293,4 +294,5 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
   };
 }
 
+export { serveCatchAll, serveSPA };
 export default buildRoutes;
