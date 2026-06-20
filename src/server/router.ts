@@ -63,10 +63,18 @@ async function serveCatchAll(req: Request): Promise<Response> {
   if (isBundled) {
     return serveSPA(req);
   }
-  // In dev mode, serve the raw index.html for Bun HMR.
-  const html = await Bun.file(
-    path.join(import.meta.dir, "..", "index.html"),
-  ).text();
+  // Dev mode: try to serve the file from the source tree first (Bun's HMR
+  // transpiles .tsx/.ts on the fly), then fall back to index.html for SPA routes.
+  const srcDir = path.join(import.meta.dir, "..");
+  const relPath = new URL(req.url).pathname.replace(/^\//u, "") || "index.html";
+  const filePath = path.join(srcDir, relPath);
+  if (filePath.startsWith(srcDir + path.sep)) {
+    const file = Bun.file(filePath);
+    if (await file.exists()) {
+      return new Response(file);
+    }
+  }
+  const html = await Bun.file(path.join(srcDir, "index.html")).text();
   return new Response(html, {
     headers: { "Content-Type": "text/html" },
   });
