@@ -189,7 +189,7 @@ export default function MarkdownEditor({
               />
             ) : (
               <div ref={previewRef} className="h-full overflow-y-auto">
-                <MarkdownViewer value={previewValue} />
+                <MarkdownViewer key={previewValue} value={previewValue} />
               </div>
             )}
           </div>

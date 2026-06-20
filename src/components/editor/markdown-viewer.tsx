@@ -91,7 +91,7 @@ const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
   return (
     <div className="prose prose-table:my-0 prose-img:my-0 prose-pre:my-0 prose-pre:bg-transparent prose-pre:text-foreground dark:prose-invert max-w-none px-8 py-6">
       <Streamdown
-        mode="static"
+        mode="streaming"
         plugins={{ cjk, code, math, mermaid }}
         shikiTheme={["github-light", "github-dark"]}
         linkSafety={{ enabled: false }}
