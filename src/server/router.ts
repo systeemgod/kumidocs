@@ -19,6 +19,7 @@ import {
   serveRepoAsset,
 } from "./api";
 import { makeUser } from "./auth";
+import devIndex from "@/index.html";
 import path from "node:path";
 import RateLimiter from "./rate-limit";
 import type { Config } from "./config";
@@ -58,23 +59,13 @@ async function serveSPA(req: Request): Promise<Response> {
 
 type RequireUser = (req: Request) => User | undefined;
 
-/** Serves the SPA entry point in both dev and bundled modes. */
-async function serveCatchAll(req: Request): Promise<Response> {
-  if (isBundled) {
-    return serveSPA(req);
-  }
-  // In dev mode, serve the raw index.html for Vite/Bun HMR.
-  const html = await Bun.file(path.join(import.meta.dir, "..", "index.html")).text();
-  return new Response(html, {
-    headers: { "Content-Type": "text/html" },
-  });
-}
-
 function buildRoutes(config: Config, requireUser: RequireUser): Record<string, unknown> {
   /** Per-user rate limiter with configurable limits. */
   const mutationLimiter = new RateLimiter(config.rateLimit.count, config.rateLimit.windowMs);
   mutationLimiter.startCleanup();
   return {
+    "/*": isBundled ? serveSPA : devIndex,
+
     "/api/auth/email": {
       async POST(req: Request) {
         let body: unknown;
@@ -292,5 +283,5 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
   };
 }
 
-export { serveCatchAll, serveSPA };
+export { serveSPA };
 export default buildRoutes;
