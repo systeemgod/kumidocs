@@ -26,7 +26,7 @@ const UserContext = createContext<UserContextValue>({
   setEmailAndRefetch: () => {
     globalThis.location.reload();
   },
-  sidebarDefaultDepth: 2,
+  sidebarDefaultDepth: 0,
   slideThemes: {},
 });
 
@@ -58,7 +58,7 @@ const fetchMe = async (): Promise<FetchMeResult> => {
     };
   } catch (error: unknown) {
     const needs401 = error instanceof ApiError && error.status === HTTP_UNAUTHORIZED;
-    return { needs401, sidebarDefaultDepth: 2, slideThemes: {} };
+    return { needs401, sidebarDefaultDepth: 0, slideThemes: {} };    
   }
 };
 
@@ -68,7 +68,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   const [loading, setLoading] = useState(true);
   const [needsEmailSetup, setNeedsEmailSetup] = useState(false);
   const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
-  const [sidebarDefaultDepth, setSidebarDefaultDepth] = useState(2);
+  const [sidebarDefaultDepth, setSidebarDefaultDepth] = useState(0);
 
   useMountEffect(() => {
     void (async (): Promise<void> => {
