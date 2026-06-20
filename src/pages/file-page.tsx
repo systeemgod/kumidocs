@@ -6,6 +6,7 @@ import PageInfoPanel from "@/components/layout/page-info-panel";
 import TocSidebar from "@/components/editor/toc-sidebar";
 import { buildEditorContent } from "./file-page-utils";
 import { useFilePage } from "./use-file-page";
+import { useEffect } from "react";
 
 export default function FilePage(): JSX.Element {
   const {
@@ -54,6 +55,21 @@ export default function FilePage(): JSX.Element {
     conflictBanner,
     setConflictBanner,
   } = useFilePage();
+
+  // Warn before closing/tab away if there are unsaved changes.
+  useEffect(() => {
+    if (saveStatus !== "unsaved") {
+      return;
+    }
+    const handler = (ev: BeforeUnloadEvent): void => {
+      ev.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    // oxlint-disable-next-line typescript/consistent-return
+    return function cleanup(): void {
+      window.removeEventListener("beforeunload", handler);
+    };
+  }, [saveStatus]);
 
   if (loading) {
     return (

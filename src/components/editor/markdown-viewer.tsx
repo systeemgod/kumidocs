@@ -79,7 +79,24 @@ const AnchorComponent = (allProps: { href?: string; children?: ReactNode }): JSX
 };
 
 // oxfmt-ignore
-const COMPONENTS = { "a": AnchorComponent, "kumi-emoji": KumiEmojiComponent };
+// oxlint-disable-next-line id-length
+const COMPONENTS: Record<string, (props: Record<string, unknown>) => JSX.Element> = {
+  // oxlint-disable-next-line id-length
+  a: AnchorComponent,
+  img: (allProps: { src?: string; alt?: string; title?: string }): JSX.Element => {
+    const { src, alt, title } = allProps;
+    return (
+      <img
+        src={src}
+        alt={alt ?? ""}
+        title={title}
+        className="rounded-lg max-w-full h-auto"
+        loading="lazy"
+      />
+    );
+  },
+  "kumi-emoji": KumiEmojiComponent,
+};
 
 const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
   const { value } = allProps;
