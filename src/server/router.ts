@@ -19,6 +19,7 @@ import {
   serveRepoAsset,
 } from "./api";
 import { makeUser } from "./auth";
+import devIndex from "@/index.html";
 import path from "node:path";
 import RateLimiter from "./rate-limit";
 import type { Config } from "./config";
@@ -58,33 +59,16 @@ async function serveSPA(req: Request): Promise<Response> {
 
 type RequireUser = (req: Request) => User | undefined;
 
-/** Serves the SPA entry point in both dev and bundled modes. */
+/** Serves the SPA entry point in production (bundled) mode. */
 async function serveCatchAll(req: Request): Promise<Response> {
-  if (isBundled) {
-    return serveSPA(req);
-  }
-  // Dev mode: try to serve the file from the source tree first (Bun's HMR
-  // transpiles .tsx/.ts on the fly), then fall back to index.html for SPA routes.
-  const srcDir = path.join(import.meta.dir, "..");
-  const relPath = new URL(req.url).pathname.replace(/^\//u, "") || "index.html";
-  const filePath = path.join(srcDir, relPath);
-  if (filePath.startsWith(srcDir + path.sep)) {
-    const file = Bun.file(filePath);
-    if (await file.exists()) {
-      return new Response(file);
-    }
-  }
-  const html = await Bun.file(path.join(srcDir, "index.html")).text();
-  return new Response(html, {
-    headers: { "Content-Type": "text/html" },
-  });
+  return serveSPA(req);
 }
 
 function buildRoutes(config: Config, requireUser: RequireUser): Record<string, unknown> {
   /** Per-user rate limiter with configurable limits. */
   const mutationLimiter = new RateLimiter(config.rateLimit.count, config.rateLimit.windowMs);
   mutationLimiter.startCleanup();
-  return {
+  const routes: Record<string, unknown> = {
     "/api/auth/email": {
       async POST(req: Request) {
         let body: unknown;
@@ -300,6 +284,14 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
       },
     },
   };
+
+  // Dev mode only: Bun's HTMLBundle enables HMR and .tsx transpilation.
+  // In production the SPA is served by fetch() → serveCatchAll.
+  if (!isBundled) {
+    routes["/*"] = devIndex;
+  }
+
+  return routes;
 }
 
 export { serveCatchAll, serveSPA };

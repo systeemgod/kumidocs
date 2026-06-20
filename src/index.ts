@@ -23,11 +23,13 @@ import {
   wsMessage,
   wsOpen,
 } from "./server/websocket";
-import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
 import buildRoutes, { serveCatchAll } from "./server/router";
+import type { KumiDocsPermissions } from "./server/auth";
+// oxlint-disable-next-line no-underscore-dangle
+declare const __BUNDLED__: boolean | undefined;
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -284,7 +286,12 @@ const server = serve<WsData>({
     }
 
     // All non-WS, non-API paths: serve the SPA catch-all.
-    return serveCatchAll(req);
+    // oxlint-disable-next-line no-underscore-dangle
+    if (__BUNDLED__ !== undefined) {
+      return serveCatchAll(req);
+    }
+    // Dev mode: let routes["/*"] handle it (Bun HTMLBundle needs routes).
+    return undefined;
   },
 
   port: config.port,
