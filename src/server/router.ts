@@ -64,9 +64,7 @@ async function serveCatchAll(req: Request): Promise<Response> {
     return serveSPA(req);
   }
   // In dev mode, serve the raw index.html for Vite/Bun HMR.
-  const html = await Bun.file(
-    path.join(import.meta.dir, "..", "index.html"),
-  ).text();
+  const html = await Bun.file(path.join(import.meta.dir, "..", "index.html")).text();
   return new Response(html, {
     headers: { "Content-Type": "text/html" },
   });

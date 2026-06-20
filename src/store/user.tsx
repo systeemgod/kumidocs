@@ -58,7 +58,7 @@ const fetchMe = async (): Promise<FetchMeResult> => {
     };
   } catch (error: unknown) {
     const needs401 = error instanceof ApiError && error.status === HTTP_UNAUTHORIZED;
-    return { needs401, sidebarDefaultDepth: 0, slideThemes: {} };    
+    return { needs401, sidebarDefaultDepth: 0, slideThemes: {} };
   }
 };
 
