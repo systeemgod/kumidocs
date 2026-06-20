@@ -213,22 +213,23 @@ async function runPullCycle(): Promise<void> {
 
   if (result.advanced) {
     await loadPermissions();
-    await Promise.all(
-      result.changed
-        .filter((changedPath) => changedPath !== ".kumidocs.json")
-        .map(async (changedPath) => {
-          const fullPath = path.join(config.repoPath, changedPath);
-          if (existsSync(fullPath)) {
-            await reloadFile(changedPath, config);
-            updateInIndex(changedPath);
-            broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
-          } else {
-            removeFromCache(changedPath);
-            removeFromIndex(changedPath);
-            broadcastPageDeleted(changedPath);
-          }
-        }),
-    );
+    // Full rescan is more reliable than per-file git diff — catches new
+    // directories, renames, and files that git rebase may struggle to
+    // report when the working tree has uncommitted auto-save changes.
+    await loadFilestore(config, ig);
+    initSearch();
+    // Broadcast a tree change so all clients refresh the sidebar.
+    for (const changedPath of result.changed) {
+      if (changedPath === ".kumidocs.json") {
+        continue;
+      }
+      const fullPath = path.join(config.repoPath, changedPath);
+      if (existsSync(fullPath)) {
+        broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
+      } else {
+        broadcastPageDeleted(changedPath);
+      }
+    }
   }
 
   // Adaptive delay: after failure retry soon (5s → 10s → 20s → … capped at interval);
