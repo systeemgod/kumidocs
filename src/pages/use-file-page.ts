@@ -32,6 +32,7 @@ interface UseFilePageReturn {
   setConflictBanner: Dispatch<SetStateAction<string | undefined>>;
   content: string;
   duplicateError: string | undefined;
+  setDuplicateError: Dispatch<SetStateAction<string | undefined>>;
   editLocked: PresenceUser | undefined;
   editMode: boolean;
   enterEdit: () => void;
@@ -217,6 +218,7 @@ function useFilePage(): UseFilePageReturn {
     content,
     duplicateError,
     setConflictBanner,
+    setDuplicateError,
     editLocked,
     editMode,
     enterEdit,

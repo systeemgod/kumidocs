@@ -116,6 +116,7 @@ function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
     return;
   }
 
+  const hadViewers = pageViewers.has(pageId);
   const viewers = pageViewers.get(pageId);
   if (viewers) {
     viewers.delete(sid);
@@ -126,9 +127,9 @@ function leaveCurrentPage(ws: ServerWebSocket<WsData>): void {
   if (pageEditors.get(pageId) === sid) {
     pageEditors.delete(pageId);
   }
-  // Only broadcast an update if there are still viewers (or editors) on this page,
-  // otherwise the entry is gone and there's nothing to update.
-  if (pageViewers.has(pageId) || pageEditors.has(pageId)) {
+  // Broadcast presence update so other clients know the viewer left.
+  // Check hadViewers before the delete above to handle the last-leaver case.
+  if (hadViewers || pageEditors.has(pageId)) {
     broadcastToAll(presenceUpdate(pageId));
   }
   ws.data.pageId = undefined;

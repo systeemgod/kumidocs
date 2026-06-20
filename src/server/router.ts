@@ -64,8 +64,7 @@ async function serveCatchAll(req: Request): Promise<Response> {
   if (isBundled) {
     return serveSPA(req);
   }
-  // oxlint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  return new Response(devIndex as unknown as string, {
+  return new Response(String(devIndex), {
     headers: { "Content-Type": "text/html" },
   });
 }

@@ -2,6 +2,7 @@ import type { PresenceUser, SyncStatus, TreeNode } from "@/lib/types";
 import { getMe, getTree } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
 import { useWsConnectionState, useWsListener, wsClient } from "@/store/ws";
+import { Button } from "@/components/ui/button";
 import NewPageDialog from "@/components/dialogs/new-page-dialog";
 import { Outlet } from "react-router-dom";
 import SearchPalette from "@/components/search/search-palette";
@@ -251,6 +252,16 @@ export default function AppShell(): JSX.Element {
           className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-1.5 flex items-center gap-2 text-sm text-red-800 dark:text-red-200 shrink-0"
         >
           <span className="flex-1">{configError}</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-xs"
+            onClick={() => {
+              setConfigError(undefined);
+            }}
+          >
+            Dismiss
+          </Button>
         </div>,
       );
     }
@@ -263,6 +274,26 @@ export default function AppShell(): JSX.Element {
           className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-1.5 flex items-center gap-2 text-sm text-red-800 dark:text-red-200 shrink-0"
         >
           <span className="flex-1">{treeError}</span>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-6 text-xs"
+            onClick={() => {
+              void loadTree();
+            }}
+          >
+            Retry
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-xs"
+            onClick={() => {
+              setTreeError(undefined);
+            }}
+          >
+            Dismiss
+          </Button>
         </div>,
       );
     }
