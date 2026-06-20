@@ -27,7 +27,7 @@ import type { KumiDocsPermissions } from "./server/auth";
 import type { User } from "./lib/types";
 import type { WsData } from "./server/websocket";
 import path from "node:path";
-import buildRoutes from "./server/router";
+import buildRoutes, { serveCatchAll } from "./server/router";
 
 let config: ReturnType<typeof loadConfig>;
 try {
@@ -278,9 +278,13 @@ const server = serve<WsData>({
       return upgraded ? undefined : new Response("WS upgrade failed", { status: 400 });
     }
 
-    // All non-WS paths fall through to the routes object which handles
-    // API routes and the SPA catch-all (/*).
-    return undefined;
+    // API paths: fall through to the routes object for method-specific handling.
+    if (url.pathname.startsWith("/api/")) {
+      return undefined;
+    }
+
+    // All non-WS, non-API paths: serve the SPA catch-all.
+    return serveCatchAll(req);
   },
 
   port: config.port,
