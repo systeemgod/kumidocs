@@ -1,5 +1,6 @@
 import type { PresenceUser, User, WsClientMessage, WsServerMessage } from "@/lib/types";
 import type { ServerWebSocket } from "bun";
+import { getFile } from "./filestore";
 
 interface WsData {
   user: User;
@@ -154,6 +155,10 @@ function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
 
   switch (msg.type) {
     case "hello": {
+      // Ignore presence for pages that don't exist in the repository.
+      if (getFile(msg.pageId) === undefined) {
+        return;
+      }
       if (ws.data.pageId !== msg.pageId) {
         leaveCurrentPage(ws);
       }
