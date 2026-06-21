@@ -4,13 +4,17 @@ const ALERT_TYPES = ["CAUTION", "IMPORTANT", "NOTE", "TIP", "WARNING"] as const;
 
 const ALERT_RE = /^\[!(?<type>CAUTION|IMPORTANT|NOTE|TIP|WARNING)\]\s*\n?/u;
 
-/** Check if the first text content of a blockquote starts with a GFM alert marker. */
+/** Check if the first <p> inside a blockquote starts with a GFM alert marker.
+ * Skips leading whitespace text nodes (remark/rehype may insert \n text nodes). */
 function matchAlertType(children: ElementContent[]): (typeof ALERT_TYPES)[number] | undefined {
-  const first = children[0];
-  if (first?.type !== "element" || first.tagName !== "p") {
+  const firstP = children.find(
+    (child): child is ElementContent & { type: "element"; tagName: "p" } =>
+      child.type === "element" && child.tagName === "p",
+  );
+  if (!firstP) {
     return undefined;
   }
-  const textNode = first.children[0];
+  const textNode = firstP.children[0];
   if (textNode?.type !== "text") {
     return undefined;
   }
@@ -47,20 +51,26 @@ const walk = (node: Element | Root): void => {
   node.tagName = "kumi-alert";
   node.properties = { dataAlertType: alertType };
 
-  // Strip the "[!TYPE]\n" marker from the first paragraph's first text node
-  const firstP = node.children[0];
-  if (firstP?.type === "element" && firstP.tagName === "p") {
-    const firstText = firstP.children[0];
+  // Strip the "[!TYPE]\n" marker from the alert paragraph's first text node
+  const alertP = node.children.find(
+    (child): child is ElementContent & { type: "element"; tagName: "p" } =>
+      child.type === "element" && child.tagName === "p",
+  );
+  if (alertP) {
+    const firstText = alertP.children[0];
     if (firstText?.type === "text") {
       firstText.value = firstText.value.replace(ALERT_RE, "");
     }
     // If the paragraph is now empty (just the marker was there), remove it
     if (
-      firstP.children.length === 1 &&
+      alertP.children.length === 1 &&
       firstText?.type === "text" &&
       firstText.value.trim() === ""
     ) {
-      node.children.shift();
+      const idx = node.children.indexOf(alertP);
+      if (idx !== -1) {
+        node.children.splice(idx, 1);
+      }
     }
   }
 };
