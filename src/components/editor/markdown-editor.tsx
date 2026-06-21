@@ -66,6 +66,7 @@ export default function MarkdownEditor({
     handleDragOver,
     handleDrop,
     handleKeyDown,
+    handlePaste,
     handleEditorScroll,
     applyMeta,
     saveSelection,
@@ -169,6 +170,7 @@ export default function MarkdownEditor({
             onKeyUp={saveSelection}
             onScroll={handleEditorScroll}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             disabled={disabled}
             spellCheck
             className="flex-1 resize-none outline-none bg-background text-foreground font-mono text-sm leading-relaxed p-6 overflow-y-auto placeholder:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"

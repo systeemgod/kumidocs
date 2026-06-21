@@ -2,6 +2,7 @@ import type { Dispatch, RefObject, SetStateAction } from "react";
 import {
   HEADING_OPTIONS,
   insertLink,
+  insertLinkWithUrl,
   insertWrap,
   setLinePrefix,
   toggleListPrefix,
@@ -36,6 +37,7 @@ interface UseMarkdownEditorReturn {
   handleKeyDown: (ev: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   handleLink: () => void;
   handleNumbered: () => void;
+  handlePaste: (ev: React.ClipboardEvent<HTMLTextAreaElement>) => void;
   handlePropsOpen: (open: boolean) => void;
   handleQuote: () => void;
   handleStrikethrough: () => void;
@@ -224,6 +226,41 @@ function useMarkdownEditor({
     [onSave, handleBold, handleItalic],
   );
 
+  const handlePaste = useCallback(
+    (ev: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const ta = taRef.current;
+      if (!ta) {
+        return;
+      }
+
+      // 1. Paste image files — upload and insert as markdown image syntax.
+      const imageFiles = [...ev.clipboardData.files].filter((file) =>
+        file.type.startsWith("image/"),
+      );
+      if (imageFiles.length > 0) {
+        ev.preventDefault();
+        handleImageFiles(imageFiles);
+        return;
+      }
+
+      // 2. Paste link over selected text — wrap selection as [selected](url).
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      if (start !== end) {
+        const text = ev.clipboardData.getData("text/plain")?.trim();
+        if (text && /^https?:\/\/|^ftp:\/\/|^www\./iu.test(text)) {
+          ev.preventDefault();
+          insertLinkWithUrl(ta, text);
+          syncChange();
+          return;
+        }
+      }
+
+      // Otherwise, let the default paste happen.
+    },
+    [handleImageFiles, syncChange],
+  );
+
   const handleEditorScroll = useCallback((ev: React.UIEvent<HTMLTextAreaElement>) => {
     const ta = ev.currentTarget;
     const preview = previewRef.current;
@@ -252,6 +289,7 @@ function useMarkdownEditor({
     handleKeyDown,
     handleLink,
     handleNumbered,
+    handlePaste,
     handlePropsOpen,
     handleQuote,
     handleStrikethrough,

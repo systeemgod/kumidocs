@@ -104,6 +104,27 @@ function insertLink(ta: HTMLTextAreaElement): void {
   ta.focus();
 }
 
+/** Insert a markdown link with a pre-filled URL. Wraps selected text as link
+ * text; if no text is selected, inserts `[url](url)` and positions the cursor
+ * to edit the text portion. */
+function insertLinkWithUrl(ta: HTMLTextAreaElement, url: string): void {
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const selected = ta.value.slice(start, end);
+  const text = selected || url;
+  const insertion = `[${text}](${url})`;
+  ta.setRangeText(insertion, start, end, "preserve");
+  if (selected.length > 0) {
+    // Select the pasted URL portion so user can refine it
+    const urlStart = start + 1 + text.length + 2;
+    ta.setSelectionRange(urlStart, urlStart + url.length);
+  } else {
+    // Select the text portion so user can type a label
+    ta.setSelectionRange(start + 1, start + 1 + text.length);
+  }
+  ta.focus();
+}
+
 /** Insert an image markdown snippet. Uses selected text as alt text if any. */
 function insertImage(ta: HTMLTextAreaElement, url: string): void {
   const start = ta.selectionStart;
@@ -162,6 +183,7 @@ export {
   setLinePrefix,
   toggleListPrefix,
   insertLink,
+  insertLinkWithUrl,
   insertImage,
   uploadImageFile,
   CHEATSHEET_ROWS,
