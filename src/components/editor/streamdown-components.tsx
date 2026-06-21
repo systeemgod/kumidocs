@@ -123,6 +123,50 @@ const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
   );
 };
 
+// ── GFM Alert component ─────────────────────────────────────────────────────
+
+interface KumiAlertProps {
+  node?: unknown;
+  children?: ReactNode;
+}
+
+const ALERT_LABELS: Record<string, string> = {
+  CAUTION: "Caution",
+  IMPORTANT: "Important",
+  NOTE: "Note",
+  TIP: "Tip",
+  WARNING: "Warning",
+};
+
+const ALERT_CLASSES: Record<string, string> = {
+  CAUTION: "border-red-500 bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-200",
+  IMPORTANT:
+    "border-purple-500 bg-purple-50 dark:bg-purple-950 text-purple-800 dark:text-purple-200",
+  NOTE: "border-blue-500 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200",
+  TIP: "border-green-500 bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-200",
+  WARNING: "border-amber-500 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200",
+};
+
+const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const nodeData = allProps.node as
+    | { properties?: { dataAlertType?: unknown } }
+    | undefined;
+  const rawType = nodeData?.properties?.dataAlertType;
+  const alertType = typeof rawType === "string" ? rawType : "NOTE";
+  const label = ALERT_LABELS[alertType] ?? "Note";
+  const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
+  return (
+    <div
+      className={`border-l-4 rounded-r-lg px-4 py-3 my-4 ${classes}`}
+      role="alert"
+    >
+      <p className="font-bold mb-1 text-inherit">{label}</p>
+      {allProps.children}
+    </div>
+  );
+};
+
 // ── Component maps ─────────────────────────────────────────────────────────
 
 /** Component map for document (non-slide) markdown viewer. */
@@ -132,6 +176,7 @@ const COMPONENTS_DOC: Record<string, (props: Record<string, unknown>) => JSX.Ele
   // oxlint-disable-next-line id-length
   a: AnchorComponent,
   img: ImgComponent,
+  "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
 };
 
@@ -142,6 +187,7 @@ const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.E
   // oxlint-disable-next-line id-length
   a: SlideAnchorComponent,
   img: ImgComponent,
+  "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
 };
 
@@ -150,6 +196,7 @@ export {
   COMPONENTS_DOC,
   COMPONENTS_SLIDE,
   ImgComponent,
+  KumiAlert,
   KumiEmojiComponent,
   REHYPE_PLUGINS,
   SlideAnchorComponent,
