@@ -149,18 +149,13 @@ const ALERT_CLASSES: Record<string, string> = {
 
 const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  const nodeData = allProps.node as
-    | { properties?: { dataAlertType?: unknown } }
-    | undefined;
+  const nodeData = allProps.node as { properties?: { dataAlertType?: unknown } } | undefined;
   const rawType = nodeData?.properties?.dataAlertType;
   const alertType = typeof rawType === "string" ? rawType : "NOTE";
   const label = ALERT_LABELS[alertType] ?? "Note";
   const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
   return (
-    <div
-      className={`border-l-4 rounded-r-lg px-4 py-3 my-4 ${classes}`}
-      role="alert"
-    >
+    <div className={`border-l-4 rounded-r-lg px-4 py-3 my-4 ${classes}`} role="alert">
       <p className="font-bold mb-1 text-inherit">{label}</p>
       {allProps.children}
     </div>
