@@ -1,20 +1,15 @@
-import {
-  AlertRegular,
-  ErrorCircleRegular,
-  InfoRegular,
-  LightbulbRegular,
-  WarningRegular,
-} from "@fluentui/react-icons";
 import { defaultRehypePlugins } from "streamdown";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
 import type { ReactNode } from "react";
 import { harden } from "rehype-harden";
-import { ALLOWED_BG_URL_PREFIXES } from "@/lib/slide";
 import rehypeEmojiPlugin from "./rehype-emoji-plugin";
 import rehypeGfmAlertsPlugin from "./rehype-gfm-alerts-plugin";
 import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
 import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
+
+/** Allowed URL prefixes for images, used by both rehype-harden and slide CSS validation. */
+const ALLOWED_BG_URL_PREFIXES = ["/images/", "https://", "http://", "data:image/", "./", "../"];
 
 // ── Shared rehype plugins ──────────────────────────────────────────────────
 
@@ -145,13 +140,12 @@ const ALERT_LABELS: Record<string, string> = {
   WARNING: "Warning",
 };
 
-// oxlint-disable-next-line @typescript-eslint/no-explicit-any
-const ALERT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  CAUTION: ErrorCircleRegular,
-  IMPORTANT: AlertRegular,
-  NOTE: InfoRegular,
-  TIP: LightbulbRegular,
-  WARNING: WarningRegular,
+const ALERT_ICONS: Record<string, string> = {
+  CAUTION: "\uD83D\uDED1",
+  IMPORTANT: "\u2757",
+  NOTE: "\u2139\uFE0F",
+  TIP: "\uD83D\uDCA1",
+  WARNING: "\u26A0\uFE0F",
 };
 
 const ALERT_CLASSES: Record<string, string> = {
@@ -170,11 +164,11 @@ const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   const alertType = typeof rawType === "string" ? rawType : "NOTE";
   const label = ALERT_LABELS[alertType] ?? "Note";
   const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
-  const Icon = ALERT_ICONS[alertType] ?? InfoRegular;
+  const emoji = ALERT_ICONS[alertType] ?? ALERT_ICONS.NOTE;
   return (
     <div className={`border-l-4 rounded-r-lg px-4 py-3 my-4 not-prose ${classes}`} role="alert">
       <p className="font-bold mt-0 mb-1 text-inherit flex items-center gap-1.5">
-        <Icon className="w-4 h-4" />
+        <EmojiIcon emoji={emoji} size={16} />
         {label}
       </p>
       {allProps.children}
@@ -207,6 +201,7 @@ const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.E
 };
 
 export {
+  ALLOWED_BG_URL_PREFIXES,
   AnchorComponent,
   COMPONENTS_DOC,
   COMPONENTS_SLIDE,

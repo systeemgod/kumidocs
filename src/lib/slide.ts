@@ -1,8 +1,4 @@
-/**
- * Allowed URL prefixes for background images (aligned with rehype-harden in slide-streamdown.tsx).
- * URLs in `background*` directives that don't match are silently discarded.
- */
-const ALLOWED_BG_URL_PREFIXES = ["/images/", "https://", "http://", "data:image/", "./", "../"];
+import { ALLOWED_BG_URL_PREFIXES } from "@/components/editor/streamdown-components";
 
 /**
  * Validate that all `url(...)` references in a CSS value point to allowed origins.
@@ -343,7 +339,6 @@ const splitAtSecondH2 = (content: string): [string, string] => {
 
 export type { SlideDirectives, ParsedSlide, SlideThemeElement, SlideThemeDef, SlideThemeMap };
 export {
-  ALLOWED_BG_URL_PREFIXES,
   cssUrlsAreSafe,
   parseSlideDirectives,
   isBgDark,
