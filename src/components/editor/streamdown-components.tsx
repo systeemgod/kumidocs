@@ -8,8 +8,10 @@ import rehypeGfmAlertsPlugin from "./rehype-gfm-alerts-plugin";
 import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
 import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
 
-/** Allowed URL prefixes for images, used by both rehype-harden and slide CSS validation. */
-const ALLOWED_BG_URL_PREFIXES = ["/images/", "https://", "http://", "data:image/", "./", "../"];
+/** Allowed URL prefixes for images (rehype-harden + slide CSS validation) */
+const ALLOWED_IMAGE_PREFIXES = ["/images/", "data:image/"];
+/** Allowed URL to LINK to anywhere */
+const ALLOWED_LINK_PREFIXES = ["*"];
 
 // ── Shared rehype plugins ──────────────────────────────────────────────────
 
@@ -28,10 +30,10 @@ const REHYPE_PLUGINS: PluggableList = [
   [
     harden,
     {
-      // Restrict to safe URL prefixes; "*" allows all http/https as a fallback.
-      // Specific prefixes like "/" are checked first (origin-scoped); "*" catches external URLs.
-      allowedImagePrefixes: ALLOWED_BG_URL_PREFIXES,
-      allowedLinkPrefixes: ["/", "./", "../", "#", "mailto:", "*"],
+      allowDataImages: true,
+      allowedImagePrefixes: ALLOWED_IMAGE_PREFIXES,
+      allowedLinkPrefixes: ALLOWED_LINK_PREFIXES,
+      allowedProtocols: ["mailto", "https"],
       defaultOrigin: DEFAULT_ORIGIN,
     },
   ],
@@ -201,7 +203,8 @@ const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.E
 };
 
 export {
-  ALLOWED_BG_URL_PREFIXES,
+  ALLOWED_IMAGE_PREFIXES as ALLOWED_BG_URL_PREFIXES,
+  ALLOWED_LINK_PREFIXES,
   AnchorComponent,
   COMPONENTS_DOC,
   COMPONENTS_SLIDE,
