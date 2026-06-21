@@ -117,13 +117,7 @@ interface ImgComponentProps {
 const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
   const { src, alt, title } = allProps;
   return (
-    <img
-      src={src}
-      alt={alt ?? ""}
-      title={title}
-      className="rounded-lg max-w-full h-auto"
-      loading="lazy"
-    />
+    <img src={src} alt={alt ?? ""} title={title} className="max-w-full h-auto" loading="lazy" />
   );
 };
 
@@ -141,8 +135,11 @@ const COMPONENTS_DOC: Record<string, (props: Record<string, unknown>) => JSX.Ele
 
 /** Component map for slide markdown viewer. */
 // oxfmt-ignore
+// oxlint-disable-next-line id-length
 const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.Element> = {
-  "a": SlideAnchorComponent,
+  // oxlint-disable-next-line id-length
+  a: SlideAnchorComponent,
+  img: ImgComponent,
   "kumi-emoji": KumiEmojiComponent,
 };
 
