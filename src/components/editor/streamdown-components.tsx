@@ -1,3 +1,10 @@
+import {
+  AlertRegular,
+  ErrorCircleRegular,
+  InfoRegular,
+  LightbulbRegular,
+  WarningRegular,
+} from "@fluentui/react-icons";
 import { defaultRehypePlugins } from "streamdown";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
@@ -138,6 +145,15 @@ const ALERT_LABELS: Record<string, string> = {
   WARNING: "Warning",
 };
 
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
+const ALERT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  CAUTION: ErrorCircleRegular,
+  IMPORTANT: AlertRegular,
+  NOTE: InfoRegular,
+  TIP: LightbulbRegular,
+  WARNING: WarningRegular,
+};
+
 const ALERT_CLASSES: Record<string, string> = {
   CAUTION: "border-red-500 bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-200",
   IMPORTANT:
@@ -154,9 +170,13 @@ const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   const alertType = typeof rawType === "string" ? rawType : "NOTE";
   const label = ALERT_LABELS[alertType] ?? "Note";
   const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
+  const Icon = ALERT_ICONS[alertType] ?? InfoRegular;
   return (
-    <div className={`border-l-4 rounded-r-lg px-4 py-3 my-4 ${classes}`} role="alert">
-      <p className="font-bold mb-1 text-inherit">{label}</p>
+    <div className={`border-l-4 rounded-r-lg px-4 py-3 my-4 not-prose ${classes}`} role="alert">
+      <p className="font-bold mt-0 mb-1 text-inherit flex items-center gap-1.5">
+        <Icon className="w-4 h-4" />
+        {label}
+      </p>
       {allProps.children}
     </div>
   );
