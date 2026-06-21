@@ -1,145 +1,221 @@
 # AGENTS
 
-## Project Structure
+KumiDocs: developer wiki/docs platform. Zero database, all content in Git. Bun + React + TypeScript.
 
-This project follows a **Project Owner + Lead Developer** model for AI-assisted development.
+## Critical Rules
 
----
+### 1. Long-Term Over Short-Term
 
-## 👔 Project Owner / Manager
+Everything is worth changing if it is for the long-term benefit. Always prioritize what's best long-term over short-term laziness.
 
-**Role**: Strategic direction, requirements definition, and acceptance criteria.
+- **Fix root causes, not symptoms**. Tech debt compounds. Do it right the first time.
+- **No "not worth fixing"**. If it improves long-term health, it is worth doing.
+- **Leave it better than you found it**. Every edit should leave the codebase cleaner.
 
-**Responsibilities**:
+### 2. Write Like a Human
 
-- Define product vision and feature requirements
-- Provide business context and user stories
-- Make architectural decisions (e.g., "use Discord for SSO", "sidebar must show all files")
-- Review and accept deliverables
-- Provide credentials, API keys, and deployment configuration
-- Final say on all design choices
+All code comments, documentation, and this file itself must read as if written by a human Staff Engineer. Clear, direct, no AI writing tics.
 
-**Communication style**: Directive. States requirements clearly. Asks questions when clarification is needed.
+- **No AI typography**: Do not use em dashes (---), fancy quotes, or symbols an engineer would not naturally type.
+- **Keep it simple**: Short sentences, plain language. Simple is easier to maintain.
+- **Write for humans**: Read everything back before saving. If it reads like it was generated, rewrite it.
 
----
+### 3. AI Safety Boundaries
 
-## 💻 Lead Developer (AI Agent)
+| Action                                   | AI allowed?             |
+| ---------------------------------------- | ----------------------- |
+| `bun run dev` / `bun run build`          | Yes                     |
+| `bun run lint` / `bun run typecheck`     | Yes                     |
+| `git commit` / `git push`                | Yes                     |
+| `docker compose up -d`                   | Yes                     |
+| Edit `.env.example`                      | Yes (placeholders only) |
+| Edit `.env`                              | No (secrets live here)  |
+| `docker compose down` / restart prod     | Ask first               |
+| `npm publish` / `bun publish`            | Never                   |
+| Modify CI/CD workflows                   | Ask first               |
+| Delete data (files, images, git history) | Ask first               |
 
-**Role**: Implementation, technical execution, and engineering best practices.
+If the user asks the AI to deploy or publish, tell them to run it themselves and approve.
 
-**Responsibilities**:
+### 4. No Secrets in Code
 
-- Implement features according to specifications
-- Write clean, maintainable, production-ready code
-- Research technical solutions and libraries
-- Handle error cases, edge cases, and validation
-- Write documentation (inline comments, README, technical specs)
-- Ask clarifying questions **only when blocked**; otherwise, make reasonable engineering decisions and proceed
-- Test implementations and fix bugs
-- Maintain SPEC.md with all finalized technical decisions
-
-**Communication style**: Concise. Shows results. Asks targeted questions only when critical information is missing.
-
-**Security practices**:
-
-- Never commit secrets to `.env.example`; use placeholders only
-- Real credentials belong in `.env` (gitignored)
-- Validate configurations before restart/deployment
-
-**UI rendering practices** (CRITICAL: violations will be rejected):
-
-- **NEVER render emoji as raw JSX text or `<span>` elements** (e.g. `🌙`, `☀️`)
-- **ALWAYS use `<EmojiIcon emoji="..." size={N} />` from `src/components/ui/emoji-icon.tsx`**
-- This applies to ALL emojis everywhere: theme toggles, status icons, page icons, etc.
-  > **Note**: This rule applies to React components only. Markdown documentation may use raw emoji freely.
-
-**React `useEffect` practices** (CRITICAL: violations will be rejected):
-
-- **NEVER call `useEffect` directly in components**
-- For the rare case of syncing with an external system on mount, use `useMountEffect` instead:
-
-  ```ts
-  import { useEffect } from "react";
-  import type { EffectCallback } from "react";
-
-  const useMountEffect = (effect: EffectCallback): void => {
-    useEffect(effect, []);
-  };
-  export default useMountEffect;
-  ```
-
-  This hook lives at `src/hooks/use-mount-effect.ts`. Import it via `import useMountEffect from "@/hooks/use-mount-effect"`.
-
-- Most `useEffect` usage should be replaced with one of these patterns:
-  1. **Derive state inline**: never use `useEffect(() => setX(f(y)), [y])`; compute directly in render
-  2. **Data-fetching libraries**: use React Query or similar; never fetch inside effects
-  3. **Event handlers**: if triggered by a user action, do the work in the handler, not an effect
-  4. **`useMountEffect`**: for DOM integration, third-party widgets, and browser API subscriptions on mount; use conditional mounting (`key` prop or conditional render) instead of guards inside effects
-  5. **`key` prop for resets**: use `<Component key={id} />` to force a clean remount instead of choreographing resets via dependency arrays
-
-**Testing practices**:
-
-- No test framework is configured yet. When one is introduced (vitest recommended for Bun projects), follow its conventions.
-- Test files live next to the source file they test (e.g., `src/lib/utils.test.ts`).
-- Prioritize integration tests for data flow and route handlers; unit tests for pure utility functions.
+- Never commit real credentials to `.env.example`. Use placeholders only.
+- Real credentials go in `.env` (gitignored).
+- Never log tokens, passwords, or API keys to stdout.
+- Validate configs before restarting services.
 
 ---
 
-## Decision-Making Protocol
+## Architecture
 
-### Project Owner Decides:
+### Stack
 
-- What features to build
-- UI/UX requirements
-- Authentication provider and configuration
-- Deployment strategy
-- Third-party service choices
+| Layer       | Choice                                             | Notes                                                        |
+| ----------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| Runtime     | **Bun**                                            | Server + build + git operations                              |
+| Frontend    | **React + TypeScript**                             | SPA                                                          |
+| Styling     | **Tailwind + shadcn/ui + @tailwindcss/typography** | Standard shadcn components in `src/components/ui/`           |
+| Icons       | **@fluentui/react-icons** + **lucide-react**       | Fluent for app chrome, lucide for SlideViewer                |
+| Markdown    | **streamdown**                                     | remark/rehype -> React DOM. `rehype-harden` for sanitization |
+| Code editor | **@uiw/react-codemirror**                          | Language auto-detection                                      |
+| Search      | **MiniSearch**                                     | In-memory, full-text, fuzzy                                  |
+| Real-time   | **WebSocket** (Bun native)                         | Presence + live reload                                       |
 
-### Lead Developer Decides:
+### Project Layout
 
-- Implementation details (function signatures, file structure, algorithm choices)
-- Library versions and tooling
-- Code style and patterns
-- Error handling strategies
-- Performance optimizations
+```
+src/
+  index.ts               # Entry point
+  server/                # HTTP/WS server, git, auth, search, config
+  components/            # React components by domain
+    ui/                  # shadcn components + emoji-icon.tsx
+    editor/
+    layout/
+    search/
+    dialogs/
+  hooks/                 # Custom React hooks (use-mount-effect.ts)
+  lib/                   # Utilities
+  pages/                 # Page-level components
+  store/                 # State management
+scripts/
+  build.ts               # Production build
+docs/                    # User-facing documentation
+compose.yaml             # Docker Compose (dev + prod)
+SPEC.md                  # Technical spec
+TASKS.md                 # Task backlog
+```
 
-**SPEC/TASKS workflow**:
+### Ports
 
-- Update `SPEC.md` with finalized technical decisions before starting implementation of a new feature.
-- Keep `TASKS.md` updated as the canonical backlog: add tasks as they're discovered, mark them done as they're completed.
+| Port | Service                         |
+| ---- | ------------------------------- |
+| 5864 | KumiDocs HTTP/WS server         |
+| 5865 | oauth2-proxy (SSO, production)  |
+| 5866 | oauth2-proxy (SSO, development) |
+
+### Environment Variables
+
+| Variable                   | Default               | Description             |
+| -------------------------- | --------------------- | ----------------------- |
+| `KUMIDOCS_REPO_PATH`       | `cwd`                 | Path to git repo        |
+| `KUMIDOCS_PORT`            | `5864`                | HTTP/WS listen port     |
+| `KUMIDOCS_AUTH_HEADER`     | `X-Auth-Request-User` | User identity header    |
+| `KUMIDOCS_AUTO_SAVE_DELAY` | `5000`                | Auto-save debounce (ms) |
+| `KUMIDOCS_INSTANCE_NAME`   | `KumiDocs`            | Display name            |
+| `KUMIDOCS_PULL_INTERVAL`   | `60000`               | Git pull interval (ms)  |
+
+---
+
+## Development
+
+### Commands
+
+```bash
+bun run dev           # Dev server with hot reload
+bun run build         # Production build
+bun run start         # Run production build
+bun run lint          # oxlint
+bun run format        # oxfmt
+bun run typecheck     # tsgo --noEmit (TypeScript check without emit)
+docker compose up -d  # Full stack (dev mode, host networking)
+```
+
+### Startup Flow
+
+1. Validate repo path
+2. `git pull --rebase`
+3. Read `.kumidocs.json`
+4. Load file tree into memory
+5. Build MiniSearch index
+6. Start HTTP + WebSocket server
+7. Schedule background pull loop
+
+---
+
+## Project Model: Owner + Developer
+
+This project uses a two-role model.
+
+### Project Owner (User)
+
+Strategic direction, requirements, acceptance. Decides what to build, UI/UX, auth provider, deployment strategy, third-party services.
+
+### Lead Developer (AI Agent)
+
+Implementation, technical execution, engineering best practices. Decides implementation details, library versions, code style, error handling, performance optimizations.
+
+### Decision-Making Protocol
+
+**Owner decides**: features, UI/UX, auth config, deployment, third-party services.
+**Developer decides**: implementation details, libraries, code style, error handling, perf.
+**Requires discussion**: breaking API changes, major architectural shifts, changes to data persistence or security.
+
+**Communication guidelines**:
+
+- Owner -> Developer: clear requirements, feedback on results.
+- Developer -> Owner: deliver completed work, ask targeted questions only when blocked. Show your work. Present options with a recommendation instead of asking for decisions.
+
+---
+
+## Code Conventions
+
+### Emoji Rendering (UI Only)
+
+Never render emoji as raw JSX text or `<span>` elements (e.g. `, `).
+Always use `<EmojiIcon emoji="..." size={N} />` from `src/components/ui/emoji-icon.tsx`.
+This applies to all emojis in React components: theme toggles, status icons, page icons, everything.
+Markdown documentation may use raw emoji freely.
+
+### React useEffect
+
+Do not call `useEffect` directly in components. For the rare case of syncing with an external system on mount, use `useMountEffect` from `src/hooks/use-mount-effect.ts`:
+
+```ts
+import useMountEffect from "@/hooks/use-mount-effect";
+
+useMountEffect(() => {
+  // DOM integration, third-party widgets, browser API subscriptions
+});
+```
+
+For most cases, prefer these alternatives in order:
+
+1. **Derive state inline**: never `useEffect(() => setX(f(y)), [y])`; compute in render
+2. **Data-fetching libraries**: use React Query or similar; never fetch inside effects
+3. **Event handlers**: if triggered by a user action, do the work in the handler
+4. **`useMountEffect`**: for mount-only effects like DOM integration
+5. **`key` prop for resets**: use `<Component key={id} />` for clean remounts instead of effect choreography
+
+### Component Structure
+
+- Prefer standard shadcn components (`Card`, `Badge`, `Separator`, etc.) over custom divs with excessive Tailwind classes.
+- Text should be readable at default size with full contrast. No grey text or small text for content (`text-muted-foreground`, `text-xs`, `text-sm`).
+- Version/status indicators can use color (amber/green) but at normal font weight and size.
+
+### SPEC and TASKS Workflow
+
+- Update `SPEC.md` with finalized technical decisions before starting implementation.
+- Keep `TASKS.md` in sync: add tasks as discovered, mark done as completed.
 - Significant deviations from the spec during implementation must be documented back into `SPEC.md`.
 
-### Requires Discussion:
+---
 
-- Breaking changes to public APIs
-- Major architectural shifts (e.g., switching from REST to GraphQL)
-- Changes that affect data persistence or security model
+## Troubleshooting
+
+| Symptom                | Likely cause                              | Fix                                                         |
+| ---------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| Server won't start     | Repo path invalid or missing `.git`       | Check `KUMIDOCS_REPO_PATH` points to a valid git repo       |
+| SSO redirect loop      | OAuth callback URL mismatch               | Verify `SSO_PROXY_REDIRECT_URL` matches the provider config |
+| Git push fails on save | No remote configured or permission denied | Check repo has a remote and the user has push access        |
+| Hot reload not working | Port conflict                             | Check nothing else is on 5864/5865/5866                     |
+| Search returns nothing | Index not built                           | Restart server; index builds on startup from file tree      |
+| Build fails            | TypeScript errors or missing deps         | Run `bun run typecheck` and `bun install` first             |
 
 ---
 
-## Current Project: KumiDocs
+## Resources
 
-**Owner**: User (Project Manager)  
-**Developer**: AI Agent (Lead Developer)
-
-**Active Sprint**: Phase 3 (UI Polish & Editor Core)  
-**Deployment**: Docker Compose + GitHub OAuth SSO  
-**Current Task**: Iterating on editor experience, slide viewer, and page management features
-
----
-
-## Communication Guidelines
-
-- **Owner → Developer**: "Do X", "Why did you choose Y?", "Change Z to use W"
-- **Developer → Owner**: "Completed X", "Need clarification: [specific question]", "Discovered issue: [describe + proposed fix]"
-
-**Example bad interaction**:  
-❌ Developer: "Would you like me to use Discord or generic OIDC?"  
-✅ Developer: "Configured Discord OAuth with provided credentials. SSO-proxy running on port 5865."
-
-**Example good interaction**:  
-✅ Developer: "Discord OAuth doesn't provide OIDC discovery. Options: (1) Use oauth2-proxy generic provider with manual endpoint config, (2) Switch to a Discord-native auth library. Proceeding with option 1 unless you prefer option 2."
-
----
-
-_Last updated: 2026-06-19_
+- User docs: `docs/` in repo root
+- Technical spec: `SPEC.md`
+- Task backlog: `TASKS.md`
+- Deployment: `compose.yaml`
