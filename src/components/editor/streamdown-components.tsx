@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { harden } from "rehype-harden";
 import { ALLOWED_BG_URL_PREFIXES } from "@/lib/slide";
 import rehypeEmojiPlugin from "./rehype-emoji-plugin";
+import rehypeGfmAlertsPlugin from "./rehype-gfm-alerts-plugin";
 import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
 import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
 
@@ -35,6 +36,7 @@ const REHYPE_PLUGINS: PluggableList = [
   rehypeHeadingIdsPlugin,
   rehypeImageAttrsPlugin,
   rehypeEmojiPlugin,
+  rehypeGfmAlertsPlugin,
 ];
 
 // ── KumiEmojiComponent ─────────────────────────────────────────────────────
