@@ -247,12 +247,11 @@ function useMarkdownEditor({
       const start = ta.selectionStart;
       const end = ta.selectionEnd;
       if (start !== end) {
-        const text = ev.clipboardData.getData("text/plain")?.trim();
+        const text = ev.clipboardData.getData("text/plain").trim();
         if (text && /^https?:\/\/|^ftp:\/\/|^www\./iu.test(text)) {
           ev.preventDefault();
           insertLinkWithUrl(ta, text);
           syncChange();
-          return;
         }
       }
 

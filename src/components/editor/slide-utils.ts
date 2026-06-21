@@ -8,18 +8,12 @@ interface OverlayOptions {
   rootRect?: DOMRect;
 }
 
-/**
- * Add invisible text and link overlays to a jsPDF document from a rendered
- * HTML element.
- *
- * Used by both the slide PDF export (single-page per slide) and the
- * document PDF export (multi-page paginated via `pageHPx`).
- */
-function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions): void {
-  const { pageHPx, rootRect: precomputed } = options ?? {};
-  const rootRect = precomputed ?? root.getBoundingClientRect();
-
-  // Invisible text overlay
+function applyTextOverlay(
+  pdf: JsPDF,
+  root: HTMLElement,
+  rootRect: DOMRect,
+  pageHPx: number | undefined,
+): void {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
@@ -50,7 +44,8 @@ function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions
       const pageIdx = Math.floor(yLocal / pageHPx);
       pdf.setPage(pageIdx + 1);
     }
-    const yOnPage = pageHPx !== undefined ? yLocal - Math.floor(yLocal / pageHPx) * pageHPx : yLocal;
+    const yOnPage =
+      pageHPx === undefined ? yLocal : yLocal - Math.floor(yLocal / pageHPx) * pageHPx;
     const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
     pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
     // Stretch/compress char spacing so the invisible text spans the same
@@ -64,8 +59,14 @@ function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions
     });
     pdf.setCharSpace(0);
   }
+}
 
-  // Link hotspots
+function applyLinkOverlay(
+  pdf: JsPDF,
+  root: HTMLElement,
+  rootRect: DOMRect,
+  pageHPx: number | undefined,
+): void {
   for (const anchor of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
     const rect = anchor.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
@@ -73,7 +74,12 @@ function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions
     }
     const xPos = rect.left - rootRect.left;
     const yLocal = rect.top - rootRect.top;
-    if (pageHPx !== undefined) {
+    if (pageHPx === undefined) {
+      if (xPos < 0 || yLocal < 0) {
+        continue;
+      }
+      pdf.link(xPos, yLocal, rect.width, rect.height, { url: anchor.href });
+    } else {
       const pageIdx = Math.floor(yLocal / pageHPx);
       const yOnPage = yLocal - pageIdx * pageHPx;
       if (xPos < 0 || yOnPage < 0) {
@@ -81,18 +87,22 @@ function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions
       }
       pdf.setPage(pageIdx + 1);
       pdf.link(xPos, yOnPage, rect.width, rect.height, { url: anchor.href });
-    } else {
-      if (xPos < 0 || yLocal < 0) {
-        continue;
-      }
-      pdf.link(xPos, yLocal, rect.width, rect.height, { url: anchor.href });
     }
   }
 }
 
-/** @deprecated Use `addOverlayToPdf` instead. */
-function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
-  addOverlayToPdf(pdf, root);
+/**
+ * Add invisible text and link overlays to a jsPDF document from a rendered
+ * HTML element.
+ *
+ * Used by both the slide PDF export (single-page per slide) and the
+ * document PDF export (multi-page paginated via `pageHPx`).
+ */
+function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions): void {
+  const { pageHPx, rootRect: precomputed } = options ?? {};
+  const rootRect = precomputed ?? root.getBoundingClientRect();
+  applyTextOverlay(pdf, root, rootRect, pageHPx);
+  applyLinkOverlay(pdf, root, rootRect, pageHPx);
 }
 
 // ── Slide parsing ─────────────────────────────────────────────────────────────
@@ -198,4 +208,4 @@ function buildCanvasStyle(
  * showing a slide number badge.  Theme and per-slide directives are both applied.
  */
 
-export { addOverlayToPdf, overlaySelectableLayer, splitSlides, buildCanvasStyle, SLIDE_W, SLIDE_H };
+export { addOverlayToPdf, splitSlides, buildCanvasStyle, SLIDE_W, SLIDE_H };

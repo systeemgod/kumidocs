@@ -31,7 +31,7 @@ export default function ErrorBanner({
   variant = "error",
   actions,
 }: ErrorBannerProps): JSX.Element | false {
-  if (!message) {
+  if (message === undefined || message === "") {
     return false;
   }
   const styles = VARIANT_STYLES[variant];

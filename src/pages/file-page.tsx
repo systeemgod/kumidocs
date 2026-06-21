@@ -139,10 +139,10 @@ export default function FilePage(): JSX.Element {
           },
           {
             label: "Dismiss",
-            variant: "ghost",
             onClick: () => {
               setDuplicateError(undefined);
             },
+            variant: "ghost",
           },
         ]}
       />
@@ -151,16 +151,16 @@ export default function FilePage(): JSX.Element {
         actions={[
           {
             label: "Dismiss",
-            variant: "ghost",
             onClick: () => {
               setConflictBanner(undefined);
             },
+            variant: "ghost",
           },
         ]}
       />
       <ErrorBanner
         variant="warning"
-        message={remoteBanner ? `${remoteBanner} while you have unsaved changes.` : ""}
+        message={remoteBanner !== undefined && remoteBanner !== "" ? `${remoteBanner} while you have unsaved changes.` : remoteBanner}
         actions={[
           {
             label: "Reload",
@@ -175,10 +175,10 @@ export default function FilePage(): JSX.Element {
           },
           {
             label: "Dismiss",
-            variant: "ghost",
             onClick: () => {
               setRemoteBanner(undefined);
             },
+            variant: "ghost",
           },
         ]}
       />

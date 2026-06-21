@@ -1,6 +1,6 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { ParsedSlide, SlideThemeMap } from "@/lib/slide";
-import { SLIDE_H, SLIDE_W, overlaySelectableLayer, splitSlides } from "./slide-utils";
+import { SLIDE_H, SLIDE_W, addOverlayToPdf, splitSlides } from "./slide-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { parseSlideDirectives } from "@/lib/slide";
 import useMountEffect from "@/hooks/use-mount-effect";
@@ -253,7 +253,7 @@ function useSlideViewer({
         pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, SLIDE_W, SLIDE_H);
         const el = slideEls[idx];
         if (el !== undefined) {
-          overlaySelectableLayer(pdf, el);
+          addOverlayToPdf(pdf, el);
         }
       }
       pdf.save(`${filename}.pdf`);
