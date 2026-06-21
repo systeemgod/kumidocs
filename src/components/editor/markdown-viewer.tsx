@@ -1,102 +1,16 @@
-import { Streamdown, defaultRehypePlugins } from "streamdown";
-import { EmojiIcon } from "@/components/ui/emoji-icon";
-import type { PluggableList } from "unified";
-import type { ReactNode } from "react";
+import { Streamdown } from "streamdown";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
-import { harden } from "rehype-harden";
 import { math } from "@streamdown/math";
 import { memo } from "react";
 import { mermaid } from "@streamdown/mermaid";
 import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
-import rehypeEmojiPlugin from "./rehype-emoji-plugin";
-import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
-import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
+import { COMPONENTS_DOC, REHYPE_PLUGINS } from "./streamdown-components";
 import useMountEffect from "@/hooks/use-mount-effect";
 
 interface MarkdownViewerProps {
   value: string;
 }
-
-const sanitizePlugin = defaultRehypePlugins.sanitize;
-if (!sanitizePlugin) {
-  throw new Error("streamdown sanitize plugin is required");
-}
-
-/** Resolve relative URLs against the current page origin. */
-const LOCAL = "http://localhost:5864";
-// oxlint-disable-next-line typescript/no-unnecessary-condition
-const DEFAULT_ORIGIN = globalThis.location === undefined ? LOCAL : globalThis.location.origin;
-
-const REHYPE_PLUGINS: PluggableList = [
-  sanitizePlugin,
-  [
-    harden,
-    {
-      // Restrict to safe URL prefixes; "*" allows all http/https as a fallback.
-      // Specific prefixes like "/" are checked first (origin-scoped); "*" catches external URLs.
-      allowedImagePrefixes: ["/images/", "https://", "http://", "data:image/", "./", "../"],
-      allowedLinkPrefixes: ["/", "./", "../", "#", "mailto:", "*"],
-      defaultOrigin: DEFAULT_ORIGIN,
-    },
-  ],
-  rehypeHeadingIdsPlugin,
-  rehypeImageAttrsPlugin,
-  rehypeEmojiPlugin,
-];
-
-const KumiEmojiComponent = (allProps: Record<string, unknown>): JSX.Element => {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  const nodeData = allProps.node as { properties: { dataEmoji?: unknown } } | undefined;
-  let emoji = "";
-  if (nodeData && typeof nodeData.properties.dataEmoji === "string") {
-    emoji = nodeData.properties.dataEmoji;
-  }
-  if (emoji) {
-    return <EmojiIcon emoji={emoji} size="1.07lh" className="align-middle" />;
-  }
-  return <></>;
-};
-
-const AnchorComponent = (allProps: { href?: string; children?: ReactNode }): JSX.Element => {
-  const { href, children } = allProps;
-  let target = "_blank";
-  if (href?.startsWith("#") === true) {
-    target = "_self";
-  }
-  return (
-    <a
-      className="wrap-anywhere font-medium text-primary underline"
-      data-incomplete="false"
-      data-streamdown="link"
-      href={href}
-      rel="noopener noreferrer"
-      target={target}
-    >
-      {children}
-    </a>
-  );
-};
-
-// oxfmt-ignore
-// oxlint-disable-next-line id-length
-const COMPONENTS: Record<string, (props: Record<string, unknown>) => JSX.Element> = {
-  // oxlint-disable-next-line id-length
-  a: AnchorComponent,
-  img: (allProps: { src?: string; alt?: string; title?: string }): JSX.Element => {
-    const { src, alt, title } = allProps;
-    return (
-      <img
-        src={src}
-        alt={alt ?? ""}
-        title={title}
-        className="rounded-lg max-w-full h-auto"
-        loading="lazy"
-      />
-    );
-  },
-  "kumi-emoji": KumiEmojiComponent,
-};
 
 const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
   const { value } = allProps;
@@ -112,7 +26,7 @@ const MarkdownViewerInner = (allProps: MarkdownViewerProps): JSX.Element => {
         plugins={{ cjk, code, math, mermaid }}
         shikiTheme={["github-light", "github-dark"]}
         linkSafety={{ enabled: false }}
-        components={COMPONENTS}
+        components={COMPONENTS_DOC}
         rehypePlugins={REHYPE_PLUGINS}
       >
         {value}
