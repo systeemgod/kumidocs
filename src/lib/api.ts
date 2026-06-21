@@ -150,9 +150,7 @@ const setAuthEmail = async (email: string): Promise<MeResponse> =>
   });
 
 /** Duplicate a page file by appending `-copy` before the `.md` extension. */
-const duplicatePage = async (
-  path: string,
-): Promise<{ newPath: string } | { error: string }> => {
+const duplicatePage = async (path: string): Promise<{ newPath: string } | { error: string }> => {
   try {
     const data = await getFile(path);
     const newPath = `${path.replace(/\.md$/iu, "")}-copy.md`;

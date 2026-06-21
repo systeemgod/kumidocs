@@ -2,13 +2,13 @@ import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import CodeEditor from "@/components/editor/code-editor";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
-import type { jsPDF as JsPDF } from "jspdf";
 import MarkdownEditor from "@/components/editor/markdown-editor";
 import MarkdownViewer from "@/components/editor/markdown-viewer";
 import type { SaveStatus } from "./use-file-page-save";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { SlideThemeMap } from "@/lib/slide";
 import { SlideViewer } from "@/components/editor/slide-viewer";
+import { addOverlayToPdf } from "@/components/editor/slide-utils";
 import { extensionToType } from "@/lib/filetypes";
 import { extractHeadingTitle } from "@/lib/frontmatter";
 
@@ -17,78 +17,6 @@ function pathToTitle(path: string): string {
     .replace(/\.md$/u, "")
     .replaceAll(/[-_]/gu, " ")
     .replaceAll(/\b\w/gu, (char) => char.toUpperCase());
-}
-
-// ── PDF overlay helpers (extracted to keep exportPagePdf complexity in check) ──
-
-function addTextOverlayToPage(
-  pdf: JsPDF,
-  el: HTMLElement,
-  rootRect: DOMRect,
-  pageHPx: number,
-): void {
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
-    if (!text || !(node instanceof Text) || node.parentElement === null) {
-      continue;
-    }
-    let ancestor: Element | null = node.parentElement;
-    let inSvg = false;
-    while (ancestor) {
-      if (ancestor.tagName.toLowerCase() === "svg") {
-        inSvg = true;
-        break;
-      }
-      ancestor = ancestor.parentElement;
-    }
-    if (inSvg) {
-      continue;
-    }
-    const range = document.createRange();
-    range.selectNode(node);
-    const br = range.getBoundingClientRect();
-    if (br.width <= 0 || br.height <= 0) {
-      continue;
-    }
-    const yLocal = br.top - rootRect.top;
-    const pageIdx = Math.floor(yLocal / pageHPx);
-    const yOnPage = yLocal - pageIdx * pageHPx;
-    const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
-    pdf.setPage(pageIdx + 1);
-    pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
-    const pdfWidth = pdf.getTextWidth(text);
-    const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
-    pdf.setCharSpace(charSpace);
-    pdf.text(text, br.left - rootRect.left, yOnPage, {
-      baseline: "top",
-      renderingMode: "invisible",
-    });
-    pdf.setCharSpace(0);
-  }
-}
-
-function addLinkOverlayToPage(
-  pdf: JsPDF,
-  el: HTMLElement,
-  rootRect: DOMRect,
-  pageHPx: number,
-): void {
-  for (const anchor of el.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-    const rect = anchor.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) {
-      continue;
-    }
-    const xPos = rect.left - rootRect.left;
-    const yLocal = rect.top - rootRect.top;
-    const pageIdx = Math.floor(yLocal / pageHPx);
-    const yOnPage = yLocal - pageIdx * pageHPx;
-    if (xPos < 0 || yOnPage < 0) {
-      continue;
-    }
-    pdf.setPage(pageIdx + 1);
-    pdf.link(xPos, yOnPage, rect.width, rect.height, { url: anchor.href });
-  }
 }
 
 // ── Derived-value helpers ─────────────────────────────────────────────────────
@@ -223,8 +151,7 @@ function buildEditorContent({
 export type { PresenceUser, User, SaveStatus, DocMeta, SlideThemeMap };
 export {
   pathToTitle,
-  addTextOverlayToPage,
-  addLinkOverlayToPage,
+  addOverlayToPdf,
   resolveFileType,
   computeTitle,
   getEditButtonClass,

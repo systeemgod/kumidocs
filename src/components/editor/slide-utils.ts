@@ -1,10 +1,25 @@
 import type { SlideDirectives, SlideThemeDef } from "@/lib/slide";
 import type { jsPDF as JsPDF } from "jspdf";
 
-function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
-  const rootRect = root.getBoundingClientRect();
+interface OverlayOptions {
+  /** When set, paginates text/link overlays across multi-page PDFs. */
+  pageHPx?: number;
+  /** Pre-computed root bounding rect. If omitted, computed from `root`. */
+  rootRect?: DOMRect;
+}
 
-  // Invisible text
+/**
+ * Add invisible text and link overlays to a jsPDF document from a rendered
+ * HTML element.
+ *
+ * Used by both the slide PDF export (single-page per slide) and the
+ * document PDF export (multi-page paginated via `pageHPx`).
+ */
+function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions): void {
+  const { pageHPx, rootRect: precomputed } = options ?? {};
+  const rootRect = precomputed ?? root.getBoundingClientRect();
+
+  // Invisible text overlay
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = (node.textContent ?? "").replaceAll(/\s+/gu, " ").trim();
@@ -30,6 +45,12 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
     if (br.width <= 0 || br.height <= 0) {
       continue;
     }
+    const yLocal = br.top - rootRect.top;
+    if (pageHPx !== undefined) {
+      const pageIdx = Math.floor(yLocal / pageHPx);
+      pdf.setPage(pageIdx + 1);
+    }
+    const yOnPage = pageHPx !== undefined ? yLocal - Math.floor(yLocal / pageHPx) * pageHPx : yLocal;
     const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
     pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
     // Stretch/compress char spacing so the invisible text spans the same
@@ -37,7 +58,7 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
     const pdfWidth = pdf.getTextWidth(text);
     const charSpace = text.length > 1 ? (br.width - pdfWidth) / (text.length - 1) : 0;
     pdf.setCharSpace(charSpace);
-    pdf.text(text, br.left - rootRect.left, br.top - rootRect.top, {
+    pdf.text(text, br.left - rootRect.left, yOnPage, {
       baseline: "top",
       renderingMode: "invisible",
     });
@@ -51,12 +72,27 @@ function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
       continue;
     }
     const xPos = rect.left - rootRect.left;
-    const yPos = rect.top - rootRect.top;
-    if (xPos < 0 || yPos < 0) {
-      continue;
+    const yLocal = rect.top - rootRect.top;
+    if (pageHPx !== undefined) {
+      const pageIdx = Math.floor(yLocal / pageHPx);
+      const yOnPage = yLocal - pageIdx * pageHPx;
+      if (xPos < 0 || yOnPage < 0) {
+        continue;
+      }
+      pdf.setPage(pageIdx + 1);
+      pdf.link(xPos, yOnPage, rect.width, rect.height, { url: anchor.href });
+    } else {
+      if (xPos < 0 || yLocal < 0) {
+        continue;
+      }
+      pdf.link(xPos, yLocal, rect.width, rect.height, { url: anchor.href });
     }
-    pdf.link(xPos, yPos, rect.width, rect.height, { url: anchor.href });
   }
+}
+
+/** @deprecated Use `addOverlayToPdf` instead. */
+function overlaySelectableLayer(pdf: JsPDF, root: HTMLElement): void {
+  addOverlayToPdf(pdf, root);
 }
 
 // ── Slide parsing ─────────────────────────────────────────────────────────────
@@ -162,4 +198,4 @@ function buildCanvasStyle(
  * showing a slide number badge.  Theme and per-slide directives are both applied.
  */
 
-export { overlaySelectableLayer, splitSlides, buildCanvasStyle, SLIDE_W, SLIDE_H };
+export { addOverlayToPdf, overlaySelectableLayer, splitSlides, buildCanvasStyle, SLIDE_W, SLIDE_H };

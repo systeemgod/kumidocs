@@ -1,4 +1,4 @@
-import { addLinkOverlayToPage, addTextOverlayToPage } from "./file-page-utils";
+import { addOverlayToPdf } from "@/components/editor/slide-utils";
 import { useCallback, useRef, useState } from "react";
 import type { RefObject } from "react";
 
@@ -52,8 +52,7 @@ function usePagePdfExport(title: string): UsePagePdfExportReturn {
         pdf.addImage(sliceCanvas.toDataURL("image/png"), "PNG", 0, 0, RENDER_W, sliceH / SCALE);
         yOffset += scaledPageH;
       }
-      addTextOverlayToPage(pdf, el, rootRect, PAGE_H_PX);
-      addLinkOverlayToPage(pdf, el, rootRect, PAGE_H_PX);
+      addOverlayToPdf(pdf, el, { pageHPx: PAGE_H_PX, rootRect });
       pdf.save(`${title}.pdf`);
     } finally {
       setIsPdfExporting(false);
