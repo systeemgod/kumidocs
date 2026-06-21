@@ -149,12 +149,30 @@ const setAuthEmail = async (email: string): Promise<MeResponse> =>
     method: "POST",
   });
 
+/** Duplicate a page file by appending `-copy` before the `.md` extension. */
+const duplicatePage = async (
+  path: string,
+): Promise<{ newPath: string } | { error: string }> => {
+  try {
+    const data = await getFile(path);
+    const newPath = `${path.replace(/\.md$/iu, "")}-copy.md`;
+    await createFile(newPath, data.content);
+    return { newPath };
+  } catch (error: unknown) {
+    if (error instanceof ApiError && error.status === 409) {
+      return { error: "A copy already exists at that path" };
+    }
+    return { error: "Duplicate failed" };
+  }
+};
+
 export type { DiffData, FileGetResponse, FileSaveResponse, ImageEntry, MeResponse };
 export {
   ApiError,
   createFile,
   deleteFile,
   deleteImage,
+  duplicatePage,
   getBacklinks,
   getFile,
   getFileDiff,

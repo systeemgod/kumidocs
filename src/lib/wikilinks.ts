@@ -7,6 +7,8 @@
  *    and `[[target|display text]]` with standard markdown links
  */
 
+import { headingToSlug } from "@/lib/heading";
+
 /** Lookup map returned by `GET /api/pages/lookup`. */
 interface WikilinkLookup {
   /** "Page Title" → "path/to/page.md" */
@@ -72,12 +74,7 @@ function resolveWikilinks(markdown: string, lookup: WikilinkLookup): string {
     }
 
     // Dead link: slugify target and link to create page
-    const slug = trimmed
-      .toLowerCase()
-      .replaceAll(/[^\w\s-]/gu, "")
-      .trim()
-      .replaceAll(/[\s_]+/gu, "-")
-      .replaceAll(/-+/gu, "-");
+    const slug = headingToSlug(trimmed);
     return `[${display}](/p/${slug}.md)`;
   });
 }

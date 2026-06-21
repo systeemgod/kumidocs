@@ -1,4 +1,4 @@
-import { ApiError, createFile, getFile } from "@/lib/api";
+import { duplicatePage } from "@/lib/api";
 import {
   ChevronDownRegular,
   ChevronRightRegular,
@@ -74,19 +74,13 @@ async function handleDuplicatePage(
   path: string,
   navigate: (to: string) => void,
 ): Promise<string | undefined> {
-  try {
-    const data = await getFile(path);
-    const newPath = `${path.replace(/\.md$/iu, "")}-copy.md`;
-    await createFile(newPath, data.content);
-    toast.success("Page duplicated");
-    navigate(`/p/${newPath}`);
-    return undefined;
-  } catch (error: unknown) {
-    if (error instanceof ApiError && error.status === 409) {
-      return "A copy already exists at that path";
-    }
-    return "Duplicate failed";
+  const result = await duplicatePage(path);
+  if ("error" in result) {
+    return result.error;
   }
+  toast.success("Page duplicated");
+  navigate(`/p/${result.newPath}`);
+  return undefined;
 }
 
 // oxlint-disable-next-line complexity

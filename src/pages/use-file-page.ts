@@ -1,4 +1,4 @@
-import { ApiError, createFile, getFile, getPagesLookup } from "@/lib/api";
+import { duplicatePage, getPagesLookup } from "@/lib/api";
 import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
@@ -196,20 +196,14 @@ function useFilePage(): UseFilePageReturn {
   const [duplicateError, setDuplicateError] = useState<string | undefined>();
   const handlePageDuplicate = useCallback(async () => {
     setDuplicateError(undefined);
-    try {
-      const data = await getFile(filePath);
-      const newPath = `${filePath.replace(/\.md$/iu, "")}-copy.md`;
-      await createFile(newPath, data.content);
-      reloadTree();
-      toast.success("Page duplicated");
-      void navigate(`/p/${newPath}`);
-    } catch (error: unknown) {
-      if (error instanceof ApiError && error.status === 409) {
-        setDuplicateError("A copy already exists at that path");
-      } else {
-        setDuplicateError("Duplicate failed");
-      }
+    const result = await duplicatePage(filePath);
+    if ("error" in result) {
+      setDuplicateError(result.error);
+      return;
     }
+    reloadTree();
+    toast.success("Page duplicated");
+    void navigate(`/p/${result.newPath}`);
   }, [filePath, navigate, reloadTree]);
 
   return {

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import ErrorBanner from "@/components/ui/error-banner";
 import FilePageHeader from "./file-page-header";
 import MarkdownViewer from "@/components/editor/markdown-viewer";
 import NotFound from "./not-found";
@@ -102,112 +102,86 @@ export default function FilePage(): JSX.Element {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Error banners */}
-      {loadError !== undefined && loadError !== "" && (
-        <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
-          <span className="flex-1">{loadError}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 text-xs"
-            onClick={async () => {
+      <ErrorBanner
+        message={loadError}
+        actions={[
+          {
+            label: "Retry",
+            onClick: async () => {
               try {
                 await loadDoc(filePath);
               } catch {
                 // retry handled by loadDoc's own error handling
               }
-            }}
-          >
-            Retry
-          </Button>
-        </div>
-      )}
-      {saveError !== undefined && saveError !== "" && (
-        <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
-          <span className="flex-1">{saveError}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 text-xs"
-            onClick={() => {
+            },
+          },
+        ]}
+      />
+      <ErrorBanner
+        message={saveError}
+        actions={[
+          {
+            label: "Retry Save",
+            onClick: () => {
               void handleSave();
-            }}
-          >
-            Retry Save
-          </Button>
-        </div>
-      )}
-      {duplicateError !== undefined && duplicateError !== "" && (
-        <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
-          <span className="flex-1">{duplicateError}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 text-xs"
-            onClick={() => {
+            },
+          },
+        ]}
+      />
+      <ErrorBanner
+        message={duplicateError}
+        actions={[
+          {
+            label: "Retry",
+            onClick: () => {
               void handlePageDuplicate();
-            }}
-          >
-            Retry
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-xs"
-            onClick={() => {
+            },
+          },
+          {
+            label: "Dismiss",
+            variant: "ghost",
+            onClick: () => {
               setDuplicateError(undefined);
-            }}
-          >
-            Dismiss
-          </Button>
-        </div>
-      )}
-      {conflictBanner !== undefined && conflictBanner !== "" && (
-        <div className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
-          <span className="flex-1">{conflictBanner}</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-xs"
-            onClick={() => {
+            },
+          },
+        ]}
+      />
+      <ErrorBanner
+        message={conflictBanner}
+        actions={[
+          {
+            label: "Dismiss",
+            variant: "ghost",
+            onClick: () => {
               setConflictBanner(undefined);
-            }}
-          >
-            Dismiss
-          </Button>
-        </div>
-      )}
-
-      {/* Remote change banner */}
-      {remoteBanner !== undefined && remoteBanner !== "" && (
-        <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-          <span className="flex-1">{remoteBanner} while you have unsaved changes.</span>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 text-xs"
-            onClick={async () => {
+            },
+          },
+        ]}
+      />
+      <ErrorBanner
+        variant="warning"
+        message={remoteBanner ? `${remoteBanner} while you have unsaved changes.` : ""}
+        actions={[
+          {
+            label: "Reload",
+            onClick: async () => {
               try {
                 await loadDoc(filePath);
               } catch (error: unknown) {
                 console.error("Failed to reload document:", error);
               }
               setRemoteBanner(undefined);
-            }}
-          >
-            Reload
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-xs"
-            onClick={() => {
+            },
+          },
+          {
+            label: "Dismiss",
+            variant: "ghost",
+            onClick: () => {
               setRemoteBanner(undefined);
-            }}
-          >
-            Dismiss
-          </Button>
-        </div>
-      )}
+            },
+          },
+        ]}
+      />
 
       {/* Page header */}
       <FilePageHeader
