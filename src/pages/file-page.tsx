@@ -160,7 +160,11 @@ export default function FilePage(): JSX.Element {
       />
       <ErrorBanner
         variant="warning"
-        message={remoteBanner !== undefined && remoteBanner !== "" ? `${remoteBanner} while you have unsaved changes.` : remoteBanner}
+        message={
+          remoteBanner !== undefined && remoteBanner !== ""
+            ? `${remoteBanner} while you have unsaved changes.`
+            : remoteBanner
+        }
         actions={[
           {
             label: "Reload",
