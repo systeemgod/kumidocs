@@ -143,11 +143,11 @@ const ALERT_LABELS: Record<string, string> = {
 };
 
 const ALERT_ICONS: Record<string, string> = {
-  CAUTION: "\uD83D\uDED1",
-  IMPORTANT: "\u2757",
+  CAUTION: "\uD83C\uDD98",
+  IMPORTANT: "\u2611\uFE0F",
   NOTE: "\u2139\uFE0F",
-  TIP: "\uD83D\uDCA1",
-  WARNING: "\u26A0\uFE0F",
+  TIP: "\uD83D\uDD30",
+  WARNING: "\uD83D\uDEB8",
 };
 
 const ALERT_CLASSES: Record<string, string> = {
@@ -168,11 +168,11 @@ const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
   const emoji = ALERT_ICONS[alertType] ?? ALERT_ICONS.NOTE;
   return (
-    <div className={`border-l-4 rounded-r-lg px-4 py-3 my-4 not-prose ${classes}`} role="alert">
-      <p className="font-bold mt-0 mb-1 text-inherit flex items-center gap-1.5">
-        <EmojiIcon emoji={emoji} size={16} />
-        {label}
-      </p>
+    <div className={`border-l-4 rounded-r-lg px-5 py-3 my-4 not-prose ${classes}`} role="alert">
+      <div className="font-bold mt-2 mb-3 text-inherit flex items-center gap-3 leading-none">
+        <EmojiIcon emoji={emoji} size="28px" />
+        <span>{label}</span>
+      </div>
       {allProps.children}
     </div>
   );
