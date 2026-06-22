@@ -4,6 +4,7 @@ import { mkdir, readdir, unlink } from "node:fs/promises";
 import type { FileEntry, TreeNode } from "@/lib/types";
 import type { Config } from "./config";
 import type { IgnoreChecker } from "./git-ignore";
+import ignore from "ignore";
 import matter from "gray-matter";
 import path from "node:path";
 
@@ -25,6 +26,30 @@ function consumeWritten(relPath: string): boolean {
 
 function invalidateTree(): void {
   treeCache = undefined;
+}
+
+// User-configured hidden file patterns from .kumidocs.json hideFiles field.
+// Rebuilt on every permissions reload.
+let hiddenFilter: (relPath: string) => boolean = () => false;
+
+/** Set patterns that should be hidden from the sidebar / tree. Accepts gitignore-style entries. */
+function setHiddenPatterns(patterns: string[] | undefined): void {
+  if (patterns === undefined || patterns.length === 0) {
+    hiddenFilter = (): boolean => false;
+    return;
+  }
+  const ig = ignore().add(patterns);
+  hiddenFilter = (relPath: string): boolean => {
+    if (!relPath || relPath === ".") {
+      return false;
+    }
+    try {
+      return ig.ignores(relPath.replaceAll("\\", "/"));
+    } catch {
+      return false;
+    }
+  };
+  invalidateTree();
 }
 
 const IGNORED_NAMES = new Set([
@@ -190,7 +215,8 @@ function buildFileTree(): TreeNode[] {
     (filePath) =>
       !filePath.startsWith(".") &&
       !IGNORED_NAMES.has(filePath.split("/")[0] ?? "") &&
-      !filePath.startsWith("images/"),
+      !filePath.startsWith("images/") &&
+      !hiddenFilter(filePath),
   );
 
   const root: TreeNode[] = [];
@@ -248,5 +274,6 @@ export {
   parseFileEntry,
   reloadFile,
   removeFromCache,
+  setHiddenPatterns,
   writeFileToRepo,
 };

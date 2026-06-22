@@ -9,6 +9,7 @@ import {
   loadFilestore,
   reloadFile,
   removeFromCache,
+  setHiddenPatterns,
 } from "./server/filestore";
 import { buildIgnoreChecker } from "./server/git-ignore";
 import { gitFetchAndRebase, gitPull, gitStageAndCommit } from "./server/git";
@@ -54,6 +55,7 @@ setReadonly(config.readonly);
 async function loadPermissions(): Promise<void> {
   if (config.readonly) {
     setPermissions({});
+    setHiddenPatterns(undefined);
     return;
   }
   const configPath = path.join(config.repoPath, ".kumidocs.json");
@@ -62,6 +64,8 @@ async function loadPermissions(): Promise<void> {
     const parsed: unknown = JSON.parse(raw);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     setPermissions(parsed as KumiDocsPermissions);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    setHiddenPatterns((parsed as KumiDocsPermissions).hideFiles);
   } catch (error: unknown) {
     // If file doesn't exist, create it with default config
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
@@ -71,6 +75,7 @@ async function loadPermissions(): Promise<void> {
       };
       await Bun.write(configPath, JSON.stringify(defaultConfig, undefined, 2));
       setPermissions(defaultConfig);
+      setHiddenPatterns(undefined);
       console.log("Created .kumidocs.json with default configuration");
 
       // Commit and push the new config file
@@ -84,6 +89,7 @@ async function loadPermissions(): Promise<void> {
       console.log("Committed and pushed .kumidocs.json to repository");
     } else {
       setPermissions({});
+      setHiddenPatterns(undefined);
     }
   }
 }
