@@ -9,7 +9,7 @@ interface BacklinkEntry {
   title: string;
 }
 
-// ── Lookup ───────────────────────────────────────────────────────────────────
+// Lookup
 
 /**
  * Build the wiki-link lookup map from all `.md` files in the repo.
@@ -34,7 +34,7 @@ function buildLookup(): WikilinkLookup {
     if (!(pathKey in byPath)) {
       byPath[pathKey] = filePath;
     }
-    // Also map the base filename (e.g. "aws-architecture" → path)
+    // Also map the base filename (e.g. "aws-architecture" -> path)
     const baseName = filePath.split("/").pop()?.replace(/\.md$/u, "");
     if (
       baseName !== undefined &&
@@ -54,7 +54,7 @@ function apiPagesLookup(): Response {
   return Response.json(buildLookup());
 }
 
-// ── Backlinks ────────────────────────────────────────────────────────────────
+// Backlinks
 
 /**
  * Find all pages that reference the given path via `[[target]]` wiki-links.

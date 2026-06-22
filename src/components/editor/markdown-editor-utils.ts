@@ -5,7 +5,7 @@ function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): voi
   const end = ta.selectionEnd;
   const selected = ta.value.slice(start, end);
 
-  // Toggle case 1: selected text includes the wrappers → unwrap.
+  // Toggle case 1: selected text includes the wrappers -> unwrap.
   if (
     selected.length >= before.length + after.length &&
     selected.startsWith(before) &&
@@ -18,7 +18,7 @@ function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): voi
     return;
   }
 
-  // Toggle case 2: inner text is selected and is surrounded by markers → unwrap.
+  // Toggle case 2: inner text is selected and is surrounded by markers -> unwrap.
   if (
     start >= before.length &&
     end + after.length <= ta.value.length &&
@@ -31,7 +31,7 @@ function insertWrap(ta: HTMLTextAreaElement, before: string, after: string): voi
     return;
   }
 
-  // Toggle case 3: no selection, cursor sits between empty markers → remove them.
+  // Toggle case 3: no selection, cursor sits between empty markers -> remove them.
   if (
     start === end &&
     start >= before.length &&
@@ -149,7 +149,7 @@ async function uploadImageFile(file: File): Promise<string | undefined> {
   }
 }
 
-// ── Cheatsheet content ────────────────────────────────────────────────────────
+// Cheatsheet content
 
 const CHEATSHEET_ROWS: [string, string][] = [
   ["# Heading 1", "H1"],

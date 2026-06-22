@@ -13,7 +13,7 @@ import { ScrollArea } from "./scroll-area";
 import cn from "@/lib/utils";
 import data from "./emoji/emojimart-data-all-15.json";
 
-// ── Typed subset of emojimart-data-all-15.json ───────────────────────────────
+// Typed subset of emojimart-data-all-15.json
 
 interface EmojiSkin {
   native: string;
@@ -37,7 +37,7 @@ interface MartData {
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion
 const emojiData = data as unknown as MartData;
 
-// ── Category display config ───────────────────────────────────────────────────
+// Category display config
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
   activity: { icon: "⚽", label: "Activities" },
@@ -50,7 +50,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
   symbols: { icon: "💫", label: "Symbols" },
 };
 
-// ── Pre-built indexes (run once at module load, not per render) ───────────────
+// Pre-built indexes (run once at module load, not per render)
 
 const CATEGORY_EMOJIS: Record<string, { native: string; name: string }[]> = {};
 for (const cat of emojiData.categories) {
@@ -100,7 +100,7 @@ const getInitialCategory = (): string => {
   return "people";
 };
 
-// ── Memoised emoji cell ───────────────────────────────────────────────────────
+// Memoised emoji cell
 
 interface EmojiCellProps {
   native: string;
@@ -126,7 +126,7 @@ const EmojiCellInner = (allProps: EmojiCellProps): JSX.Element => {
 
 const EmojiCell = memo(EmojiCellInner);
 
-// ── Category tabs ─────────────────────────────────────────────────────────────
+// Category tabs
 
 interface CategoryTabsProps {
   activeCategory: string;
@@ -170,7 +170,7 @@ const CategoryTabsInner = (allProps: CategoryTabsProps): JSX.Element => {
 
 const CategoryTabs = memo(CategoryTabsInner);
 
-// ── Emoji grid ────────────────────────────────────────────────────────────────
+// Emoji grid
 
 interface EmojiGridProps {
   displayEmojis: { native: string; name: string }[];
@@ -200,7 +200,7 @@ const EmojiGridInner = (allProps: EmojiGridProps): JSX.Element => {
 
 const EmojiGrid = memo(EmojiGridInner);
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// Component
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void;

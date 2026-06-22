@@ -39,9 +39,9 @@ const HIDDEN_DIR_NAMES = new Set(["images"]);
 
 /**
  * Merge TreeNode[] (mixed files + dirs) into PageNode[]:
- * - dir "test-3/" + "test-3.md" → one PageNode with children
- * - dir with no matching .md → virtual ghost PageNode
- * - .md file with no matching dir → leaf PageNode
+ * - dir "test-3/" + "test-3.md" -> one PageNode with children
+ * - dir with no matching .md -> virtual ghost PageNode
+ * - .md file with no matching dir -> leaf PageNode
  */
 function buildPageTree(nodes: TreeNode[]): PageNode[] {
   const filtered = nodes.filter(
@@ -49,8 +49,8 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
       !HIDDEN_NAMES.has(node.name) && !(node.type === "dir" && HIDDEN_DIR_NAMES.has(node.name)),
   );
 
-  const fileMap = new Map<string, TreeNode>(); // baseName → file node
-  const dirMap = new Map<string, TreeNode>(); // dirName → dir node
+  const fileMap = new Map<string, TreeNode>(); // baseName -> file node
+  const dirMap = new Map<string, TreeNode>(); // dirName -> dir node
 
   for (const node of filtered) {
     if (node.type === "dir") {
@@ -74,7 +74,7 @@ function buildPageTree(nodes: TreeNode[]): PageNode[] {
     });
   }
 
-  // Orphan dirs (no matching .md) → virtual ghost page
+  // Orphan dirs (no matching .md) -> virtual ghost page
   for (const [name, dirNode] of dirMap) {
     if (fileMap.has(name)) {
       continue;
@@ -127,7 +127,7 @@ export default function Sidebar({
         className="shrink-0 border-r border-border bg-sidebar flex flex-col h-full overflow-hidden"
         style={{ width }}
       >
-        {/* ── Pages header ── */}
+        {/* Pages header */}
         <div className="flex items-center px-3 py-2.5 border-b border-border shrink-0">
           <span className="flex-1 text-sm pt-1 font-semibold text-foreground uppercase tracking-wide select-none">
             Pages

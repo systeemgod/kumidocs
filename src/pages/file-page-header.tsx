@@ -149,7 +149,7 @@ function FilePageHeader({
         </div>
       )}
 
-      {/* Save status – inline next to Edit button */}
+      {/* Save status - inline next to Edit button */}
       {editMode && (
         <Badge variant="outline" className={`text-xs h-5 shrink-0${saveBadgeClass}`}>
           {SAVE_BADGE_TEXT[saveStatus]}

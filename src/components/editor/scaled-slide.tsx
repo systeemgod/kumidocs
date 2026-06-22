@@ -133,7 +133,7 @@ function ScaledSlide({
     >
       <SlideMarkdownViewer slide={slide} contentPadding={resolvedTheme?.contentPadding} />
 
-      {/* ── Deck-level / directive header ── */}
+      {/* Deck-level / directive header */}
       <HeaderFooterOverlay
         text={directives.header ?? deckHeader}
         vars={{ slideNum, slideTotal: total, title: slideTitle }}
@@ -141,7 +141,7 @@ function ScaledSlide({
         position="top"
       />
 
-      {/* ── Theme overlay elements ── */}
+      {/* Theme overlay elements */}
       {resolvedTheme?.elements && resolvedTheme.elements.length > 0 && (
         <SlideOverlay
           elements={resolvedTheme.elements}
@@ -152,7 +152,7 @@ function ScaledSlide({
         />
       )}
 
-      {/* ── Deck-level / directive footer ── */}
+      {/* Deck-level / directive footer */}
       <HeaderFooterOverlay
         text={directives.footer ?? deckFooter}
         vars={{ slideNum, slideTotal: total, title: slideTitle }}
@@ -160,7 +160,7 @@ function ScaledSlide({
         position="bottom"
       />
 
-      {/* ── Slide number badge ── */}
+      {/* Slide number badge */}
       {paginate && (
         <div className="slide-number">
           {slideNum} / {total}

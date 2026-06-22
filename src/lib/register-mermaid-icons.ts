@@ -12,7 +12,7 @@
  * No CDN fetches; icons are bundled via npm packages.
  */
 
-// ── Icon pack imports (bundled at build time) ───────────────────────────
+// Icon pack imports (bundled at build time)
 // Each @iconify-json/* package exports a JSON file with the Iconify schema:
 //   { prefix: string, icons: Record<string, IconifyIcon>, ... }
 import deviconIcons from "@iconify-json/devicon/icons.json";

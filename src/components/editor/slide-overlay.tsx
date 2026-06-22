@@ -1,11 +1,11 @@
 import type React from "react";
 import type { SlideThemeElement } from "@/lib/slide";
 
-// ── Canvas dimensions must match SlideViewer ─────────────────────────────────
+// Canvas dimensions must match SlideViewer
 const CANVAS_W = 960;
 const CANVAS_H = 540;
 
-// ── Position helper ───────────────────────────────────────────────────────────
+// Position helper
 
 type RectElement = Extract<SlideThemeElement, { type: "rect" }>;
 type AlignableElement = Extract<SlideThemeElement, { type: "text" | "image" }>;
@@ -94,7 +94,7 @@ function computePositionStyle(el: SlideThemeElement): React.CSSProperties {
   return styles;
 }
 
-// ── Template variable interpolation ──────────────────────────────────────────
+// Template variable interpolation
 
 function interpolate(
   template: string,
@@ -121,7 +121,7 @@ function interpolate(
   return result;
 }
 
-// ── SVG dimension patcher ─────────────────────────────────────────────────────
+// SVG dimension patcher
 // html2canvas renders <img src="...svg..."> at the SVG's own intrinsic size,
 // ignoring CSS width/height, which crops the image to the top-left corner.
 // Patching the SVG root's width/height attributes to match the display size
@@ -150,7 +150,7 @@ function patchSvgDimensions(src: string, width?: number, height?: number): strin
   }
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// Component
 
 interface SlideOverlayProps {
   elements: SlideThemeElement[];

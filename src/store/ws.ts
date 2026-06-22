@@ -7,7 +7,7 @@ type WsListener = (msg: WsServerMessage) => void;
 const RECONNECT_DELAY_MS = 3000;
 const HEARTBEAT_INTERVAL_MS = 30_000;
 
-// ── Connection state (global, module-level) ───────────────────────────────────
+// Connection state (global, module-level)
 
 type ConnectionState = "connecting" | "connected" | "disconnected";
 

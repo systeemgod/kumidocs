@@ -219,11 +219,11 @@ export default function AppShell(): JSX.Element {
     [sidebarWidth],
   );
 
-  // ── Connection state ──────────────────────────────────────────────────
+  // Connection state
   const wsConnectionState = useWsConnectionState();
   const isWsOffline = wsConnectionState !== "connected";
 
-  // ── Error banners ─────────────────────────────────────────────────────
+  // Error banners
 
   const errorBanners = ((): JSX.Element[] => {
     const banners: JSX.Element[] = [];

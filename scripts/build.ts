@@ -29,7 +29,7 @@ console.log("Building KumiDocs…");
 // Always start from a clean slate so stale hashed files don't accumulate.
 rmSync(distDir, { recursive: true, force: true });
 
-// ── Step 1: Frontend (browser) ────────────────────────────────────────────────
+// Step 1: Frontend (browser)
 // Build the React app from index.html into dist/public/.  The server bundle
 // then serves these files from disk via import.meta.dir, which is CWD-independent.
 console.log("  [1/2] Frontend…");
@@ -46,7 +46,7 @@ for (const log of frontendResult.logs) {
 }
 if (!frontendResult.success) process.exit(1);
 
-// ── Step 2: Server (bun target) ───────────────────────────────────────────────
+// Step 2: Server (bun target)
 // __BUNDLED__ is injected so the server switches from Bun's HTML-import HMR
 // route (dev) to the static file handler that reads from import.meta.dir/public/.
 console.log("  [2/2] Server…");

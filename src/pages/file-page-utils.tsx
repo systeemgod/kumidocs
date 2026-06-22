@@ -19,7 +19,7 @@ function pathToTitle(path: string): string {
     .replaceAll(/\b\w/gu, (char) => char.toUpperCase());
 }
 
-// ── Derived-value helpers ─────────────────────────────────────────────────────
+// Derived-value helpers
 
 function resolveFileType(rawExt: string, slides: boolean | undefined): FileType {
   const base = extensionToType(rawExt);

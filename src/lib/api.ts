@@ -3,7 +3,7 @@ import type { BacklinkEntry } from "@/server/backlinks";
 import type { SlideThemeMap } from "./slide";
 import type { WikilinkLookup } from "./wikilinks";
 
-// ── Error ─────────────────────────────────────────────────────────────────────
+// Error
 
 class ApiError extends Error {
   public readonly status: number;
@@ -17,7 +17,7 @@ class ApiError extends Error {
   }
 }
 
-// ── Response types ────────────────────────────────────────────────────────────
+// Response types
 
 interface MeResponse {
   id: string;
@@ -59,7 +59,7 @@ interface DiffData {
   unifiedDiff: string;
 }
 
-// ── Core request helper ───────────────────────────────────────────────────────
+// Core request helper
 
 async function request<TResponse>(url: string, init?: RequestInit): Promise<TResponse> {
   const res = await fetch(url, init);
@@ -77,7 +77,7 @@ async function request<TResponse>(url: string, init?: RequestInit): Promise<TRes
   return data as TResponse;
 }
 
-// ── API functions ─────────────────────────────────────────────────────────────
+// API functions
 
 const getMe = async (): Promise<MeResponse> => request<MeResponse>("/api/me");
 

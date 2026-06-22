@@ -12,7 +12,7 @@ import {
 import type { CommitEntry } from "@/lib/types";
 import type { Config } from "./config";
 
-// ── Serial queue ──────────────────────────────────────────────────────────────
+// Serial queue
 // All operations that touch .git/index or the working tree run through this
 // queue so concurrent HTTP saves and the background pull loop never race.
 let gitTail: Promise<void> = Promise.resolve();

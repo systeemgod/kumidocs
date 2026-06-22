@@ -142,7 +142,7 @@ const parseSlideDirectives = (raw: string): ParsedSlide => {
   return { content: content.trim(), directives };
 };
 
-// ── Custom theme system ───────────────────────────────────────────────────────
+// Custom theme system
 
 type SlideThemeElement =
   | {

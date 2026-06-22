@@ -25,7 +25,7 @@ import { readdir, readFile, mkdir, rm, exists, writeFile } from "node:fs/promise
 import { join, resolve } from "node:path";
 import { $ } from "bun";
 
-// ── Paths ─────────────────────────────────────────────────────────────────────
+// Paths
 
 const REPO_URL = "https://github.com/microsoft/fluentui-emoji";
 const CLONE_DIR = "/tmp/fluentui-emoji";
@@ -40,7 +40,7 @@ const COLOR_DIR = join(PROJECT_ROOT, "src/components/ui/emoji/color");
 // country-flag-icons 3x2 SVG directory (installed as dev dependency)
 const FLAG_SVGS_DIR = join(PROJECT_ROOT, "node_modules/country-flag-icons/3x2");
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// Types
 
 interface EmojiSkin {
   native: string;
@@ -57,9 +57,9 @@ interface FluentMeta {
   glyph: string;
 }
 
-// ── Helpers: Fluent Emoji ────────────────────────────────────────────────────
+// Helpers: Fluent Emoji
 
-/** Walk the fluentui assets dir and build a map: glyph → absolute Color SVG path. */
+/** Walk the fluentui assets dir and build a map: glyph -> absolute Color SVG path. */
 async function buildGlyphMap(assetsDir: string): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   const assetNames = await readdir(assetsDir);
@@ -94,7 +94,7 @@ async function buildGlyphMap(assetsDir: string): Promise<Map<string, string>> {
   return map;
 }
 
-// ── Helpers: Country flags ───────────────────────────────────────────────────
+// Helpers: Country flags
 
 /**
  * Decode a regional-indicator flag emoji (e.g. 🇺🇸) to its ISO 3166-1 alpha-2
@@ -119,7 +119,7 @@ function flagEmojiToISO(native: string): string | null {
   return String.fromCharCode(a - 0x1f1e6 + 65, b - 0x1f1e6 + 65);
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// Main
 
 const forceClone = process.argv.includes("--clone");
 
@@ -137,7 +137,7 @@ if (!(await exists(CLONE_DIR))) {
   console.log(`Reusing existing clone at ${CLONE_DIR}`);
 }
 
-// 2. Build glyph → SVG path map
+// 2. Build glyph -> SVG path map
 console.log("Building glyph map from fluentui assets…");
 const glyphMap = await buildGlyphMap(ASSETS_DIR);
 console.log(`  ${String(glyphMap.size)} assets indexed.`);
@@ -151,7 +151,7 @@ for (const cat of martData.categories) {
 }
 console.log(`  ${String(allIds.size)} emoji IDs in emojimart data.`);
 
-// 4. Build map: native char → base64 data URI
+// 4. Build map: native char -> base64 data URI
 await mkdir(join(PROJECT_ROOT, "src/components/ui/emoji"), { recursive: true });
 
 let matchedFluent = 0;

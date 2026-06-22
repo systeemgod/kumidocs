@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-Developer-focused wiki/docs platform. Zero database: all content in a single Git repo. Inspired by Docmost (layout reference). Target: developers, 3–20 concurrent users.
+Developer-focused wiki/docs platform. Zero database: all content in a single Git repo. Inspired by Docmost (layout reference). Target: developers, 3 to 20 concurrent users.
 
 - Primary content: Markdown pages (YAML frontmatter)
 - Secondary content: Slide decks (`slides: true`), Code files

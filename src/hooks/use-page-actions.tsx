@@ -28,7 +28,7 @@ interface UsePageActionsResult {
 export default function usePageActions(reloadTree: () => void): UsePageActionsResult {
   const navigate = useNavigate();
 
-  // ── Move dialog ──────────────────────────────────────────────────────────
+  // Move dialog
   const [moveOpen, setMoveOpen] = useState(false);
   const [moveFrom, setMoveFrom] = useState("");
   const [moveParent, setMoveParent] = useState(ROOT); // sentinel = root
@@ -119,7 +119,7 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     setMoveOpen(false);
   }, [moveFrom, moveParent, moveSlug, navigate, reloadTree]);
 
-  // ── Delete dialog ─────────────────────────────────────────────────────────
+  // Delete dialog
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState("");
   const [deleteTitle, setDeleteTitle] = useState("");
@@ -146,12 +146,12 @@ export default function usePageActions(reloadTree: () => void): UsePageActionsRe
     setDeleteOpen(false);
   }, [deleteTarget, navigate, reloadTree]);
 
-  // ── Preview path ──────────────────────────────────────────────────────────
+  // Preview path
   const previewParent = moveParent === ROOT ? "" : moveParent;
   const previewSlug = moveSlug || "page-name";
   const previewPath = previewParent ? `${previewParent}/${previewSlug}.md` : `${previewSlug}.md`;
 
-  // ── Dialog JSX ─────────────────────────────────────────────────────────
+  // Dialog JSX
   const dialogs = (
     <PageActionDialogs
       moveOpen={moveOpen}

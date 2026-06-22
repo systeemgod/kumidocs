@@ -69,7 +69,7 @@ const CODE_TYPES = new Set([
 const NO_DOT = -1;
 const AFTER_DOT = 1;
 
-/** Extract lowercase extension from a path (e.g. "test.tsx" → "tsx", "README.md" → "md", "nodot" → ""). */
+/** Extract lowercase extension from a path (e.g. "test.tsx" -> "tsx", "README.md" -> "md", "nodot" -> ""). */
 const pathExtension = (path: string): string => {
   const dot = path.lastIndexOf(".");
   const slash = path.lastIndexOf("/");

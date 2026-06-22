@@ -120,7 +120,7 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
   return <span style={wrapStyle} className={className} />;
 }
 
-// Same emoji regex as rehypeEmojiPlugin; kept here to avoid ui → editor imports.
+// Same emoji regex as rehypeEmojiPlugin; kept here to avoid ui -> editor imports.
 const TITLE_EMOJI_RE =
   /(?:[*#0-9]\uFE0F?\u20E3|[\u{1F1E6}-\u{1F1FF}]{2}|\p{Extended_Pictographic}[\p{Emoji_Modifier}\uFE0F]?(?:\u200D(?:\p{Extended_Pictographic}|\u2640\uFE0F?|\u2642\uFE0F?)[\p{Emoji_Modifier}\uFE0F]?)*)/gu;
 

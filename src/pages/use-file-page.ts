@@ -117,7 +117,7 @@ function useFilePage(): UseFilePageReturn {
   const fileType = resolveFileType(rawExt, meta.slides);
   const title = computeTitle(fileType, content, filePath);
 
-  // ── Document title ────────────────────────────────────────────────────────
+  // Document title
   useEffect(() => {
     if (loading) {
       document.title = "Loading…";
@@ -131,7 +131,7 @@ function useFilePage(): UseFilePageReturn {
   const breadcrumb = filePath.replace(/\.md$/u, "").split("/").slice(0, -1);
   const { exportPagePdf, pdfContentRef } = usePagePdfExport(title);
 
-  // ── Wiki-link lookup ────────────────────────────────────────────────────
+  // Wiki-link lookup
   const [pagesLookup, setPagesLookup] = useState<WikilinkLookup | undefined>();
   useMountEffect(() => {
     void (async (): Promise<void> => {

@@ -90,7 +90,7 @@ async function loadPermissions(): Promise<void> {
 
 await loadPermissions();
 
-// ── File watcher ──────────────────────────────────────────────────────────────
+// File watcher
 // Build gitignore checker once; used to skip both watching and indexing.
 const ig = buildIgnoreChecker(config.repoPath);
 
@@ -215,7 +215,7 @@ async function runPullCycle(): Promise<void> {
 
   if (result.advanced) {
     await loadPermissions();
-    // Full rescan is more reliable than per-file git diff — catches new
+    // Full rescan is more reliable than per-file git diff - catches new
     // directories, renames, and files that git rebase may struggle to
     // report when the working tree has uncommitted auto-save changes.
     await loadFilestore(config, ig);
@@ -234,7 +234,7 @@ async function runPullCycle(): Promise<void> {
     }
   }
 
-  // Adaptive delay: after failure retry soon (5s → 10s → 20s → … capped at interval);
+  // Adaptive delay: after failure retry soon (5s -> 10s -> 20s -> ... capped at interval);
   // after success reset to normal interval.
   if (result.pullFailed) {
     pullBackoff =

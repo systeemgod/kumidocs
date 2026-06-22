@@ -5,7 +5,7 @@
 // oxlint-disable-next-line import/no-duplicates, import/no-unassigned-import
 import "khroma";
 // Named import variant: some bundler versions need this to trigger proper
-// ESM re-export tracing through khroma's chain (khroma → methods → adjust).
+// ESM re-export tracing through khroma's chain (khroma -> methods -> adjust).
 // oxlint-disable-next-line @typescript-eslint/no-unused-vars, import/no-duplicates
 import "./index.css";
 import App from "./app";

@@ -92,7 +92,7 @@ export default function MarkdownEditor({
         handlePropsOpen={handlePropsOpen}
         setShowPreview={setShowPreview}
       />
-      {/* ── Properties dialog ── */}
+      {/* Properties dialog */}
       <Dialog open={propsOpen} onOpenChange={handlePropsOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -153,7 +153,7 @@ export default function MarkdownEditor({
           </div>
         </DialogContent>
       </Dialog>
-      {/* ── Two-pane content ── */}
+      {/* Two-pane content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left: editor */}
         <div

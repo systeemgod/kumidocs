@@ -105,7 +105,7 @@ function addOverlayToPdf(pdf: JsPDF, root: HTMLElement, options?: OverlayOptions
   applyLinkOverlay(pdf, root, rootRect, pageHPx);
 }
 
-// ── Slide parsing ─────────────────────────────────────────────────────────────
+// Slide parsing
 
 /**
  * Split markdown content into individual slides on `---` separator lines.
@@ -144,11 +144,11 @@ function splitSlides(content: string): string[] {
   return slides.filter((slide) => slide.length > 0);
 }
 
-// ── Slide canvas size ─────────────────────────────────────────────────────────
+// Slide canvas size
 const SLIDE_W = 960;
 const SLIDE_H = 540;
 
-// ── Canvas style builder ──────────────────────────────────────────────────────
+// Canvas style builder
 
 function buildCanvasStyle(
   resolvedTheme: Omit<SlideThemeDef, "layouts"> | undefined,
@@ -202,7 +202,7 @@ function buildCanvasStyle(
   return style;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// Component
 /**
  * Renders a single 960×540 slide canvas, scaled to `scale` and optionally
  * showing a slide number badge.  Theme and per-slide directives are both applied.

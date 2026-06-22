@@ -23,8 +23,8 @@ import type { User } from "@/lib/types";
 
 /**
  * After a git push result, broadcast the appropriate sync status:
- * - push_failed → set push to "failing"
- * - push succeeded while previously failing → recover to "ok"
+ * - push_failed -> set push to "failing"
+ * - push succeeded while previously failing -> recover to "ok"
  */
 function handlePushResult(result: { error?: string }): void {
   if (result.error === "push_failed") {
@@ -240,7 +240,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
   }
 
   // Collect all files that must move: the page itself plus any sub-pages living
-  // under the matching directory (e.g. "docs.md" → also move all "docs/*").
+  // under the matching directory (e.g. "docs.md" -> also move all "docs/*").
   const fromDir = `${from.replace(/\.md$/iu, "")}/`;
   const toDir = `${to.replace(/\.md$/iu, "")}/`;
   const allPaths = getAllPaths();
@@ -295,7 +295,7 @@ async function apiFileRename(req: Request, user: User, config: Config): Promise<
   const movedPaths = renameOps.map((op) => op.relFrom);
   const newPaths = renameOps.map((op) => op.relTo);
 
-  const msg = `docs: rename ${from} → ${to} by ${user.displayName}`;
+  const msg = `docs: rename ${from} -> ${to} by ${user.displayName}`;
   const extraMoves = subFiles.map((subFile) => ({
     from: subFile,
     to: toDir + subFile.slice(fromDir.length),

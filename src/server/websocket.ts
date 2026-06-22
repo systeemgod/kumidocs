@@ -23,7 +23,7 @@ function send(ws: ServerWebSocket<WsData>, msg: WsServerMessage): void {
   }
 }
 
-// ── Sync status tracking ──────────────────────────────────────────────────────
+// Sync status tracking
 // Tracks whether the server can reach and sync with the remote git origin.
 // Broadcasts to all connected clients on state changes so the UI can show
 // a persistent banner when remote sync is degraded.

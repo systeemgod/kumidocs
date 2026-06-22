@@ -233,7 +233,7 @@ function useMarkdownEditor({
         return;
       }
 
-      // 1. Paste image files — upload and insert as markdown image syntax.
+      // 1. Paste image files: upload and insert as markdown image syntax.
       const imageFiles = [...ev.clipboardData.files].filter((file) =>
         file.type.startsWith("image/"),
       );
@@ -243,7 +243,7 @@ function useMarkdownEditor({
         return;
       }
 
-      // 2. Paste link over selected text — wrap selection as [selected](url).
+      // 2. Paste link over selected text: wrap selection as [selected](url).
       const start = ta.selectionStart;
       const end = ta.selectionEnd;
       if (start !== end) {

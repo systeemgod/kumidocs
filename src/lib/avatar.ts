@@ -9,8 +9,8 @@
 
 /**
  * Derive a display name from an email address.
- * "max.faxalv@example.com" → "Max Faxalv"
- * "max@foorack.com"     → "Max"
+ * "max.faxalv@example.com" -> "Max Faxalv"
+ * "max@foorack.com"     -> "Max"
  */
 const emailToDisplayName = (email: string): string => {
   const local = email.split("@")[0] ?? email;
@@ -26,7 +26,7 @@ const emailToDisplayName = (email: string): string => {
     .trim();
 };
 
-/** Djb2-style hash of name → deterministic HSL background color. */
+/** Djb2-style hash of name -> deterministic HSL background color. */
 const avatarColor = (name: string): string => {
   let hash = 1;
   for (let idx = 0; idx < name.length; idx += 1) {
@@ -37,10 +37,10 @@ const avatarColor = (name: string): string => {
 };
 
 /**
- * Returns 1–2 uppercase initials for a display name.
+ * Returns 1-2 uppercase initials for a display name.
  *
- * - Multi-word  → first char of first word + first char of last word  ("Jane Doe" → "JD")
- * - Single word → first two chars of the word                         ("Foorack"  → "FO")
+ * - Multi-word  -> first char of first word + first char of last word  ("Jane Doe" -> "JD")
+ * - Single word -> first two chars of the word                         ("Foorack"  -> "FO")
  */
 const avatarInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/u).filter(Boolean);

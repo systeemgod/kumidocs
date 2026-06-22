@@ -1,7 +1,7 @@
 import type { CommitEntry } from "@/lib/types";
 import type { Config } from "./config";
 
-// ── Subprocess helper ─────────────────────────────────────────────────────────
+// Subprocess helper
 
 /** Max time (ms) to wait for any git subprocess before killing it.
  * Prevents a hanging git command from stalling the entire serial queue. */
@@ -33,7 +33,7 @@ async function runGit(
   return { exitCode, stderr, stdout };
 }
 
-// ── Read-only operations (no lock needed) ────────────────────────────────────
+// Read-only operations (no lock needed)
 
 async function getHeadShaNative(config: Config): Promise<string> {
   const result = await runGit(config.repoPath, ["rev-parse", "--short", "HEAD"]);
@@ -155,7 +155,7 @@ async function gitBlobAtNative(
   return result.stdout;
 }
 
-// ── Write operations (caller must hold the git lock) ─────────────────────────
+// Write operations (caller must hold the git lock)
 
 async function gitPullNative(config: Config): Promise<void> {
   const result = await runGit(config.repoPath, ["pull", "--ff-only", "--quiet"]);

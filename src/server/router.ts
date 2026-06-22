@@ -286,7 +286,7 @@ function buildRoutes(config: Config, requireUser: RequireUser): Record<string, u
   };
 
   // Dev mode only: Bun's HTMLBundle enables HMR and .tsx transpilation.
-  // In production the SPA is served by fetch() → serveCatchAll.
+  // In production the SPA is served by fetch() -> serveCatchAll.
   if (!isBundled) {
     routes["/*"] = devIndex;
   }

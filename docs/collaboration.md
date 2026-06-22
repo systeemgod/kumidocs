@@ -122,7 +122,7 @@ For reference, the full WebSocket message protocol:
 
 ## Limits
 
-KumiDocs is designed for teams of **3–20 concurrent users**. It is not designed for:
+KumiDocs is designed for teams of **3 to 20 concurrent users**. It is not designed for:
 
 - Public wikis with hundreds of simultaneous viewers
 - High-frequency concurrent edits to the same file

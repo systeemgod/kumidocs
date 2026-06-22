@@ -32,7 +32,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// ── Image Detail Panel ────────────────────────────────────────────────────────
+// Image Detail Panel
 
 function ImageDetailPanel({
   image,
@@ -185,7 +185,7 @@ function ImageDetailPanel({
   );
 }
 
-// ── Image Library Page ────────────────────────────────────────────────────────
+// Image Library Page
 
 export default function ImageLibraryPage(): JSX.Element {
   const { filename } = useParams<{ filename?: string }>();

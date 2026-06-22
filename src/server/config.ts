@@ -21,7 +21,7 @@ interface Config {
   readonly: boolean;
 }
 
-// ── Option definitions ────────────────────────────────────────────────────────
+// Option definitions
 // To add a new config option: add one entry here. Everything else is automatic.
 
 interface OptionDef {
@@ -41,7 +41,7 @@ interface OptionDef {
   needsValue?: boolean;
 }
 
-// ── Coercers ──────────────────────────────────────────────────────────────────
+// Coercers
 
 const PORT_MAX = 65_535;
 
@@ -52,7 +52,7 @@ const fatal = (message: string): never => {
 const coercePort = (raw: string): number => {
   const parsed = Number(raw);
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > PORT_MAX) {
-    fatal(`--port expects an integer 1–65535, got: ${JSON.stringify(raw)}`);
+    fatal(`--port expects an integer 1-65535, got: ${JSON.stringify(raw)}`);
   }
   return parsed;
 };
@@ -77,7 +77,7 @@ const coerceBool = (raw: string): boolean => {
   return false;
 };
 
-// ── Options table ─────────────────────────────────────────────────────────────
+// Options table
 
 const OPTIONS: OptionDef[] = [
   {
@@ -158,7 +158,7 @@ const OPTIONS: OptionDef[] = [
   },
 ];
 
-// ── Help / version ────────────────────────────────────────────────────────────
+// Help / version
 
 const defaultValue = (opt: OptionDef): Config[keyof Config] => {
   if (typeof opt.default === "function") {
@@ -195,7 +195,7 @@ const printHelp = (): void => {
   process.stdout.write(`${lines.join("\n")}\n`);
 };
 
-// ── Parser ────────────────────────────────────────────────────────────────────
+// Parser
 
 // TypeScript cannot verify that opt.coerce(raw) returns Config[K] for a specific
 // Key K at the call-site because it reasons over the union of all keys. The runtime

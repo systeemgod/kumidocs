@@ -85,7 +85,7 @@ function useSlideViewer({
   const slideElemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const offscreenRef = useRef<HTMLDivElement>(null);
 
-  // ── Keyboard navigation ──────────────────────────────────────────────────
+  // Keyboard navigation
   const prev = useCallback(() => {
     setIndex((idx) => {
       const next = Math.max(0, idx - 1);
@@ -128,7 +128,7 @@ function useSlideViewer({
     };
   });
 
-  // ── Scale slide canvas to fit the stage ──────────────────────────────────
+  // Scale slide canvas to fit the stage
   useMountEffect(() => {
     const el = stageRef.current;
     if (!el) {
@@ -148,7 +148,7 @@ function useSlideViewer({
     };
   });
 
-  // ── Fullscreen ───────────────────────────────────────────────────────────
+  // Fullscreen
   useMountEffect(() => {
     const handler = (): void => {
       const active = Boolean(document.fullscreenElement);
@@ -173,7 +173,7 @@ function useSlideViewer({
     }
   }, []);
 
-  // ── Spotlight (bare fullscreen, slide only) ───────────────────────────────
+  // Spotlight (bare fullscreen, slide only)
   // Rendered only when isSpotlight=true, so useMountEffect runs requestFullscreen
   // and a ResizeObserver immediately on mount of the spotlight overlay div.
   const spotlightCleanupRef = useRef(undefined as (() => void) | undefined);
@@ -215,7 +215,7 @@ function useSlideViewer({
     setIsSpotlight(true);
   }, []);
 
-  // ── PDF export ───────────────────────────────────────────────────────────
+  // PDF export
   const exportPdf = useCallback(async () => {
     if (isExporting) {
       return;

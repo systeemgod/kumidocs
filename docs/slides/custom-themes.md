@@ -112,7 +112,7 @@ Setting both `left: 0` and `right: 0` spans the full width. Setting both `top: 0
 | Field                            | Type    | Description                                     |
 | -------------------------------- | ------- | ----------------------------------------------- |
 | `src`                            | string  | Image URL (use `/images/…` for uploaded images) |
-| `opacity`                        | number  | 0–1 opacity                                     |
+| `opacity`                        | number  | 0 to 1 opacity                                  |
 | `width`, `height`                | number  | Size in px                                      |
 | `left`, `right`, `top`, `bottom` | number  | Distance from edge                              |
 | `centerX`, `centerY`             | boolean | Centre on that axis                             |

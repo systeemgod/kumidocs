@@ -5,18 +5,18 @@
  * cannot trace khroma's deep ESM re-export chain:
  *
  *   khroma/dist/index.js
- *     → export * from './methods/index.js'
- *       → import rgba from './rgba.js'
- *         → export { ... rgba ... }
+ *     -> export * from './methods/index.js'
+ *       -> import rgba from './rgba.js'
+ *         -> export { ... rgba ... }
  *
- * The `export { defaultImport }` pattern (default → named re-export) through
+ * The `export { defaultImport }` pattern (default -> named re-export) through
  * a re-export chain breaks Bun's named-export resolution, resulting in:
  *   TypeError: import_khromaN.rgba is not a function
  *
  * This patch replaces khroma/dist/index.js with direct re-exports from each
  * individual method file, eliminating the methods/index.js intermediary.
  *
- * The production build (scripts/build.ts → Bun.build()) does NOT need this
+ * The production build (scripts/build.ts -> Bun.build()) does NOT need this
  * patch: Bun.build() traces exports correctly.
  */
 
@@ -28,7 +28,7 @@ const KHROMA_INDEX = join(import.meta.dir, "..", "node_modules", "khroma", "dist
 const PATCHED = `/* PATCHED by scripts/postinstall.js: Bun dev bundler compat.
  * Original: export * from './methods/index.js'
  * Bun's HMR bundler cannot trace deep ESM re-exports through
- * the methods/index.js intermediary (default imports → named re-exports). */
+ * the methods/index.js intermediary (default imports -> named re-exports). */
 export { default as adjust } from './methods/adjust.js';
 export { default as alpha, default as opacity } from './methods/alpha.js';
 export { default as blue } from './methods/blue.js';

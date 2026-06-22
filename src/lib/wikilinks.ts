@@ -11,9 +11,9 @@ import { headingToSlug } from "@/lib/heading";
 
 /** Lookup map returned by `GET /api/pages/lookup`. */
 interface WikilinkLookup {
-  /** "Page Title" → "path/to/page.md" */
+  /** "Page Title" -> "path/to/page.md" */
   byTitle: Record<string, string>;
-  /** "path/to/page" (without .md) → "path/to/page.md" */
+  /** "path/to/page" (without .md) -> "path/to/page.md" */
   byPath: Record<string, string>;
 }
 

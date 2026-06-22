@@ -74,7 +74,7 @@ function SlideViewer({
 
   return (
     <>
-      {/* ── Off-screen render container for PDF export ── */}
+      {/* Off-screen render container for PDF export */}
       <div
         ref={offscreenRef}
         aria-hidden="true"
@@ -121,7 +121,7 @@ function SlideViewer({
           standalone ? "h-screen w-screen" : "h-full",
         )}
       >
-        {/* ── Spotlight overlay: bare fullscreen, slide only ── */}
+        {/* Spotlight overlay: bare fullscreen, slide only */}
         {isSpotlight && (
           <SlideSpotlightOverlay
             currentSlide={currentSlide}
@@ -147,7 +147,7 @@ function SlideViewer({
           />
         )}
 
-        {/* ── Slide stage ── */}
+        {/* Slide stage */}
         {scrollMode ? (
           <div
             ref={stageRef}

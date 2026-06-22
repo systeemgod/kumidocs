@@ -24,7 +24,7 @@ interface TocItem {
  *   1. lowercase
  *   2. strip non-word chars (keep \w, \s, -)
  *   3. trim
- *   4. replace whitespace / underscores → hyphens
+ *   4. replace whitespace / underscores -> hyphens
  *   5. collapse consecutive hyphens
  */
 function headingToSlug(text: string): string {

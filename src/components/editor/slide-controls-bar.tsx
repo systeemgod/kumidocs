@@ -41,7 +41,7 @@ function SlideControlsBar({
 }: SlideControlsBarProps): JSX.Element {
   return (
     <>
-      {/* ── Progress bar (paginate mode only) ── */}
+      {/* Progress bar (paginate mode only) */}
       {!scrollMode && (
         <div className="shrink-0 h-0.5 bg-muted">
           <div
@@ -53,7 +53,7 @@ function SlideControlsBar({
         </div>
       )}
 
-      {/* ── Controls bar ── */}
+      {/* Controls bar */}
       <div className="shrink-0 flex items-center justify-center gap-3 px-4 py-2 border-t border-border bg-background">
         {scrollMode ? (
           <span className="text-xs text-muted-foreground tabular-nums select-none">

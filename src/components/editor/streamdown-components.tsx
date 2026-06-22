@@ -13,7 +13,7 @@ const ALLOWED_IMAGE_PREFIXES = ["/images/", "data:image/"];
 /** Allowed URL to LINK to anywhere */
 const ALLOWED_LINK_PREFIXES = ["*"];
 
-// ── Shared rehype plugins ──────────────────────────────────────────────────
+// Shared rehype plugins
 
 const sanitizePlugin = defaultRehypePlugins.sanitize;
 if (!sanitizePlugin) {
@@ -43,7 +43,7 @@ const REHYPE_PLUGINS: PluggableList = [
   rehypeGfmAlertsPlugin,
 ];
 
-// ── KumiEmojiComponent ─────────────────────────────────────────────────────
+// KumiEmojiComponent
 
 interface KumiEmojiProps {
   node?: unknown;
@@ -63,14 +63,14 @@ const KumiEmojiComponent = (allProps: KumiEmojiProps): JSX.Element => {
   return <EmojiIcon emoji={emoji} size="1.07lh" className="align-middle" />;
 };
 
-// ── Anchor components ──────────────────────────────────────────────────────
+// Anchor components
 
 interface AnchorProps {
   href?: string;
   children?: ReactNode;
 }
 
-/** Anchor for document (non-slide) markdown – includes text-primary colour. */
+/** Anchor for document (non-slide) markdown - includes text-primary colour. */
 const AnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
@@ -91,7 +91,7 @@ const AnchorComponent = (allProps: AnchorProps): JSX.Element => {
   );
 };
 
-/** Anchor for slide markdown – same as AnchorComponent but without text-primary. */
+/** Anchor for slide markdown - same as AnchorComponent but without text-primary. */
 const SlideAnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
@@ -112,7 +112,7 @@ const SlideAnchorComponent = (allProps: AnchorProps): JSX.Element => {
   );
 };
 
-// ── Image component ────────────────────────────────────────────────────────
+// Image component
 
 interface ImgComponentProps {
   src?: string;
@@ -127,7 +127,7 @@ const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
   );
 };
 
-// ── GFM Alert component ─────────────────────────────────────────────────────
+// GFM Alert component
 
 interface KumiAlertProps {
   node?: unknown;
@@ -178,7 +178,7 @@ const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   );
 };
 
-// ── Component maps ─────────────────────────────────────────────────────────
+// Component maps
 
 /** Component map for document (non-slide) markdown viewer. */
 // oxfmt-ignore
