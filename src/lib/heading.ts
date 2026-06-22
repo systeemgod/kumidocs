@@ -1,10 +1,4 @@
-/**
- * Shared heading utilities for KumiDocs.
- *
- * `headingToSlug` must stay in sync with `rehypeHeadingIdsPlugin` so that
- * heading IDs generated at render-time match the slugs we derive from raw
- * markdown for the Table of Contents.
- */
+/** Must stay in sync with rehypeHeadingIdsPlugin for TOC slug matching. */
 
 /** A single entry in the page table of contents. */
 interface TocItem {
@@ -16,17 +10,7 @@ interface TocItem {
   level: number;
 }
 
-/**
- * Convert heading text to a URL-safe slug matching the algorithm in
- * `rehypeHeadingIdsPlugin`.
- *
- * Algorithm:
- *   1. lowercase
- *   2. strip non-word chars (keep \w, \s, -)
- *   3. trim
- *   4. replace whitespace / underscores -> hyphens
- *   5. collapse consecutive hyphens
- */
+/** Slugify heading text. Must match rehypeHeadingIdsPlugin. */
 function headingToSlug(text: string): string {
   return text
     .toLowerCase()

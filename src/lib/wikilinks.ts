@@ -1,11 +1,4 @@
-/**
- * Wiki-link (`[[Page Name]]`) resolution for KumiDocs.
- *
- * Two parts:
- * 1. **Lookup map**: maps page titles and partial paths to real file paths
- * 2. **resolveWikilinks**: pre-processes raw markdown, replacing `[[target]]`
- *    and `[[target|display text]]` with standard markdown links
- */
+/** [[Page Name]] -> markdown link resolution. */
 
 import { headingToSlug } from "@/lib/heading";
 
@@ -39,14 +32,13 @@ const WIKILINK_RE = /\[\[(?<target>[^\]]+?)(?:\|(?<display>[^\]]+))?\]\]/gu;
 function resolveWikilinkTarget(target: string, lookup: WikilinkLookup): string | undefined {
   const trimmed = target.trim();
 
-  // 1. Try exact path match (e.g. [[docs/aws-architecture]])
+  // Try exact path match first, then fall back to title lookup
   const pathKey = trimmed.replace(/\.md$/u, "");
   const resolvedPath = lookup.byPath[pathKey] ?? lookup.byPath[trimmed];
   if (resolvedPath !== undefined) {
     return resolvedPath;
   }
 
-  // 2. Try title match (exact then case-insensitive)
   return (
     lookup.byTitle[trimmed] ??
     Object.entries(lookup.byTitle).find(

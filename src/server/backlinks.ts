@@ -56,12 +56,6 @@ function apiPagesLookup(): Response {
 
 // Backlinks
 
-/**
- * Find all pages that reference the given path via `[[target]]` wiki-links.
- *
- * Scans every `.md` file, extracts `[[...]]` patterns, and checks if the
- * resolved target matches the query path.
- */
 function buildBacklinks(queryPath: string): BacklinkEntry[] {
   const lookup = buildLookup();
   const results: BacklinkEntry[] = [];

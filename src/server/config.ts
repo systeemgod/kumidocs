@@ -197,9 +197,7 @@ const printHelp = (): void => {
 
 // Parser
 
-// TypeScript cannot verify that opt.coerce(raw) returns Config[K] for a specific
-// Key K at the call-site because it reasons over the union of all keys. The runtime
-// Is always correct; this cast confines the unsoundness to one place.
+// opt.coerce return type is correct at runtime; confine unsoundness here.
 const setConfigKey = (config: Config, key: keyof Config, value: Config[keyof Config]): void => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   (config as Record<keyof Config, Config[keyof Config]>)[key] = value;

@@ -12,16 +12,7 @@ interface TocSidebarProps {
   onClose?: () => void;
 }
 
-/**
- * In-page table of contents sidebar for documentation pages.
- *
- * - Extracts headings from raw markdown (mirrors `rehypeHeadingIdsPlugin` slugs)
- * - Highlights the heading currently visible via `IntersectionObserver`
- * - Clicking a heading smooth-scrolls to it
- * - Indents `##` under `#`, `###` under `##`, etc.
- *
- * Styled to match the "Page info" panel (PageInfoPanel).
- */
+/** Table of contents sidebar for documentation pages. */
 export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.Element {
   const tocItems = useMemo(() => extractTocItems(content), [content]);
   const [activeId, setActiveId] = useState<string>("");

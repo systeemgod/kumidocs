@@ -26,7 +26,7 @@ const app = (
 );
 
 // Import.meta.hot is available in Bun dev (HMR) mode; undefined after production bundling
-// Note: import.meta.hot.data must be accessed directly (Bun restriction: no aliasing via variable)
+// Bun requires direct access to import.meta.hot.data: no aliasing
 interface HotData {
   root?: ReturnType<typeof createRoot>;
 }

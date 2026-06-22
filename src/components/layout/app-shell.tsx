@@ -72,7 +72,7 @@ export default function AppShell(): JSX.Element {
       setTreeError(undefined);
     } catch (error: unknown) {
       console.error("Failed to load file tree:", error);
-      setTreeError("Failed to load file tree. The sidebar may be empty.");
+      setTreeError("Failed to load file tree.");
     }
   }, []);
 

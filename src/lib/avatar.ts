@@ -1,11 +1,4 @@
-/**
- * Shared avatar utilities used by both client components and server auth.
- *
- * These functions are imported by:
- *   - src/server/auth.ts                       (emailToDisplayName for User.displayName)
- *   - src/components/layout/PageInfoPanel.tsx  (commit history avatars)
- *   - src/components/ui/avatar.tsx             (initials fallback when no Gravatar)
- */
+/** Avatar display utilities. */
 
 /**
  * Derive a display name from an email address.

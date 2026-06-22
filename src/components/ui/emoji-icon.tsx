@@ -1,21 +1,5 @@
 // oxlint-disable typescript/no-deprecated
-/**
- * EmojiIcon: unified icon/emoji renderer.
- *
- * Two distinct icon libraries serve different purposes:
- *
- *   @fluentui/react-icons: SYSTEM ICONS
- *     UI chrome: file-type indicators, buttons, toolbar actions, etc.
- *     Use the `icon` prop to render one of these directly.
- *
- *   Microsoft Fluent Emoji (emojis.ts): SELECTABLE PAGE ICONS
- *     User-chosen emoji on pages/documents (Microsoft 3D Fluent style).
- *     SVGs are baked into the bundle; zero HTTP requests.
- *     Use the `emoji` prop to render a character from this set.
- *
- * The `size` prop controls pixel dimensions for both paths, working around
- * the issue where Fluent Color SVGs ignore Tailwind `w-N h-N` classes.
- */
+/** Fluent for system icons, Fluent Emoji SVGs for page emoji. */
 import type { CSSProperties, FC } from "react";
 import {
   Code24Color,

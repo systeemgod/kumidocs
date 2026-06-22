@@ -83,7 +83,6 @@ const resolveEmail = (value: string): string | undefined => {
   return value.trim().toLowerCase();
 };
 
-/** Build a User object from a verified email address and the current permissions. */
 function makeUser(email: string): User {
   const displayName = emailToDisplayName(email);
   const editors = perms.editors ?? [];

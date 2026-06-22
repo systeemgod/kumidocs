@@ -272,8 +272,7 @@ function sendSaveConflict(userId: string, pageId: string): void {
   for (const ws of sessions.values()) {
     if (ws.data.user.id === userId) {
       send(ws, {
-        message:
-          "Your changes could not be saved: a remote conflict occurred and could not be resolved.",
+        message: "Save conflict: remote changes could not be merged.",
         pageId,
         type: "save_conflict_lost",
       });

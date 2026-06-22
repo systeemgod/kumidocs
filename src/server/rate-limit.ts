@@ -1,14 +1,4 @@
-/**
- * Per-user in-memory sliding-window rate limiter.
- *
- * Usage:
- *   const limiter = new RateLimiter(30, 10_000);
- *   if (!limiter.check(userId)) {
- *     return new Response("Too many requests", { status: 429 });
- *   }
- *
- * A cleanup timer prunes stale entries every 60s to prevent memory leaks.
- */
+/** Per-user in-memory sliding-window rate limiter with periodic cleanup. */
 
 const CLEANUP_INTERVAL_MS = 60_000;
 
