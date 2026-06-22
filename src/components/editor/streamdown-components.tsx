@@ -6,7 +6,6 @@ import { harden } from "rehype-harden";
 import rehypeEmojiPlugin from "./rehype-emoji-plugin";
 import rehypeGfmAlertsPlugin from "./rehype-gfm-alerts-plugin";
 import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
-import rehypeImageAttrsPlugin from "./rehype-image-attrs-plugin";
 
 /** Allowed URL prefixes for images (rehype-harden + slide CSS validation) */
 const ALLOWED_IMAGE_PREFIXES = ["/images/", "data:image/"];
@@ -38,7 +37,6 @@ const REHYPE_PLUGINS: PluggableList = [
     },
   ],
   rehypeHeadingIdsPlugin,
-  rehypeImageAttrsPlugin,
   rehypeEmojiPlugin,
   rehypeGfmAlertsPlugin,
 ];
@@ -118,7 +116,6 @@ interface ImgComponentProps {
   src?: string;
   alt?: string;
   title?: string;
-  style?: string;
 }
 
 /**
@@ -133,9 +130,8 @@ interface ImgComponentProps {
  * Keywords are stripped from the rendered alt text.
  */
 function parseMarpSize(alt: string): { cleanAlt: string; marpWidth?: string; marpHeight?: string } {
-  // Matches width:200px, w:32, height:30cm, h:100%, etc.
   const RE =
-    /(?<key>width|height|w|h)\s*:\s*(?<value>[\d.]+(?:px|cm|mm|in|pt|pc|em|rem|%|auto)?)\s*/gi;
+    /(?<key>width|height|w|h)\s*:\s*(?<value>[\d.]+(?:px|cm|mm|in|pt|pc|em|rem|%|auto)?)\s*/giu;
   let marpWidth: string | undefined;
   let marpHeight: string | undefined;
 
@@ -155,34 +151,20 @@ function parseMarpSize(alt: string): { cleanAlt: string; marpWidth?: string; mar
 }
 
 const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
-  const { src, alt = "", title, style } = allProps;
+  const { src, alt = "", title } = allProps;
   const { cleanAlt, marpHeight, marpWidth } = parseMarpSize(alt);
 
-  // Merge inline style from {key=value} plugin with Marp size keywords.
-  // Marp keywords win over the {key=value} syntax when both are present.
-  const mergedStyle: React.CSSProperties = {};
-
-  // hast-util-to-jsx-runtime converts style strings to objects,
-  // but accept string too for safety.
-  if (typeof style === "string") {
-    for (const part of style.split(";")) {
-      const colonIdx = part.indexOf(":");
-      if (colonIdx > 0) {
-        const cssKey = part.slice(0, colonIdx).trim();
-        const cssVal = part.slice(colonIdx + 1).trim();
-        if (cssKey && cssVal) {
-          const camelKey = cssKey.replaceAll(/-([a-z])/gu, (_m: string, c: string) =>
-            c.toUpperCase(),
-          );
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-          (mergedStyle as Record<string, string>)[camelKey] = cssVal;
-        }
-      }
-    }
+  const style: React.CSSProperties = {};
+  if (marpWidth !== undefined && marpWidth !== "") {
+    style.width = marpWidth;
+  }
+  if (marpHeight !== undefined && marpHeight !== "") {
+    style.height = marpHeight;
   }
 
-  if (marpWidth) mergedStyle.width = marpWidth;
-  if (marpHeight) mergedStyle.height = marpHeight;
+  const hasMarpStyle =
+    (marpWidth !== undefined && marpWidth !== "") ||
+    (marpHeight !== undefined && marpHeight !== "");
 
   return (
     <img
@@ -190,7 +172,7 @@ const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
       alt={cleanAlt}
       title={title}
       className="max-w-full h-auto"
-      style={Object.keys(mergedStyle).length > 0 ? mergedStyle : undefined}
+      style={hasMarpStyle ? style : undefined}
       loading="lazy"
     />
   );
