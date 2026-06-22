@@ -3,6 +3,10 @@ import type { Config } from "./config";
 
 // ── Subprocess helper ─────────────────────────────────────────────────────────
 
+/** Max time (ms) to wait for any git subprocess before killing it.
+ * Prevents a hanging git command from stalling the entire serial queue. */
+const GIT_TIMEOUT_MS = 60_000;
+
 async function runGit(
   repoPath: string,
   args: string[],
@@ -13,11 +17,19 @@ async function runGit(
     stderr: "pipe",
     stdout: "pipe",
   });
+
+  const killTimer = setTimeout(() => {
+    console.warn(`Git timeout: killing "git ${args.join(" ")}" after ${GIT_TIMEOUT_MS}ms`);
+    proc.kill();
+  }, GIT_TIMEOUT_MS);
+
   const [stdout, stderr, exitCode] = await Promise.all([
     new Response(proc.stdout).text(),
     new Response(proc.stderr).text(),
     proc.exited,
   ]);
+
+  clearTimeout(killTimer);
   return { exitCode, stderr, stdout };
 }
 
