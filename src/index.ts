@@ -193,11 +193,13 @@ async function watchDir(absDir: string): Promise<void> {
   }
 }
 
-await watchDir(config.repoPath);
-
 await gitPull(config);
 await loadFilestore(config, ig);
 initSearch();
+
+// Start watching AFTER the filestore is fully loaded and indexed so we
+// never process change events against an empty or half-built cache.
+await watchDir(config.repoPath);
 
 // Auth helper used in route handlers
 function requireUser(req: Request): User | undefined {
