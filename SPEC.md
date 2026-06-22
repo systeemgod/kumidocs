@@ -156,7 +156,7 @@ Toolbar spanning both panes: heading selector, Bold, Italic, Blockquote (left) +
 
 Read-only Streamdown render → React DOM. XSS via `rehype-harden`. `prose prose-sm dark:prose-invert` typography.
 
-**Image syntax:** `![alt](url){width=300px}` adds `{key=value}` after the image to apply inline CSS. Keys: `width`, `height`, `max-width`, `min-width`, `max-height`, `min-height`. Via `rehypeImageAttrsPlugin`.
+**Image syntax:** `![width:200px](url)` uses Marp-standard keywords in alt text to apply inline CSS. Supports `width`/`w` and `height`/`h` with any CSS unit (px, %, em, rem, cm, etc.). Keywords are stripped from the rendered alt text.
 
 ### 7.3 Save Behavior
 
@@ -427,7 +427,7 @@ src/
 │   │   ├── MarkdownEditor.tsx / MarkdownViewer.tsx
 │   │   ├── SlideViewer.tsx          ← exports ScaledSlide, SLIDE_W, SLIDE_H, SlideViewer
 │   │   ├── SlideMarkdownViewer.tsx / SlideOverlay.tsx
-│   │   └── rehypeEmojiPlugin.ts / rehypeHeadingIdsPlugin.ts / rehypeImageAttrsPlugin.ts
+│   │   └── rehypeEmojiPlugin.ts / rehypeHeadingIdsPlugin.ts
 │   ├── layout/AppShell.tsx / PageInfoPanel.tsx / Sidebar.tsx / TopBar.tsx
 │   ├── search/SearchPalette.tsx
 │   └── ui/ (EmojiIcon, EmojiPicker, EmojiPickerPopover, PageMenuItems, shadcn primitives)
