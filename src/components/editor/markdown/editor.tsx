@@ -173,13 +173,7 @@ export default function MarkdownEditor({
       {/* Two-pane content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left: editor */}
-        <ContextMenu
-          onOpenChange={(open) => {
-            if (open) {
-              taRef.current?.blur();
-            }
-          }}
-        >
+        <ContextMenu>
           <ContextMenuTrigger asChild>
             <div
               className={`flex-1 min-w-0 flex flex-col overflow-hidden${showPreview ? " border-r border-border" : ""}`}
