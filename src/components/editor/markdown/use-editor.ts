@@ -1,4 +1,4 @@
-import type { Dispatch, EffectCallback, RefObject, SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import {
   HEADING_OPTIONS,
   insertLink,
@@ -13,7 +13,6 @@ import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
 import useMarkdownImageHandler from "./use-image-handler";
-import useMountEffect from "@/hooks/use-mount-effect";
 
 type SlashPhase = "closed" | "menu" | "emoji";
 
@@ -337,44 +336,12 @@ function useMarkdownEditor({
     preview.scrollTop = (ta.scrollTop / scrollable) * (preview.scrollHeight - preview.clientHeight);
   }, []);
 
-  // Native input listener for slash command detection.
-  // React's onChange fires too late / cursor resets after re-render.
-  const slashInputRef = useRef<((ev: Event) => void) | null>(null);
-  slashInputRef.current = (ev: Event): void => {
-    const ta = ev.currentTarget;
-    if (!(ta instanceof HTMLTextAreaElement) || slashPhase !== "closed" || isUndoRedoRef.current) {
-      return;
-    }
-    const pos = ta.selectionStart;
-    const val = ta.value;
-    if (pos >= 1 && val[pos - 1] === "/") {
-      const prev = pos >= 2 ? val[pos - 2] : "\n";
-      if (prev === "\n" || prev === " ") {
-        slashMenuPosRef.current = getCursorPixelPos(pos);
-        setSlashPhase("menu");
-      }
-    }
-  };
-
-  // Attach native input listener via mount effect
-  useMountEffect((): ReturnType<EffectCallback> => {
-    const ta = taRef.current;
-    if (!ta) {
-      return;
-    }
-    const handler = (ev: Event): void => {
-      slashInputRef.current?.(ev);
-    };
-    ta.addEventListener("input", handler);
-    return (): void => {
-      ta.removeEventListener("input", handler);
-    };
-  });
-
   const handleTextareaChange = useCallback(
     (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = ev.target.value;
       const oldValue = valueRef.current;
+      // Read cursor position from the event target BEFORE React re-renders
+      const cursorPos = ev.target.selectionStart;
 
       if (!isUndoRedoRef.current && newValue !== oldValue) {
         undoStackRef.current.push({ cursor: savedSelectionRef.current.start, value: oldValue });
@@ -382,8 +349,21 @@ function useMarkdownEditor({
       }
       valueRef.current = newValue;
       onChange(newValue);
+
+      // Detect "/" typed at line start or after a space → open slash command menu
+      if (slashPhase === "closed" && !isUndoRedoRef.current) {
+        const prev = cursorPos >= 2 ? newValue[cursorPos - 2] : "\n";
+        if (
+          cursorPos >= 1 &&
+          newValue[cursorPos - 1] === "/" &&
+          (prev === "\n" || prev === " ")
+        ) {
+          slashMenuPosRef.current = getCursorPixelPos(cursorPos);
+          setSlashPhase("menu");
+        }
+      }
     },
-    [onChange],
+    [onChange, slashPhase],
   );
 
   const handleContextUndo = useCallback(() => {
