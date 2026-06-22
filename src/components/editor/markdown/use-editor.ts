@@ -29,6 +29,7 @@ interface UseMarkdownEditorReturn {
   handleBold: () => void;
   handleCode: () => void;
   handleContextCopy: () => Promise<void>;
+  handleEmoji: (emoji: string) => void;
   handleContextCut: () => Promise<void>;
   handleContextPaste: () => Promise<void>;
   handleContextRedo: () => void;
@@ -388,6 +389,22 @@ function useMarkdownEditor({
     }
   }, []);
 
+  const handleEmoji = useCallback(
+    (emoji: string) => {
+      const ta = taRef.current;
+      if (!ta) {
+        return;
+      }
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      ta.setRangeText(emoji, start, end, "preserve");
+      ta.setSelectionRange(start + emoji.length, start + emoji.length);
+      ta.focus();
+      syncChange();
+    },
+    [syncChange],
+  );
+
   const handleContextPaste = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -452,6 +469,7 @@ function useMarkdownEditor({
     handleDragOver,
     handleDrop,
     handleEditorScroll,
+    handleEmoji,
     handleHeading,
     handleImageFiles,
     handleItalic,

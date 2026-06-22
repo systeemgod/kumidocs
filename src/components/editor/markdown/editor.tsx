@@ -66,6 +66,7 @@ export default function MarkdownEditor({
     handleItalic,
     handleStrikethrough,
     handleCode,
+    handleEmoji,
     handleLink,
     handleQuote,
     handleUnordered,
@@ -97,6 +98,7 @@ export default function MarkdownEditor({
         showPreview={showPreview}
         handleHeading={handleHeading}
         handleBold={handleBold}
+        handleEmoji={handleEmoji}
         handleItalic={handleItalic}
         handleStrikethrough={handleStrikethrough}
         handleCode={handleCode}

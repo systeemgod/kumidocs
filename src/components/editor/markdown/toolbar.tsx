@@ -10,6 +10,7 @@ import {
   ListChecks,
   ListOrdered,
   Settings2,
+  SmilePlus,
   Strikethrough,
   TextQuote,
 } from "lucide-react";
@@ -22,7 +23,9 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { HEADING_OPTIONS } from "./editor-utils";
+import EmojiPicker from "@/components/ui/emoji-picker";
 import MarkdownCheatsheet from "./cheatsheet";
+import { Popover } from "radix-ui";
 import type React from "react";
 
 interface MarkdownToolbarProps {
@@ -30,6 +33,7 @@ interface MarkdownToolbarProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleBold: () => void;
   handleCode: () => void;
+  handleEmoji: (emoji: string) => void;
   handleHeading: (val: string) => void;
   handleItalic: () => void;
   handleLink: () => void;
@@ -50,6 +54,7 @@ function MarkdownToolbar({
   showPreview,
   handleHeading,
   handleBold,
+  handleEmoji,
   handleItalic,
   handleStrikethrough,
   handleCode,
@@ -204,6 +209,35 @@ function MarkdownToolbar({
         >
           <ListChecks />
         </Button>
+
+        <div className="w-px h-4 bg-border mx-0.5" />
+
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+              }}
+              disabled={disabled}
+              title="Insert emoji"
+            >
+              <SmilePlus />
+            </Button>
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Content side="bottom" align="start" sideOffset={4} className="z-50">
+              <EmojiPicker
+                onEmojiSelect={(emoji) => {
+                  handleEmoji(emoji);
+                }}
+                autoFocus
+              />
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
 
         <div className="w-px h-4 bg-border mx-0.5" />
 
