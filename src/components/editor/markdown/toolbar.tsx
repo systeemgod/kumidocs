@@ -239,8 +239,6 @@ function MarkdownToolbar({
           </Popover.Portal>
         </Popover.Root>
 
-        <div className="w-px h-4 bg-border mx-0.5" />
-
         <Button
           variant="ghost"
           size="sm"
