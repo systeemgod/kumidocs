@@ -143,9 +143,10 @@ function useMarkdownEditor({
     const rect = mirror.getBoundingClientRect();
     mirror.remove();
 
+    const taRect = ta.getBoundingClientRect();
     return {
-      left: rect.left,
-      top: rect.top + rect.height,
+      left: rect.left - taRect.left,
+      top: rect.top - taRect.top + rect.height,
     };
   }
 
