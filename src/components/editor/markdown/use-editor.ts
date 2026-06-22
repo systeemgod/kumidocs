@@ -306,8 +306,26 @@ function useMarkdownEditor({
       }
       valueRef.current = newValue;
       onChange(newValue);
+
+      // Detect "/" typed at line start or after a space → open slash command menu
+      if (
+        slashPhase === "closed" &&
+        newValue.length === oldValue.length + 1 &&
+        !isUndoRedoRef.current
+      ) {
+        const ta = taRef.current;
+        if (ta) {
+          const pos = ta.selectionStart;
+          if (pos >= 1 && ta.value[pos - 1] === "/") {
+            const prev = pos >= 2 ? ta.value[pos - 2] : "\n";
+            if (prev === "\n" || prev === " ") {
+              setSlashPhase("menu");
+            }
+          }
+        }
+      }
     },
-    [onChange],
+    [onChange, slashPhase],
   );
 
   const handleContextUndo = useCallback(() => {
@@ -481,24 +499,16 @@ function useMarkdownEditor({
 
   const handleKeyUp = useCallback(
     (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Always save selection state.
       saveSelection();
 
-      if (ev.key === "/" && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey) {
-        const ta = taRef.current;
-        if (!ta) {
-          return;
-        }
-        const pos = ta.selectionStart;
-        if (pos >= 1 && ta.value[pos - 1] === "/") {
-          const prev = pos >= 2 ? ta.value[pos - 2] : "\n";
-          if (prev === "\n" || prev === " ") {
-            setSlashPhase("menu");
-          }
-        }
+      if (
+        ev.key === "Escape" &&
+        slashPhase !== "closed"
+      ) {
+        setSlashPhase("closed");
       }
     },
-    [saveSelection],
+    [saveSelection, slashPhase, setSlashPhase],
   );
 
   return {
