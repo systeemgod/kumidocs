@@ -142,6 +142,65 @@ function wsOpen(ws: ServerWebSocket<WsData>): void {
   sessions.set(ws.data.sessionId, ws);
 }
 
+function handleHello(ws: ServerWebSocket<WsData>, sid: string, rawPid: string): void {
+  if (typeof rawPid !== "string" || rawPid === "") {
+    return;
+  }
+  if (getFile(rawPid) === undefined) {
+    return;
+  }
+  if (ws.data.pageId !== rawPid) {
+    leaveCurrentPage(ws);
+  }
+  ws.data.pageId = rawPid;
+  if (!pageViewers.has(rawPid)) {
+    pageViewers.set(rawPid, new Set());
+  }
+  const viewers = pageViewers.get(rawPid);
+  if (viewers) {
+    viewers.add(sid);
+  }
+  const update = presenceUpdate(rawPid);
+  broadcastToAll(update);
+  for (const [existingPid] of pageViewers) {
+    if (existingPid !== rawPid) {
+      send(ws, presenceUpdate(existingPid));
+    }
+  }
+  send(ws, { ...getSyncStatus(), type: "sync_status" });
+}
+
+function handleEditingStart(ws: ServerWebSocket<WsData>, sid: string, rawPid: string): void {
+  if (typeof rawPid !== "string" || rawPid === "") {
+    return;
+  }
+  if (!ws.data.user.canEdit) {
+    return;
+  }
+  const existingSid = pageEditors.get(rawPid);
+  if (
+    existingSid !== undefined &&
+    existingSid !== "" &&
+    existingSid !== sid &&
+    sessions.has(existingSid)
+  ) {
+    send(ws, presenceUpdate(rawPid));
+    return;
+  }
+  pageEditors.set(rawPid, sid);
+  broadcastToPage(rawPid, presenceUpdate(rawPid));
+}
+
+function handleEditingStop(ws: ServerWebSocket<WsData>, sid: string, rawPid: string): void {
+  if (typeof rawPid !== "string" || rawPid === "") {
+    return;
+  }
+  if (pageEditors.get(rawPid) === sid) {
+    pageEditors.delete(rawPid);
+    broadcastToPage(rawPid, presenceUpdate(rawPid));
+  }
+}
+
 function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
   ws.data.lastHeartbeat = Date.now();
   let msg: WsClientMessage;
@@ -156,59 +215,17 @@ function wsMessage(ws: ServerWebSocket<WsData>, raw: string | Buffer): void {
 
   switch (msg.type) {
     case "hello": {
-      // Ignore presence for pages that don't exist in the repository.
-      if (getFile(msg.pageId) === undefined) {
-        return;
-      }
-      if (ws.data.pageId !== msg.pageId) {
-        leaveCurrentPage(ws);
-      }
-      ws.data.pageId = msg.pageId;
-      if (!pageViewers.has(msg.pageId)) {
-        pageViewers.set(msg.pageId, new Set());
-      }
-      const viewers = pageViewers.get(msg.pageId);
-      if (viewers) {
-        viewers.add(sid);
-      }
-      // Broadcast join to ALL sessions so every sidebar reflects the new location.
-      const update = presenceUpdate(msg.pageId);
-      broadcastToAll(update);
-      // Send a full snapshot of all active pages to the newly-connected client
-      // so their sidebar is immediately populated without waiting for navigations.
-      for (const [pageId] of pageViewers) {
-        if (pageId !== msg.pageId) {
-          send(ws, presenceUpdate(pageId));
-        }
-      }
-      // Send the current remote sync status so the client can show a banner
-      // immediately without waiting for the next sync event.
-      send(ws, { ...getSyncStatus(), type: "sync_status" });
+      handleHello(ws, sid, msg.pageId);
       break;
     }
 
     case "editing_start": {
-      const existingSid = pageEditors.get(msg.pageId);
-      if (
-        existingSid !== undefined &&
-        existingSid !== "" &&
-        existingSid !== sid &&
-        sessions.has(existingSid)
-      ) {
-        // Already locked by another active session; reject and send back current state
-        send(ws, presenceUpdate(msg.pageId));
-        return;
-      }
-      pageEditors.set(msg.pageId, sid);
-      broadcastToPage(msg.pageId, presenceUpdate(msg.pageId));
+      handleEditingStart(ws, sid, msg.pageId);
       break;
     }
 
     case "editing_stop": {
-      if (pageEditors.get(msg.pageId) === sid) {
-        pageEditors.delete(msg.pageId);
-        broadcastToPage(msg.pageId, presenceUpdate(msg.pageId));
-      }
+      handleEditingStop(ws, sid, msg.pageId);
       break;
     }
 

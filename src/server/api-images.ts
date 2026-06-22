@@ -161,10 +161,10 @@ function sanitizeSvg(raw: string): string {
       )
       .replaceAll(/<(?:animate(?:Transform|Motion)?|set)[^>]*\/>/giu, "")
       // on* event handler attributes (onload="...", onclick='...', onmouseover=foo, etc.)
-      .replaceAll(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
-      // javascript: and data: URIs in href, xlink:href, action, src
+      .replaceAll(/(?:^|\s)on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s/>]*)/giu, "")
+      // javascript: and data: URIs in URL-type attributes
       .replaceAll(
-        /(?<attr>(?:xlink:)?href|action|src)\s*=\s*(?:"(?:javascript|data):[^"]*"|'(?:javascript|data):[^']*')/giu,
+        /(?<attr>(?:xlink:)?href|action|formaction|src|xlink:show)\s*=\s*(?:"(?:javascript|data):[^"]*"|'(?:javascript|data):[^']*')/giu,
         "",
       )
   );
@@ -207,6 +207,7 @@ async function serveRepoAsset(assetPath: string, config: Config): Promise<Respon
         "Cache-Control": "public, max-age=3600",
         "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
         "Content-Type": "image/svg+xml",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   }
@@ -215,6 +216,7 @@ async function serveRepoAsset(assetPath: string, config: Config): Promise<Respon
     headers: {
       "Cache-Control": "public, max-age=31536000, immutable",
       "Content-Type": mime,
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

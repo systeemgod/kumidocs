@@ -1,5 +1,24 @@
 import path from "node:path";
 
+/** Maximum accepted request body size (200 KB). Rejected before JSON parsing. */
+const MAX_BODY_SIZE = 200 * 1024;
+
+/**
+ * Checks the Content-Length header as a fast pre-filter before the body is
+ * read into memory. Returns an error response if too large, or undefined to
+ * proceed.
+ */
+function checkBodySize(req: Request): Response | undefined {
+  const rawLen = req.headers.get("content-length");
+  if (rawLen !== null && rawLen !== "") {
+    const len = Number(rawLen);
+    if (Number.isFinite(len) && len > MAX_BODY_SIZE) {
+      return Response.json({ error: "Request body too large" }, { status: 413 });
+    }
+  }
+  return undefined;
+}
+
 /**
  * Returns true if `userPath` resolves to a location inside `repoPath`.
  * Prevents path traversal attacks (e.g. "../../etc/passwd").
@@ -25,5 +44,5 @@ function assertJsonObject(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-export { assertJsonObject, isSafePath };
+export { assertJsonObject, checkBodySize, isSafePath };
 export default isSafePath;

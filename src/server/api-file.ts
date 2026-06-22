@@ -1,4 +1,4 @@
-import { assertJsonObject, isSafePath } from "./api-utils";
+import { assertJsonObject, checkBodySize, isSafePath } from "./api-utils";
 import {
   broadcastPageChanged,
   broadcastPageCreated,
@@ -80,6 +80,11 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
     );
   }
 
+  const tooLarge = checkBodySize(req);
+  if (tooLarge !== undefined) {
+    return tooLarge;
+  }
+
   let body: Record<string, unknown>;
   try {
     const json: unknown = await req.json();
@@ -121,6 +126,11 @@ async function apiFilePut(url: URL, req: Request, user: User, config: Config): P
 async function apiFileCreate(req: Request, user: User, config: Config): Promise<Response> {
   if (!user.canEdit) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const tooLarge = checkBodySize(req);
+  if (tooLarge !== undefined) {
+    return tooLarge;
   }
 
   let body: Record<string, unknown>;
