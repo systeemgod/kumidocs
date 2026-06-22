@@ -427,11 +427,7 @@ function useMarkdownEditor({
         handleItalic();
       } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "z") {
         ev.preventDefault();
-        if (ev.shiftKey) {
-          handleContextRedo();
-        } else {
-          handleContextUndo();
-        }
+        handleContextUndo();
       } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "y") {
         ev.preventDefault();
         handleContextRedo();
