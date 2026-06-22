@@ -63,12 +63,9 @@ interface UseMarkdownEditorReturn {
 }
 
 /** Find the cursor position after undo/redo by locating where the content changed. */
-function cursorFromDiff(oldVal: string, newVal: string): number {
-  let pos = 0;
-  while (pos < oldVal.length && pos < newVal.length && oldVal[pos] === newVal[pos]) {
-    pos++;
-  }
-  return Math.min(pos, newVal.length);
+interface UndoEntry {
+  value: string;
+  cursor: number;
 }
 
 function useMarkdownEditor({
@@ -99,8 +96,8 @@ function useMarkdownEditor({
   // Undo/redo history stack
   const valueRef = useRef(value);
   valueRef.current = value;
-  const undoStackRef = useRef<string[]>([value]);
-  const redoStackRef = useRef<string[]>([]);
+  const undoStackRef = useRef<UndoEntry[]>([{ cursor: 0, value }]);
+  const redoStackRef = useRef<UndoEntry[]>([]);
   const isUndoRedoRef = useRef(false);
   const selectAllPendingRef = useRef(false);
 
@@ -123,7 +120,7 @@ function useMarkdownEditor({
       const oldValue = valueRef.current;
       const newValue = taRef.current.value;
       if (!isUndoRedoRef.current && newValue !== oldValue) {
-        undoStackRef.current.push(oldValue);
+        undoStackRef.current.push({ cursor: savedSelectionRef.current.start, value: oldValue });
         redoStackRef.current = [];
       }
       valueRef.current = newValue;
@@ -296,7 +293,7 @@ function useMarkdownEditor({
       const newValue = ev.target.value;
       const oldValue = valueRef.current;
       if (!isUndoRedoRef.current && newValue !== oldValue) {
-        undoStackRef.current.push(oldValue);
+        undoStackRef.current.push({ cursor: savedSelectionRef.current.start, value: oldValue });
         redoStackRef.current = [];
       }
       valueRef.current = newValue;
@@ -310,16 +307,19 @@ function useMarkdownEditor({
     if (!ta || undoStackRef.current.length <= 1) {
       return;
     }
-    const oldVal = valueRef.current;
-    redoStackRef.current.push(oldVal);
-    undoStackRef.current.pop();
-    const prev = undoStackRef.current.at(-1) ?? "";
-    const cursorPos = cursorFromDiff(oldVal, prev);
+    redoStackRef.current.push({
+      cursor: savedSelectionRef.current.start,
+      value: valueRef.current,
+    });
+    const entry = undoStackRef.current.pop();
+    if (!entry) {
+      return;
+    }
     isUndoRedoRef.current = true;
-    onChange(prev);
+    onChange(entry.value);
     isUndoRedoRef.current = false;
     queueMicrotask(() => {
-      ta.setSelectionRange(cursorPos, cursorPos);
+      ta.setSelectionRange(entry.cursor, entry.cursor);
     });
   }, [onChange]);
 
@@ -328,18 +328,19 @@ function useMarkdownEditor({
     if (!ta || redoStackRef.current.length === 0) {
       return;
     }
-    const oldVal = valueRef.current;
     const next = redoStackRef.current.pop();
-    if (next === undefined) {
+    if (!next) {
       return;
     }
-    undoStackRef.current.push(oldVal);
-    const cursorPos = cursorFromDiff(oldVal, next);
+    undoStackRef.current.push({
+      cursor: savedSelectionRef.current.start,
+      value: valueRef.current,
+    });
     isUndoRedoRef.current = true;
-    onChange(next);
+    onChange(next.value);
     isUndoRedoRef.current = false;
     queueMicrotask(() => {
-      ta.setSelectionRange(cursorPos, cursorPos);
+      ta.setSelectionRange(next.cursor, next.cursor);
     });
   }, [onChange]);
 
@@ -357,7 +358,7 @@ function useMarkdownEditor({
     try {
       await navigator.clipboard.writeText(text);
       const newValue = valueRef.current.slice(0, start) + valueRef.current.slice(end);
-      undoStackRef.current.push(valueRef.current);
+      undoStackRef.current.push({ cursor: start, value: valueRef.current });
       redoStackRef.current = [];
       valueRef.current = newValue;
       onChange(newValue);
@@ -397,7 +398,7 @@ function useMarkdownEditor({
       const start = ta.selectionStart;
       const end = ta.selectionEnd;
       const newValue = valueRef.current.slice(0, start) + text + valueRef.current.slice(end);
-      undoStackRef.current.push(valueRef.current);
+      undoStackRef.current.push({ cursor: start, value: valueRef.current });
       redoStackRef.current = [];
       valueRef.current = newValue;
       onChange(newValue);

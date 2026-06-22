@@ -176,13 +176,13 @@ export default function MarkdownEditor({
         <ContextMenu
           onOpenChange={(open) => {
             if (open) {
-              queueMicrotask(() => {
+              setTimeout(() => {
                 // Radix adds aria-hidden to the trigger when content opens.
                 // Strip it because the textarea descendant still has focus.
                 document
                   .querySelector('[data-slot="context-menu-trigger"]')
                   ?.removeAttribute("aria-hidden");
-              });
+              }, 0);
             }
           }}
         >
