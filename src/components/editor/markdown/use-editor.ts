@@ -62,6 +62,15 @@ interface UseMarkdownEditorReturn {
   themeOptions: string[];
 }
 
+/** Find the cursor position after undo/redo by locating where the content changed. */
+function cursorFromDiff(oldVal: string, newVal: string): number {
+  let pos = 0;
+  while (pos < oldVal.length && pos < newVal.length && oldVal[pos] === newVal[pos]) {
+    pos++;
+  }
+  return Math.min(pos, newVal.length);
+}
+
 function useMarkdownEditor({
   value,
   onChange,
@@ -301,15 +310,16 @@ function useMarkdownEditor({
     if (!ta || undoStackRef.current.length <= 1) {
       return;
     }
-    const cursorPos = Math.min(ta.selectionStart, ta.value.length);
-    redoStackRef.current.push(valueRef.current);
+    const oldVal = valueRef.current;
+    redoStackRef.current.push(oldVal);
     undoStackRef.current.pop();
     const prev = undoStackRef.current.at(-1) ?? "";
+    const cursorPos = cursorFromDiff(oldVal, prev);
     isUndoRedoRef.current = true;
     onChange(prev);
     isUndoRedoRef.current = false;
     queueMicrotask(() => {
-      ta.setSelectionRange(Math.min(cursorPos, prev.length), Math.min(cursorPos, prev.length));
+      ta.setSelectionRange(cursorPos, cursorPos);
     });
   }, [onChange]);
 
@@ -318,17 +328,18 @@ function useMarkdownEditor({
     if (!ta || redoStackRef.current.length === 0) {
       return;
     }
-    const cursorPos = Math.min(ta.selectionStart, ta.value.length);
+    const oldVal = valueRef.current;
     const next = redoStackRef.current.pop();
     if (next === undefined) {
       return;
     }
-    undoStackRef.current.push(valueRef.current);
+    undoStackRef.current.push(oldVal);
+    const cursorPos = cursorFromDiff(oldVal, next);
     isUndoRedoRef.current = true;
     onChange(next);
     isUndoRedoRef.current = false;
     queueMicrotask(() => {
-      ta.setSelectionRange(Math.min(cursorPos, next.length), Math.min(cursorPos, next.length));
+      ta.setSelectionRange(cursorPos, cursorPos);
     });
   }, [onChange]);
 

@@ -1,10 +1,10 @@
 import { ClipboardPaste, Copy, FileText, Redo2, Scissors, TextSelect, Undo2 } from "lucide-react";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
-  ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -173,7 +173,19 @@ export default function MarkdownEditor({
       {/* Two-pane content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left: editor */}
-        <ContextMenu>
+        <ContextMenu
+          onOpenChange={(open) => {
+            if (open) {
+              queueMicrotask(() => {
+                // Radix adds aria-hidden to the trigger when content opens.
+                // Strip it because the textarea descendant still has focus.
+                document
+                  .querySelector('[data-slot="context-menu-trigger"]')
+                  ?.removeAttribute("aria-hidden");
+              });
+            }
+          }}
+        >
           <ContextMenuTrigger asChild>
             <div
               className={`flex-1 min-w-0 flex flex-col overflow-hidden${showPreview ? " border-r border-border" : ""}`}
@@ -208,39 +220,66 @@ export default function MarkdownEditor({
             <ContextMenuItem onSelect={handleContextUndo}>
               <Undo2 className="mr-2 size-4" />
               Undo
-              <ContextMenuShortcut>Ctrl+Z</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>Z</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
             <ContextMenuItem onSelect={handleContextRedo}>
               <Redo2 className="mr-2 size-4" />
               Redo
-              <ContextMenuShortcut>Ctrl+Shift+Z</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>Shift</Kbd>
+                <Kbd>Z</Kbd>
+              </KbdGroup>
+              <KbdGroup className="ml-1">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>Y</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem onSelect={handleContextCut}>
               <Scissors className="mr-2 size-4" />
               Cut
-              <ContextMenuShortcut>Ctrl+X</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>X</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
             <ContextMenuItem onSelect={handleContextCopy}>
               <Copy className="mr-2 size-4" />
               Copy
-              <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>C</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
             <ContextMenuItem onSelect={handleContextPaste}>
               <ClipboardPaste className="mr-2 size-4" />
               Paste
-              <ContextMenuShortcut>Ctrl+V</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>V</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
             <ContextMenuItem onSelect={handleContextPaste}>
               <FileText className="mr-2 size-4" />
               Paste as plain text
-              <ContextMenuShortcut>Ctrl+Shift+V</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>Shift</Kbd>
+                <Kbd>V</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem onSelect={handleContextSelectAll}>
               <TextSelect className="mr-2 size-4" />
               Select all
-              <ContextMenuShortcut>Ctrl+A</ContextMenuShortcut>
+              <KbdGroup className="ml-auto">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>A</Kbd>
+              </KbdGroup>
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
