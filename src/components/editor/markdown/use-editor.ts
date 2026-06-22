@@ -14,6 +14,8 @@ import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
 import useMarkdownImageHandler from "./use-image-handler";
 
+type SlashPhase = "closed" | "menu" | "emoji";
+
 interface UseMarkdownEditorProps {
   value: string;
   onChange: (val: string) => void;
@@ -30,6 +32,7 @@ interface UseMarkdownEditorReturn {
   handleCode: () => void;
   handleContextCopy: () => Promise<void>;
   handleEmoji: (emoji: string) => void;
+  handleSlashEmoji: (emoji: string) => void;
   handleContextCut: () => Promise<void>;
   handleContextPaste: () => Promise<void>;
   handleContextRedo: () => void;
@@ -42,6 +45,7 @@ interface UseMarkdownEditorReturn {
   handleImageFiles: (files: FileList | File[]) => void;
   handleItalic: () => void;
   handleKeyDown: (ev: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleKeyUp: (ev: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   handleLink: () => void;
   handleNumbered: () => void;
   handlePaste: (ev: React.ClipboardEvent<HTMLTextAreaElement>) => void;
@@ -58,7 +62,9 @@ interface UseMarkdownEditorReturn {
   saveSelection: () => void;
   selectAllPendingRef: React.RefObject<boolean>;
   setShowPreview: Dispatch<SetStateAction<boolean>>;
+  setSlashPhase: Dispatch<SetStateAction<SlashPhase>>;
   showPreview: boolean;
+  slashPhase: SlashPhase;
   taRef: RefObject<HTMLTextAreaElement | null>;
   themeOptions: string[];
 }
@@ -81,6 +87,7 @@ function useMarkdownEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [headingValue, setHeadingValue] = useState("normal");
   const [showPreview, setShowPreview] = useState(true);
+  const [slashPhase, setSlashPhase] = useState<SlashPhase>("closed");
   const [propsOpen, setPropsOpen] = useState(false);
   const [dlgMeta, setDlgMeta] = useState<PageMeta>({});
   // Strip frontmatter from value for the preview pane (textarea shows full raw content).
@@ -405,6 +412,24 @@ function useMarkdownEditor({
     [syncChange],
   );
 
+  /** Insert an emoji, optionally preceded by a "/" that should be consumed. */
+  const handleSlashEmoji = useCallback(
+    (emoji: string) => {
+      const ta = taRef.current;
+      if (!ta) {
+        return;
+      }
+      const pos = ta.selectionStart;
+      // If the character before the cursor is "/", consume it as the slash trigger
+      const from = pos >= 1 && ta.value[pos - 1] === "/" ? pos - 1 : pos;
+      ta.setRangeText(emoji, from, pos, "preserve");
+      ta.setSelectionRange(from + emoji.length, from + emoji.length);
+      ta.focus();
+      syncChange();
+    },
+    [syncChange],
+  );
+
   const handleContextPaste = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -454,6 +479,28 @@ function useMarkdownEditor({
     [onSave, handleBold, handleItalic, handleContextUndo, handleContextRedo],
   );
 
+  const handleKeyUp = useCallback(
+    (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Always save selection state.
+      saveSelection();
+
+      if (ev.key === "/" && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey) {
+        const ta = taRef.current;
+        if (!ta) {
+          return;
+        }
+        const pos = ta.selectionStart;
+        if (pos >= 1 && ta.value[pos - 1] === "/") {
+          const prev = pos >= 2 ? ta.value[pos - 2] : "\n";
+          if (prev === "\n" || prev === " ") {
+            setSlashPhase("menu");
+          }
+        }
+      }
+    },
+    [saveSelection],
+  );
+
   return {
     applyMeta,
     dlgMeta,
@@ -474,11 +521,13 @@ function useMarkdownEditor({
     handleImageFiles,
     handleItalic,
     handleKeyDown,
+    handleKeyUp,
     handleLink,
     handleNumbered,
     handlePaste,
     handlePropsOpen,
     handleQuote,
+    handleSlashEmoji,
     handleStrikethrough,
     handleTask,
     handleTextareaChange,
@@ -490,7 +539,9 @@ function useMarkdownEditor({
     saveSelection,
     selectAllPendingRef,
     setShowPreview,
+    setSlashPhase,
     showPreview,
+    slashPhase,
     taRef,
     themeOptions,
   };

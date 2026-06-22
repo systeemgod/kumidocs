@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Checkbox from "@/components/ui/checkbox";
+import EmojiPicker from "@/components/ui/emoji-picker";
 import Label from "@/components/ui/label";
 import MarkdownToolbar from "./toolbar";
 import MarkdownViewer from "./viewer";
@@ -67,6 +68,7 @@ export default function MarkdownEditor({
     handleStrikethrough,
     handleCode,
     handleEmoji,
+    handleSlashEmoji,
     handleLink,
     handleQuote,
     handleUnordered,
@@ -76,6 +78,7 @@ export default function MarkdownEditor({
     handleDragOver,
     handleDrop,
     handleKeyDown,
+    handleKeyUp,
     handlePaste,
     handleEditorScroll,
     applyMeta,
@@ -88,6 +91,8 @@ export default function MarkdownEditor({
     handleContextPaste,
     handleContextSelectAll,
     selectAllPendingRef,
+    slashPhase,
+    setSlashPhase,
   } = useMarkdownEditor({ onChange, onMetaChange, onSave, slideThemes, value });
 
   return (
@@ -198,7 +203,7 @@ export default function MarkdownEditor({
                 onChange={handleTextareaChange}
                 onSelect={saveSelection}
                 onClick={saveSelection}
-                onKeyUp={saveSelection}
+                onKeyUp={handleKeyUp}
                 onScroll={handleEditorScroll}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
@@ -281,6 +286,52 @@ export default function MarkdownEditor({
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
+
+        {/* Slash command menu */}
+        {slashPhase !== "closed" && (
+          <>
+            {/* Backdrop to catch outside clicks */}
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => {
+                setSlashPhase("closed");
+              }}
+            />
+            <div
+              className="absolute left-4 top-0 z-50 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+              onKeyDown={(ev) => {
+                if (ev.key === "Escape") {
+                  setSlashPhase("closed");
+                }
+                ev.stopPropagation();
+              }}
+            >
+              {slashPhase === "menu" && (
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => {
+                    setSlashPhase("emoji");
+                  }}
+                >
+                  <span className="text-lg">😀</span>
+                  Emoji
+                </button>
+              )}
+              {slashPhase === "emoji" && (
+                <div className="max-h-80 overflow-y-auto">
+                  <EmojiPicker
+                    onEmojiSelect={(emoji) => {
+                      handleSlashEmoji(emoji);
+                      setSlashPhase("closed");
+                    }}
+                    autoFocus
+                  />
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Right: live preview */}
         {showPreview && (
