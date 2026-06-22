@@ -106,7 +106,7 @@ function buildSnippet(path: string, query: string): string {
   const lowerQuery = query.toLowerCase();
   const idx = lowerBody.includes(lowerQuery)
     ? lowerBody.indexOf(lowerQuery)
-    : lowerBody.indexOf(query.split(" ")[0]?.toLowerCase() ?? "");
+    : lowerBody.indexOf(query.split(" ")[0].toLowerCase());
   if (idx === -1) {
     return `${body.replaceAll("\n", " ").slice(0, 140)}…`;
   }

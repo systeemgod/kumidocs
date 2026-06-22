@@ -36,9 +36,6 @@ async function apiFileDiff(url: URL, config: Config): Promise<Response> {
   }
 
   const commit = commits[idx];
-  if (!commit) {
-    return Response.json({ error: "Internal error" }, { status: 500 });
-  }
   const parentCommit = commits[idx + 1];
 
   const after = await gitBlobAt(config, commit.fullSha, path);
