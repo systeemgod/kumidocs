@@ -118,12 +118,22 @@ interface ImgComponentProps {
   src?: string;
   alt?: string;
   title?: string;
+  style?: string;
 }
 
 const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
-  const { src, alt, title } = allProps;
+  const { src, alt, title, style } = allProps;
   return (
-    <img src={src} alt={alt ?? ""} title={title} className="max-w-full h-auto" loading="lazy" />
+    <img
+      src={src}
+      alt={alt ?? ""}
+      title={title}
+      className="max-w-full h-auto"
+      // React 19 accepts string values for style
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      style={style as unknown as React.CSSProperties}
+      loading="lazy"
+    />
   );
 };
 
