@@ -28,6 +28,12 @@ interface UseMarkdownEditorReturn {
   fileInputRef: RefObject<HTMLInputElement | null>;
   handleBold: () => void;
   handleCode: () => void;
+  handleContextCopy: () => Promise<void>;
+  handleContextCut: () => Promise<void>;
+  handleContextPaste: () => Promise<void>;
+  handleContextRedo: () => void;
+  handleContextSelectAll: () => void;
+  handleContextUndo: () => void;
   handleDragOver: (ev: React.DragEvent) => void;
   handleDrop: (ev: React.DragEvent) => void;
   handleEditorScroll: (ev: React.UIEvent<HTMLTextAreaElement>) => void;
@@ -42,12 +48,14 @@ interface UseMarkdownEditorReturn {
   handleQuote: () => void;
   handleStrikethrough: () => void;
   handleTask: () => void;
+  handleTextareaChange: (ev: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleUnordered: () => void;
   headingValue: string;
   previewRef: RefObject<HTMLDivElement | null>;
   previewValue: string;
   propsOpen: boolean;
   saveSelection: () => void;
+  selectAllPendingRef: React.RefObject<boolean>;
   setShowPreview: Dispatch<SetStateAction<boolean>>;
   showPreview: boolean;
   taRef: RefObject<HTMLTextAreaElement | null>;
@@ -78,6 +86,15 @@ function useMarkdownEditor({
       : [];
     return ["default", ...builtin, ...custom];
   }, [slideThemes]);
+
+  // Undo/redo history stack
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const undoStackRef = useRef<string[]>([value]);
+  const redoStackRef = useRef<string[]>([]);
+  const isUndoRedoRef = useRef(false);
+  const selectAllPendingRef = useRef(false);
+
   // Track the last known cursor/selection so toolbar actions that steal focus
   // (especially the heading Select dropdown) still operate at the right position.
   const savedSelectionRef = useRef({ end: 0, start: 0 });
@@ -91,9 +108,17 @@ function useMarkdownEditor({
   }, []);
 
   // Dispatch a synthetic change so React picks up imperative textarea edits.
+  // Pushes the previous value to the undo stack so toolbar actions are undoable.
   const syncChange = useCallback(() => {
     if (taRef.current) {
-      onChange(taRef.current.value);
+      const oldValue = valueRef.current;
+      const newValue = taRef.current.value;
+      if (!isUndoRedoRef.current && newValue !== oldValue) {
+        undoStackRef.current.push(oldValue);
+        redoStackRef.current = [];
+      }
+      valueRef.current = newValue;
+      onChange(newValue);
     }
   }, [onChange]);
 
@@ -182,7 +207,7 @@ function useMarkdownEditor({
     if (!taRef.current) {
       return;
     }
-    setLinePrefix(taRef.current, "> ");
+    toggleListPrefix(taRef.current, "> ");
     syncChange();
   }, [syncChange]);
 
@@ -273,12 +298,137 @@ function useMarkdownEditor({
     preview.scrollTop = (ta.scrollTop / scrollable) * (preview.scrollHeight - preview.clientHeight);
   }, []);
 
+  const handleTextareaChange = useCallback(
+    (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = ev.target.value;
+      const oldValue = valueRef.current;
+      if (!isUndoRedoRef.current && newValue !== oldValue) {
+        undoStackRef.current.push(oldValue);
+        redoStackRef.current = [];
+      }
+      valueRef.current = newValue;
+      onChange(newValue);
+    },
+    [onChange],
+  );
+
+  const handleContextUndo = useCallback(() => {
+    const ta = taRef.current;
+    if (!ta || undoStackRef.current.length <= 1) {
+      return;
+    }
+    redoStackRef.current.push(valueRef.current);
+    undoStackRef.current.pop();
+    const prev = undoStackRef.current.at(-1) ?? "";
+    isUndoRedoRef.current = true;
+    onChange(prev);
+    isUndoRedoRef.current = false;
+    requestAnimationFrame(() => {
+      ta.focus();
+    });
+  }, [onChange]);
+
+  const handleContextRedo = useCallback(() => {
+    const ta = taRef.current;
+    if (!ta || redoStackRef.current.length === 0) {
+      return;
+    }
+    const next = redoStackRef.current.pop();
+    if (next === undefined) {
+      return;
+    }
+    undoStackRef.current.push(valueRef.current);
+    isUndoRedoRef.current = true;
+    onChange(next);
+    isUndoRedoRef.current = false;
+    requestAnimationFrame(() => {
+      ta.focus();
+    });
+  }, [onChange]);
+
+  const handleContextCut = useCallback(async () => {
+    const ta = taRef.current;
+    if (!ta) {
+      return;
+    }
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) {
+      return;
+    }
+    const text = valueRef.current.slice(start, end);
+    try {
+      await navigator.clipboard.writeText(text);
+      const newValue = valueRef.current.slice(0, start) + valueRef.current.slice(end);
+      undoStackRef.current.push(valueRef.current);
+      redoStackRef.current = [];
+      valueRef.current = newValue;
+      onChange(newValue);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(start, start);
+      });
+    } catch {
+      // Clipboard write permission denied
+    }
+  }, [onChange]);
+
+  const handleContextCopy = useCallback(async () => {
+    const ta = taRef.current;
+    if (!ta) {
+      return;
+    }
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start === end) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(valueRef.current.slice(start, end));
+    } catch {
+      // Clipboard write permission denied
+    }
+  }, []);
+
+  const handleContextPaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const ta = taRef.current;
+      if (!ta) {
+        return;
+      }
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const newValue = valueRef.current.slice(0, start) + text + valueRef.current.slice(end);
+      undoStackRef.current.push(valueRef.current);
+      redoStackRef.current = [];
+      valueRef.current = newValue;
+      onChange(newValue);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(start + text.length, start + text.length);
+      });
+    } catch {
+      // Clipboard read requires user gesture + permission
+    }
+  }, [onChange]);
+
+  const handleContextSelectAll = useCallback(() => {
+    selectAllPendingRef.current = true;
+  }, []);
+
   return {
     applyMeta,
     dlgMeta,
     fileInputRef,
     handleBold,
     handleCode,
+    handleContextCopy,
+    handleContextCut,
+    handleContextPaste,
+    handleContextRedo,
+    handleContextSelectAll,
+    handleContextUndo,
     handleDragOver,
     handleDrop,
     handleEditorScroll,
@@ -293,12 +443,14 @@ function useMarkdownEditor({
     handleQuote,
     handleStrikethrough,
     handleTask,
+    handleTextareaChange,
     handleUnordered,
     headingValue,
     previewRef,
     previewValue,
     propsOpen,
     saveSelection,
+    selectAllPendingRef,
     setShowPreview,
     showPreview,
     taRef,
