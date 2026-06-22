@@ -309,7 +309,6 @@ function useMarkdownEditor({
     onChange(prev);
     isUndoRedoRef.current = false;
     queueMicrotask(() => {
-      ta.focus();
       ta.setSelectionRange(Math.min(cursorPos, prev.length), Math.min(cursorPos, prev.length));
     });
   }, [onChange]);
@@ -329,7 +328,6 @@ function useMarkdownEditor({
     onChange(next);
     isUndoRedoRef.current = false;
     queueMicrotask(() => {
-      ta.focus();
       ta.setSelectionRange(Math.min(cursorPos, next.length), Math.min(cursorPos, next.length));
     });
   }, [onChange]);
