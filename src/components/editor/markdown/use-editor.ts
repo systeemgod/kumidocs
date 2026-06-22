@@ -301,6 +301,7 @@ function useMarkdownEditor({
     if (!ta || undoStackRef.current.length <= 1) {
       return;
     }
+    const cursorPos = ta.selectionStart;
     redoStackRef.current.push(valueRef.current);
     undoStackRef.current.pop();
     const prev = undoStackRef.current.at(-1) ?? "";
@@ -309,6 +310,10 @@ function useMarkdownEditor({
     isUndoRedoRef.current = false;
     requestAnimationFrame(() => {
       ta.focus();
+      ta.setSelectionRange(
+        Math.min(cursorPos, prev.length),
+        Math.min(cursorPos, prev.length),
+      );
     });
   }, [onChange]);
 
@@ -317,6 +322,7 @@ function useMarkdownEditor({
     if (!ta || redoStackRef.current.length === 0) {
       return;
     }
+    const cursorPos = ta.selectionStart;
     const next = redoStackRef.current.pop();
     if (next === undefined) {
       return;
@@ -327,6 +333,10 @@ function useMarkdownEditor({
     isUndoRedoRef.current = false;
     requestAnimationFrame(() => {
       ta.focus();
+      ta.setSelectionRange(
+        Math.min(cursorPos, next.length),
+        Math.min(cursorPos, next.length),
+      );
     });
   }, [onChange]);
 
