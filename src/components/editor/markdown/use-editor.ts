@@ -112,12 +112,12 @@ function useMarkdownEditor({
   const slashMenuPosRef = useRef({ left: 0, top: 0 });
 
   /** Get the pixel position of the cursor in the textarea. */
-  function getCursorPixelPos(): { top: number; left: number } {
+  function getCursorPixelPos(cursorPos?: number): { top: number; left: number } {
     const ta = taRef.current;
     if (!ta) {
       return { left: 0, top: 0 };
     }
-    const pos = ta.selectionStart;
+    const pos = cursorPos ?? ta.selectionStart;
     const text = ta.value.slice(0, pos);
     const mirror = document.createElement("div");
     const style = window.getComputedStyle(ta);
@@ -340,6 +340,9 @@ function useMarkdownEditor({
     (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = ev.target.value;
       const oldValue = valueRef.current;
+      // Read cursor position from the event target BEFORE React re-renders
+      const cursorPos = ev.target.selectionStart;
+
       if (!isUndoRedoRef.current && newValue !== oldValue) {
         undoStackRef.current.push({ cursor: savedSelectionRef.current.start, value: oldValue });
         redoStackRef.current = [];
@@ -348,21 +351,15 @@ function useMarkdownEditor({
       onChange(newValue);
 
       // Detect "/" typed at line start or after a space → open slash command menu
-      if (
-        slashPhase === "closed" &&
-        newValue.length === oldValue.length + 1 &&
-        !isUndoRedoRef.current
-      ) {
-        const ta = taRef.current;
-        if (ta) {
-          const pos = ta.selectionStart;
-          if (pos >= 1 && ta.value[pos - 1] === "/") {
-            const prev = pos >= 2 ? ta.value[pos - 2] : "\n";
-            if (prev === "\n" || prev === " ") {
-              slashMenuPosRef.current = getCursorPixelPos();
-              setSlashPhase("menu");
-            }
-          }
+      if (slashPhase === "closed" && !isUndoRedoRef.current) {
+        const prev = cursorPos >= 2 ? newValue[cursorPos - 2] : "\n";
+        if (
+          cursorPos >= 1 &&
+          newValue[cursorPos - 1] === "/" &&
+          (prev === "\n" || prev === " ")
+        ) {
+          slashMenuPosRef.current = getCursorPixelPos(cursorPos);
+          setSlashPhase("menu");
         }
       }
     },
