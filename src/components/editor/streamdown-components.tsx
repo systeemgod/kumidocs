@@ -121,17 +121,76 @@ interface ImgComponentProps {
   style?: string;
 }
 
+/**
+ * Parse Marp-compatible image size keywords from alt text.
+ *
+ * Supports:
+ *   ![width:200px](img.jpg)
+ *   ![w:32 h:32](img.jpg)
+ *   ![alt text w:300px](img.jpg)
+ *   ![height:30cm](img.jpg)
+ *
+ * Keywords are stripped from the rendered alt text.
+ */
+function parseMarpSize(alt: string): { cleanAlt: string; marpWidth?: string; marpHeight?: string } {
+  // Matches width:200px, w:32, height:30cm, h:100%, etc.
+  const RE =
+    /(?<key>width|height|w|h)\s*:\s*(?<value>[\d.]+(?:px|cm|mm|in|pt|pc|em|rem|%|auto)?)\s*/gi;
+  let marpWidth: string | undefined;
+  let marpHeight: string | undefined;
+
+  let match: RegExpExecArray | null;
+  while ((match = RE.exec(alt)) !== null) {
+    const key = (match[1] ?? "").toLowerCase();
+    const val = match[2] ?? "";
+    if (key === "width" || key === "w") {
+      marpWidth = val;
+    } else if (key === "height" || key === "h") {
+      marpHeight = val;
+    }
+  }
+
+  const cleanAlt = alt.replaceAll(RE, "").replaceAll(/\s+/gu, " ").trim();
+  return { cleanAlt, marpHeight, marpWidth };
+}
+
 const ImgComponent = (allProps: ImgComponentProps): JSX.Element => {
-  const { src, alt, title, style } = allProps;
+  const { src, alt = "", title, style } = allProps;
+  const { cleanAlt, marpHeight, marpWidth } = parseMarpSize(alt);
+
+  // Merge inline style from {key=value} plugin with Marp size keywords.
+  // Marp keywords win over the {key=value} syntax when both are present.
+  const mergedStyle: React.CSSProperties = {};
+
+  // hast-util-to-jsx-runtime converts style strings to objects,
+  // but accept string too for safety.
+  if (typeof style === "string") {
+    for (const part of style.split(";")) {
+      const colonIdx = part.indexOf(":");
+      if (colonIdx > 0) {
+        const cssKey = part.slice(0, colonIdx).trim();
+        const cssVal = part.slice(colonIdx + 1).trim();
+        if (cssKey && cssVal) {
+          const camelKey = cssKey.replaceAll(/-([a-z])/gu, (_m: string, c: string) =>
+            c.toUpperCase(),
+          );
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          (mergedStyle as Record<string, string>)[camelKey] = cssVal;
+        }
+      }
+    }
+  }
+
+  if (marpWidth) mergedStyle.width = marpWidth;
+  if (marpHeight) mergedStyle.height = marpHeight;
+
   return (
     <img
       src={src}
-      alt={alt ?? ""}
+      alt={cleanAlt}
       title={title}
       className="max-w-full h-auto"
-      // React 19 accepts string values for style
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      style={style as unknown as React.CSSProperties}
+      style={Object.keys(mergedStyle).length > 0 ? mergedStyle : undefined}
       loading="lazy"
     />
   );
