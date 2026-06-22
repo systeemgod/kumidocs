@@ -235,22 +235,6 @@ function useMarkdownEditor({
     syncChange();
   }, [syncChange]);
 
-  const handleKeyDown = useCallback(
-    (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
-        ev.preventDefault();
-        onSave?.();
-      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "b") {
-        ev.preventDefault();
-        handleBold();
-      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "i") {
-        ev.preventDefault();
-        handleItalic();
-      }
-    },
-    [onSave, handleBold, handleItalic],
-  );
-
   const handlePaste = useCallback(
     (ev: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const ta = taRef.current;
@@ -416,6 +400,32 @@ function useMarkdownEditor({
   const handleContextSelectAll = useCallback(() => {
     selectAllPendingRef.current = true;
   }, []);
+
+  const handleKeyDown = useCallback(
+    (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
+        ev.preventDefault();
+        onSave?.();
+      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "b") {
+        ev.preventDefault();
+        handleBold();
+      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "i") {
+        ev.preventDefault();
+        handleItalic();
+      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "z") {
+        ev.preventDefault();
+        if (ev.shiftKey) {
+          handleContextRedo();
+        } else {
+          handleContextUndo();
+        }
+      } else if ((ev.ctrlKey || ev.metaKey) && ev.key === "y") {
+        ev.preventDefault();
+        handleContextRedo();
+      }
+    },
+    [onSave, handleBold, handleItalic, handleContextUndo, handleContextRedo],
+  );
 
   return {
     applyMeta,
