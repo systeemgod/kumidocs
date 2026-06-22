@@ -232,7 +232,6 @@ export default function MarkdownEditor({
               Redo
               <KbdGroup className="ml-auto">
                 <Kbd>Ctrl</Kbd>
-
                 <Kbd>Y</Kbd>
               </KbdGroup>
             </ContextMenuItem>

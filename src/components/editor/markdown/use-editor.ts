@@ -63,7 +63,7 @@ interface UseMarkdownEditorReturn {
   themeOptions: string[];
 }
 
-/** Find the cursor position after undo/redo by locating where the content changed. */
+/** A snapshot of the editor state before an edit, used for undo/redo. */
 interface UndoEntry {
   value: string;
   cursor: number;
@@ -363,8 +363,7 @@ function useMarkdownEditor({
       redoStackRef.current = [];
       valueRef.current = newValue;
       onChange(newValue);
-      requestAnimationFrame(() => {
-        ta.focus();
+      queueMicrotask(() => {
         ta.setSelectionRange(start, start);
       });
     } catch {
@@ -419,8 +418,7 @@ function useMarkdownEditor({
       redoStackRef.current = [];
       valueRef.current = newValue;
       onChange(newValue);
-      requestAnimationFrame(() => {
-        ta.focus();
+      queueMicrotask(() => {
         ta.setSelectionRange(start + text.length, start + text.length);
       });
     } catch {
