@@ -91,6 +91,7 @@ export default function MarkdownEditor({
     handleContextPaste,
     handleContextSelectAll,
     selectAllPendingRef,
+    slashMenuPosRef,
     slashPhase,
     setSlashPhase,
   } = useMarkdownEditor({ onChange, onMetaChange, onSave, slideThemes, value });
@@ -298,7 +299,12 @@ export default function MarkdownEditor({
               }}
             />
             <div
-              className="absolute left-4 top-0 z-50 w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+              className="z-50 w-64 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+              style={{
+                left: slashMenuPosRef.current.left,
+                position: "fixed",
+                top: slashMenuPosRef.current.top,
+              }}
               onKeyDown={(ev) => {
                 if (ev.key === "Escape") {
                   setSlashPhase("closed");

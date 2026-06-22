@@ -64,6 +64,7 @@ interface UseMarkdownEditorReturn {
   setShowPreview: Dispatch<SetStateAction<boolean>>;
   setSlashPhase: Dispatch<SetStateAction<SlashPhase>>;
   showPreview: boolean;
+  slashMenuPosRef: React.RefObject<{ top: number; left: number }>;
   slashPhase: SlashPhase;
   taRef: RefObject<HTMLTextAreaElement | null>;
   themeOptions: string[];
@@ -108,6 +109,46 @@ function useMarkdownEditor({
   const redoStackRef = useRef<UndoEntry[]>([]);
   const isUndoRedoRef = useRef(false);
   const selectAllPendingRef = useRef(false);
+  const slashMenuPosRef = useRef({ left: 0, top: 0 });
+
+  /** Get the pixel position of the cursor in the textarea. */
+  function getCursorPixelPos(): { top: number; left: number } {
+    const ta = taRef.current;
+    if (!ta) {
+      return { left: 0, top: 0 };
+    }
+    const pos = ta.selectionStart;
+    const text = ta.value.slice(0, pos);
+    const mirror = document.createElement("div");
+    const style = window.getComputedStyle(ta);
+    mirror.style.cssText = `
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      visibility: hidden;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      font: ${style.font};
+      font-size: ${style.fontSize};
+      font-family: ${style.fontFamily};
+      line-height: ${style.lineHeight};
+      letter-spacing: ${style.letterSpacing};
+      padding: ${style.padding};
+      border: ${style.border};
+      width: ${ta.clientWidth}px;
+    `;
+    mirror.textContent = text;
+    document.body.append(mirror);
+    const rect = mirror.getBoundingClientRect();
+    mirror.remove();
+
+    const taRect = ta.getBoundingClientRect();
+    return {
+      left: rect.left - taRect.left,
+      top: rect.top - taRect.top + rect.height,
+    };
+  }
 
   // Track the last known cursor/selection so toolbar actions that steal focus
   // (especially the heading Select dropdown) still operate at the right position.
@@ -319,6 +360,7 @@ function useMarkdownEditor({
           if (pos >= 1 && ta.value[pos - 1] === "/") {
             const prev = pos >= 2 ? ta.value[pos - 2] : "\n";
             if (prev === "\n" || prev === " ") {
+              slashMenuPosRef.current = getCursorPixelPos();
               setSlashPhase("menu");
             }
           }
@@ -501,10 +543,7 @@ function useMarkdownEditor({
     (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
       saveSelection();
 
-      if (
-        ev.key === "Escape" &&
-        slashPhase !== "closed"
-      ) {
+      if (ev.key === "Escape" && slashPhase !== "closed") {
         setSlashPhase("closed");
       }
     },
@@ -551,6 +590,7 @@ function useMarkdownEditor({
     setShowPreview,
     setSlashPhase,
     showPreview,
+    slashMenuPosRef,
     slashPhase,
     taRef,
     themeOptions,
