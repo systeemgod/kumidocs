@@ -168,7 +168,7 @@ const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
   const emoji = ALERT_ICONS[alertType] ?? ALERT_ICONS.NOTE;
   return (
-    <div className={`border-l-4 rounded-r-lg px-5 py-3 my-4 not-prose ${classes}`} role="alert">
+    <div className={`border-l-10 rounded-r-lg px-5 py-3 my-4 not-prose ${classes}`} role="alert">
       <div className="font-bold mt-2 mb-3 text-inherit flex items-center gap-3 leading-none">
         <EmojiIcon emoji={emoji} size="28px" />
         <span>{label}</span>
