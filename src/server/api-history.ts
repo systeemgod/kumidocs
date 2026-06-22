@@ -35,7 +35,8 @@ async function apiFileDiff(url: URL, config: Config): Promise<Response> {
     return Response.json({ error: "Commit not found in file history" }, { status: 404 });
   }
 
-  const commit = commits[idx];
+  // oxlint-disable-next-line no-non-null-assertion
+  const commit = commits[idx]!;
   const parentCommit = commits[idx + 1];
 
   const after = await gitBlobAt(config, commit.fullSha, path);

@@ -3,9 +3,9 @@ import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
 import type { ReactNode } from "react";
 import { harden } from "rehype-harden";
-import rehypeEmojiPlugin from "./rehype-emoji-plugin";
-import rehypeGfmAlertsPlugin from "./rehype-gfm-alerts-plugin";
-import rehypeHeadingIdsPlugin from "./rehype-heading-ids-plugin";
+import rehypeEmojiPlugin from "@/components/editor/plugins/emoji";
+import rehypeGfmAlertsPlugin from "@/components/editor/plugins/gfm-alerts";
+import rehypeHeadingIdsPlugin from "@/components/editor/plugins/heading-ids";
 
 /** Allowed URL prefixes for images (rehype-harden + slide CSS validation) */
 const ALLOWED_IMAGE_PREFIXES = ["/images/", "data:image/"];

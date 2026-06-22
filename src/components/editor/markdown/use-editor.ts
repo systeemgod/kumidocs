@@ -6,13 +6,13 @@ import {
   insertWrap,
   setLinePrefix,
   toggleListPrefix,
-} from "./markdown-editor-utils";
+} from "./editor-utils";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BUILTIN_SLIDE_THEMES } from "@/lib/slide";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
-import useMarkdownImageHandler from "./use-markdown-image-handler";
+import useMarkdownImageHandler from "./use-image-handler";
 
 interface UseMarkdownEditorProps {
   value: string;

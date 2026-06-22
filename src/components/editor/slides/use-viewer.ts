@@ -1,6 +1,6 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { ParsedSlide, SlideThemeMap } from "@/lib/slide";
-import { SLIDE_H, SLIDE_W, addOverlayToPdf, splitSlides } from "./slide-utils";
+import { SLIDE_H, SLIDE_W, addOverlayToPdf, splitSlides } from "./utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { parseSlideDirectives } from "@/lib/slide";
 import useMountEffect from "@/hooks/use-mount-effect";

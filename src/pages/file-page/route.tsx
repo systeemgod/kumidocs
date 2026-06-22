@@ -1,4 +1,4 @@
-import FilePage from "@/pages/file-page";
+import FilePage from "@/pages/file-page/page";
 import { useParams } from "react-router-dom";
 
 const FilePageRoute = (): JSX.Element => {

@@ -1,11 +1,11 @@
 /* eslint-disable sort-imports */
 import type { ParsedSlide, SlideThemeDef, SlideThemeMap } from "@/lib/slide";
-import SlideOverlay, { interpolate } from "./slide-overlay";
+import SlideOverlay, { interpolate } from "./overlay";
 import { isBgDark, resolveTheme } from "@/lib/slide";
 import cn from "@/lib/utils";
 import { useTheme } from "@/store/theme";
-import { SLIDE_H, SLIDE_W, buildCanvasStyle } from "./slide-utils";
-import SlideMarkdownViewer from "./slide-markdown-viewer";
+import { SLIDE_H, SLIDE_W, buildCanvasStyle } from "./utils";
+import SlideMarkdownViewer from "./markdown-viewer";
 /* eslint-enable sort-imports */
 
 /** Small overlay for header/footer text, positioned at top or bottom of the slide canvas. */

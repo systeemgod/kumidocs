@@ -1,11 +1,11 @@
 import ErrorBanner from "@/components/ui/error-banner";
-import FilePageHeader from "./file-page-header";
-import MarkdownViewer from "@/components/editor/markdown-viewer";
-import NotFound from "./not-found";
+import FilePageHeader from "./header";
+import MarkdownViewer from "@/components/editor/markdown/viewer";
+import NotFound from "@/pages/not-found/page";
 import PageInfoPanel from "@/components/layout/page-info-panel";
-import TocSidebar from "@/components/editor/toc-sidebar";
-import { buildEditorContent } from "./file-page-utils";
-import { useFilePage } from "./use-file-page";
+import TocSidebar from "@/components/editor/markdown/toc-sidebar";
+import { buildEditorContent } from "./utils";
+import { useFilePage } from "./use-page";
 import { useEffect } from "react";
 
 export default function FilePage(): JSX.Element {

@@ -4,7 +4,10 @@ import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import { registerMermaidIcons } from "@/lib/register-mermaid-icons";
-import { COMPONENTS_SLIDE, REHYPE_PLUGINS } from "./streamdown-components";
+import {
+  COMPONENTS_SLIDE,
+  REHYPE_PLUGINS,
+} from "@/components/editor/markdown/streamdown-components";
 import useMountEffect from "@/hooks/use-mount-effect";
 
 interface SlideStreamdownProps {

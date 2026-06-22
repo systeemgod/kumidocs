@@ -1,14 +1,14 @@
 import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
-import CodeEditor from "@/components/editor/code-editor";
+import CodeEditor from "@/components/editor/markdown/code-editor";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
-import MarkdownEditor from "@/components/editor/markdown-editor";
-import MarkdownViewer from "@/components/editor/markdown-viewer";
-import type { SaveStatus } from "./use-file-page-save";
+import MarkdownEditor from "@/components/editor/markdown/editor";
+import MarkdownViewer from "@/components/editor/markdown/viewer";
+import type { SaveStatus } from "./use-save";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { SlideThemeMap } from "@/lib/slide";
-import { SlideViewer } from "@/components/editor/slide-viewer";
-import { addOverlayToPdf } from "@/components/editor/slide-utils";
+import { SlideViewer } from "@/components/editor/slides/viewer";
+import { addOverlayToPdf } from "@/components/editor/slides/utils";
 import { extensionToType } from "@/lib/filetypes";
 import { extractHeadingTitle } from "@/lib/frontmatter";
 

@@ -1,4 +1,4 @@
-import { ALLOWED_BG_URL_PREFIXES } from "@/components/editor/streamdown-components";
+import { ALLOWED_BG_URL_PREFIXES } from "@/components/editor/markdown/streamdown-components";
 
 /**
  * Validate that all `url(...)` references in a CSS value point to allowed origins.

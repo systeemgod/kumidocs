@@ -6,7 +6,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CHEATSHEET_ROWS } from "./markdown-editor-utils";
+import { CHEATSHEET_ROWS } from "./editor-utils";
 import { FileQuestionMark } from "lucide-react";
 
 function MarkdownCheatsheet(): JSX.Element {

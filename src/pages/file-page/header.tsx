@@ -10,7 +10,7 @@ import {
   MoreHorizontalRegular,
   TextBulletListLtrRegular,
 } from "@fluentui/react-icons";
-import { SAVE_BADGE_TEXT, getEditButtonClass, getSaveBadgeClass } from "./file-page-utils";
+import { SAVE_BADGE_TEXT, getEditButtonClass, getSaveBadgeClass } from "./utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import EmojiPickerPopover from "@/components/ui/emoji-picker-popover";
 import { Link } from "react-router-dom";
 import { PageMenuItems } from "@/components/ui/page-menu-items";
-import type { SaveStatus } from "./use-file-page-save";
+import type { SaveStatus } from "./use-save";
 import { UserAvatar } from "@/components/ui/avatar";
 
 interface FilePageHeaderProps {

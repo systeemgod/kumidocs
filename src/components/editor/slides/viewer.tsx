@@ -1,10 +1,10 @@
-import { SLIDE_H, SLIDE_W } from "./slide-utils";
+import { SLIDE_H, SLIDE_W } from "./utils";
 import ScaledSlide from "./scaled-slide";
-import SlideControlsBar from "./slide-controls-bar";
-import SlideSpotlightOverlay from "./slide-spotlight-overlay";
+import SlideControlsBar from "./controls-bar";
+import SlideSpotlightOverlay from "./spotlight-overlay";
 import type { SlideThemeMap } from "@/lib/slide";
 import cn from "@/lib/utils";
-import { useSlideViewer } from "./use-slide-viewer";
+import { useSlideViewer } from "./use-viewer";
 
 interface SlideViewerProps {
   value: string;

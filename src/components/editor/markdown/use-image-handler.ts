@@ -1,4 +1,4 @@
-import { insertImage, uploadImageFile } from "./markdown-editor-utils";
+import { insertImage, uploadImageFile } from "./editor-utils";
 import type { RefObject } from "react";
 import { toast } from "@/components/ui/toaster";
 import { useCallback } from "react";

@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { HEADING_OPTIONS } from "./markdown-editor-utils";
-import MarkdownCheatsheet from "./markdown-cheatsheet";
+import { HEADING_OPTIONS } from "./editor-utils";
+import MarkdownCheatsheet from "./cheatsheet";
 import type React from "react";
 
 interface MarkdownToolbarProps {

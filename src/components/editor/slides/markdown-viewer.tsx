@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { ParsedSlide } from "@/lib/slide";
-import SlideStreamdown from "@/components/editor/slide-streamdown";
+import SlideStreamdown from "@/components/editor/slides/streamdown";
 import cn from "@/lib/utils";
 import { memo } from "react";
 import { splitAtSecondH2 } from "@/lib/slide";

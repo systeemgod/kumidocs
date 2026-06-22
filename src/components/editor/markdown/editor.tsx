@@ -18,12 +18,12 @@ import {
 } from "@/components/ui/select";
 import Checkbox from "@/components/ui/checkbox";
 import Label from "@/components/ui/label";
-import MarkdownToolbar from "./markdown-toolbar";
-import MarkdownViewer from "./markdown-viewer";
+import MarkdownToolbar from "./toolbar";
+import MarkdownViewer from "./viewer";
 import type { PageMeta } from "@/lib/frontmatter";
 import type { SlideThemeMap } from "@/lib/slide";
-import { SlideViewer } from "./slide-viewer";
-import { useMarkdownEditor } from "./use-markdown-editor";
+import { SlideViewer } from "@/components/editor/slides/viewer";
+import { useMarkdownEditor } from "./use-editor";
 
 interface MarkdownEditorProps {
   value: string;
