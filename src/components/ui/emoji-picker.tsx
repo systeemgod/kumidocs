@@ -42,10 +42,10 @@ const emojiData = data as unknown as MartData;
 const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
   activity: { icon: "⚽", label: "Activities" },
   flags: { icon: "🏁", label: "Flags" },
-  foods: { icon: "🍕", label: "Food & Drink" },
-  nature: { icon: "🐾", label: "Animals & Nature" },
+  foods: { icon: "🍔", label: "Food & Drink" },
+  nature: { icon: "🫎", label: "Animals & Nature" },
   objects: { icon: "💡", label: "Objects" },
-  people: { icon: "�", label: "Smileys & People" },
+  people: { icon: "🥳", label: "Smileys & People" },
   places: { icon: "✈️", label: "Travel & Places" },
   symbols: { icon: "💫", label: "Symbols" },
 };
