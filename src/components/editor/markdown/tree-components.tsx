@@ -99,7 +99,7 @@ function findNodeByPath(nodes: PageNode[], targetPath: string): PageNode | undef
 }
 
 /** Flat list of immediate child pages of the current page's directory. */
-function Tree(): JSX.Element {
+function Pages(): JSX.Element {
   const { pagePath, tree } = usePageContext();
   const pages = useMemo(() => buildPageTree(tree), [tree]);
 
@@ -120,7 +120,7 @@ function Tree(): JSX.Element {
 }
 
 /** Nested tree of all pages under the current page's directory. */
-function TreeNested(): JSX.Element {
+function Tree(): JSX.Element {
   const { pagePath, tree } = usePageContext();
   const pages = useMemo(() => buildPageTree(tree), [tree]);
 
@@ -140,4 +140,4 @@ function TreeNested(): JSX.Element {
   );
 }
 
-export { PageTreeView, Tree, TreeNested };
+export { Pages, PageTreeView, Tree };

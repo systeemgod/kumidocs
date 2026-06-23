@@ -1,11 +1,11 @@
 import type { Root } from "hast";
 import { visit } from "unist-util-visit";
 
-const DIRECTIVE_RE = /^\[!(?<name>TREE|TREE-NESTED)\]$/u;
+const DIRECTIVE_RE = /^\[!(?<name>TREE|PAGES)\]$/u;
 
 /**
- * Rehype plugin that transforms `[!TREE]` and `[!TREE-NESTED]` text nodes
- * into `<tree />` and `<tree-nested />` custom elements so they are picked
+ * Rehype plugin that transforms `[!TREE]` and `[!PAGES]` text nodes
+ * into `<tree />` and `<pages />` custom elements so they are picked
  * up by Streamdown's component map.
  */
 function rehypeTreeDirective(): (tree: Root) => void {
@@ -18,12 +18,12 @@ function rehypeTreeDirective(): (tree: Root) => void {
       if (!match) {
         return;
       }
-      const name = match[1] === "TREE-NESTED" ? "tree-nested" : "tree";
+      const tagName = match[1] === "TREE" ? "tree" : "pages";
       // oxlint-disable-next-line no-param-reassign
       parent.children[index] = {
         children: [],
         properties: {},
-        tagName: name,
+        tagName,
         type: "element",
       };
     });
