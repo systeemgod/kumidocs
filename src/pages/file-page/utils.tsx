@@ -33,6 +33,18 @@ function computeTitle(fileType: FileType, content: string, filePath: string): st
   return filePath.split("/").pop() ?? filePath;
 }
 
+/** Check if markdown content has no meaningful text (only frontmatter and headings). */
+function isContentEmpty(content: string): boolean {
+  const body = content
+    // Remove frontmatter
+    .replace(/^---[\s\S]*?---\r?\n/u, "")
+    // Remove heading lines
+    .replace(/^#{1,6}\s+.*$/um, "")
+    // Remove empty lines and whitespace
+    .replaceAll(/\s+/gu, "");
+  return body.length === 0;
+}
+
 function getEditButtonClass(
   editMode: boolean,
   editLocked: PresenceUser | undefined,
@@ -143,7 +155,9 @@ function buildEditorContent({
   }
   return (
     <ScrollArea className="h-full">
-      <MarkdownViewer value={viewContent} />
+      <MarkdownViewer
+        value={isContentEmpty(content) ? `${viewContent}\n\n[!PAGES]` : viewContent}
+      />
     </ScrollArea>
   );
 }
