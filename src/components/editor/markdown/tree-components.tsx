@@ -12,7 +12,7 @@ interface PageTreeViewProps {
   maxDepth?: number;
 }
 
-/** Shared read-only tree renderer, used by sidebar's PageNodeRow and by Toc/TocNested. */
+/** Shared read-only tree renderer, used by sidebar's PageNodeRow and by Tree/TreeNested. */
 function PageTreeItem({
   node,
   depth,
@@ -98,8 +98,8 @@ function findNodeByPath(nodes: PageNode[], targetPath: string): PageNode | undef
   return undefined;
 }
 
-/** Flat list of immediate child pages of the current page's parent directory. */
-function Toc(): JSX.Element {
+/** Flat list of immediate child pages of the current page's directory. */
+function Tree(): JSX.Element {
   const { pagePath, tree } = usePageContext();
   const pages = useMemo(() => buildPageTree(tree), [tree]);
 
@@ -120,7 +120,7 @@ function Toc(): JSX.Element {
 }
 
 /** Nested tree of all pages under the current page's directory. */
-function TocNested(): JSX.Element {
+function TreeNested(): JSX.Element {
   const { pagePath, tree } = usePageContext();
   const pages = useMemo(() => buildPageTree(tree), [tree]);
 
@@ -140,4 +140,4 @@ function TocNested(): JSX.Element {
   );
 }
 
-export { PageTreeView, Toc, TocNested };
+export { PageTreeView, Tree, TreeNested };

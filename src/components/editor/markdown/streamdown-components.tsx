@@ -3,10 +3,11 @@ import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
 import type { ReactNode } from "react";
 import { harden } from "rehype-harden";
-import { Toc, TocNested } from "./toc-components";
+import { Tree, TreeNested } from "./tree-components";
 import rehypeEmojiPlugin from "@/components/editor/plugins/emoji";
 import rehypeGfmAlertsPlugin from "@/components/editor/plugins/gfm-alerts";
 import rehypeHeadingIdsPlugin from "@/components/editor/plugins/heading-ids";
+import rehypeTreeDirective from "@/components/editor/plugins/tree-directive";
 
 /** Allowed URL prefixes for images (rehype-harden + slide CSS validation) */
 const ALLOWED_IMAGE_PREFIXES = ["/images/", "data:image/"];
@@ -40,6 +41,7 @@ const REHYPE_PLUGINS: PluggableList = [
   rehypeHeadingIdsPlugin,
   rehypeEmojiPlugin,
   rehypeGfmAlertsPlugin,
+  rehypeTreeDirective,
 ];
 
 // KumiEmojiComponent
@@ -241,8 +243,8 @@ const COMPONENTS_DOC: Record<string, (props: Record<string, unknown>) => JSX.Ele
   img: ImgComponent,
   "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
-  "toc": Toc,
-  "toc-nested": TocNested,
+  "tree": Tree,
+  "tree-nested": TreeNested,
 };
 
 /** Component map for slide markdown viewer. */
@@ -254,8 +256,8 @@ const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.E
   img: ImgComponent,
   "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
-  "toc": Toc,
-  "toc-nested": TocNested,
+  "tree": Tree,
+  "tree-nested": TreeNested,
 };
 
 export {
@@ -269,6 +271,6 @@ export {
   KumiEmojiComponent,
   REHYPE_PLUGINS,
   SlideAnchorComponent,
-  Toc,
-  TocNested,
+  Tree,
+  TreeNested,
 };
