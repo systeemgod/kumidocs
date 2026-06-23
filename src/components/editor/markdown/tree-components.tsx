@@ -100,7 +100,43 @@ function findNodeByPath(nodes: PageNode[], targetPath: string): PageNode | undef
   return undefined;
 }
 
-/** Flat list of immediate child pages of the current page's directory. */
+// ── Shared heading item (used by both inline Toc and TocSidebar) ──
+
+interface TocItemProps {
+  id: string;
+  text: string;
+  level: number;
+  minLevel: number;
+  active?: boolean;
+  pageHref?: string;
+}
+
+/** A single TOC entry with scroll-on-click and optional active highlighting. */
+function TocItem({ id, text, level, minLevel, active, pageHref }: TocItemProps): JSX.Element {
+  const href = pageHref === undefined ? `#${id}` : `${pageHref}#${id}`;
+  return (
+    <a
+      href={href}
+      onClick={(ev) => {
+        ev.preventDefault();
+        const el = document.querySelector(`#${CSS.escape(id)}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }}
+      className={cn(
+        "block rounded px-2 py-0.5 text-sm no-underline transition-colors hover:bg-accent/50",
+        "text-foreground",
+        active === true && "bg-accent font-medium text-accent-foreground",
+      )}
+      style={{ paddingLeft: `${8 + (level - minLevel) * 16}px` }}
+    >
+      {text}
+    </a>
+  );
+}
+
+// ── Directive components registered in Streamdown ──
 function Pages(): JSX.Element {
   const { pagePath, tree } = usePageContext();
   const pages = useMemo(() => buildPageTree(tree), [tree]);
@@ -144,8 +180,13 @@ function Tree(): JSX.Element {
 
 /** Table of contents of the current page's headings. */
 function Toc(): JSX.Element {
-  const { rawContent } = usePageContext();
+  const { rawContent, pagePath } = usePageContext();
   const items = useMemo(() => extractTocItems(rawContent), [rawContent]);
+  const pageHref = `/p/${pagePath.replace(/\.md$/iu, "")}`;
+  const minLevel = useMemo(
+    () => (items.length > 0 ? Math.min(...items.map((entry) => entry.level)) : 1),
+    [items],
+  );
 
   if (items.length === 0) {
     return <></>;
@@ -155,26 +196,18 @@ function Toc(): JSX.Element {
     <div className="my-4 rounded-md border bg-card p-3">
       <nav className="space-y-0.5">
         {items.map((item, idx) => (
-          <button
+          <TocItem
             key={`${item.id}-${idx}`}
-            type="button"
-            onClick={() => {
-              const el = document.querySelector(`#${CSS.escape(item.id)}`);
-              if (el) {
-                el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }
-            }}
-            className={cn(
-              "block w-full text-left rounded px-2 py-0.5 text-sm transition-colors hover:bg-accent/50",
-            )}
-            style={{ paddingLeft: `${8 + (item.level - 1) * 16}px` }}
-          >
-            {item.text}
-          </button>
+            id={item.id}
+            text={item.text}
+            level={item.level}
+            minLevel={minLevel}
+            pageHref={pageHref}
+          />
         ))}
       </nav>
     </div>
   );
 }
 
-export { Pages, PageTreeView, Toc, Tree };
+export { Pages, PageTreeView, Toc, TocItem, Tree };

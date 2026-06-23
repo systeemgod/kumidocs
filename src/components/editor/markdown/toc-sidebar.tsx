@@ -1,8 +1,8 @@
 import { DismissRegular, TextBulletListLtrRegular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import cn from "@/lib/utils";
 import { extractTocItems } from "@/lib/heading";
+import { TocItem } from "@/components/editor/markdown/tree-components";
 import useMountEffect from "@/hooks/use-mount-effect";
 
 interface TocSidebarProps {
@@ -108,32 +108,17 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-3">
           <ul className="space-y-0.5">
-            {tocItems.map((item, idx) => {
-              const indent = item.level - minLevel;
-              return (
-                <li key={`${item.id}-${idx}`}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const el = document.querySelector(`#${CSS.escape(item.id)}`);
-                      if (el) {
-                        el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }
-                    }}
-                    className={cn(
-                      "block w-full text-left text-xs rounded px-2 py-1 transition-colors",
-                      "hover:bg-accent hover:text-accent-foreground",
-                      activeId === item.id
-                        ? "bg-accent text-accent-foreground font-medium"
-                        : "text-muted-foreground",
-                    )}
-                    style={{ paddingLeft: `${8 + indent * 12}px` }}
-                  >
-                    {item.text}
-                  </button>
-                </li>
-              );
-            })}
+            {tocItems.map((item, idx) => (
+              <li key={`${item.id}-${idx}`}>
+                <TocItem
+                  id={item.id}
+                  text={item.text}
+                  level={item.level}
+                  minLevel={minLevel}
+                  active={activeId === item.id}
+                />
+              </li>
+            ))}
           </ul>
         </div>
       </ScrollArea>
