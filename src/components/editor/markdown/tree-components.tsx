@@ -25,7 +25,7 @@ function PageTreeItem({
   const hasChildren = node.children.length > 0;
   const href = `/p/${node.path}`.replace(/\.md$/iu, "");
   const shouldRenderChildren = hasChildren && (maxDepth === undefined || depth + 1 < maxDepth);
-  const [open, setOpen] = useState(depth === 0);
+  const [open, setOpen] = useState(true);
 
   return (
     <li className="mb-0.5">
@@ -57,7 +57,7 @@ function PageTreeItem({
           <EmojiIcon
             emoji={node.fileEntry?.emoji}
             fileType={node.fileEntry?.type ?? "doc"}
-            size={16}
+            size={24}
           />
           <span className="truncate">{node.displayTitle}</span>
         </Link>
@@ -73,7 +73,7 @@ function PageTreeItem({
 
 function PageTreeView({ nodes, depth = 0, maxDepth }: PageTreeViewProps): JSX.Element {
   return (
-    <ul className="list-none p-0 m-0">
+    <ul className="list-none p-0 m-0 not-prose">
       {nodes.map((node) => (
         // oxlint-disable-next-line no-use-before-define
         <PageTreeItem key={node.path} node={node} depth={depth} maxDepth={maxDepth} />
