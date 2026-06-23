@@ -35,7 +35,7 @@ function PageTreeItem({
         className="flex items-center gap-1 rounded px-2 py-1 text-sm hover:bg-accent/50"
         style={{ paddingLeft: `${8 + depth * 16}px` }}
       >
-        {hasChildren ? (
+        {hasChildren && shouldRenderChildren ? (
           <button
             type="button"
             className="flex items-center justify-center w-4 h-4 p-0 shrink-0 text-muted-foreground hover:text-foreground"

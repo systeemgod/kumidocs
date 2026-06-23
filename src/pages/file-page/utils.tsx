@@ -39,7 +39,7 @@ function isContentEmpty(content: string): boolean {
     // Remove frontmatter
     .replace(/^---[\s\S]*?---\r?\n/u, "")
     // Remove heading lines
-    .replace(/^#{1,6}\s+.*$/um, "")
+    .replace(/^#{1,6}\s+.*$/mu, "")
     // Remove empty lines and whitespace
     .replaceAll(/\s+/gu, "");
   return body.length === 0;

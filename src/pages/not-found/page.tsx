@@ -67,7 +67,7 @@ const NotFound = (): JSX.Element => {
   });
 
   return (
-    <div className="flex-1 flex flex-col items-center gap-4 p-8">
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
       <div className="flex flex-col items-center justify-center gap-4 text-center">
         <div className="text-5xl">
           <EmojiIcon emoji="🔍" size="1em" />
@@ -87,10 +87,8 @@ const NotFound = (): JSX.Element => {
         </Button>
       </div>
       {subtree.length > 0 && (
-        <div className="w-full max-w-lg mt-4">
-          <h2 className="text-sm font-semibold text-foreground mb-2 px-1">
-            Pages in this section
-          </h2>
+        <div className="w-full max-w-lg">
+          <h2 className="text-sm font-semibold text-foreground mb-2">Pages in this section</h2>
           <PageTreeView nodes={subtree} />
         </div>
       )}
