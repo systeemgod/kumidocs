@@ -76,9 +76,9 @@ function PageTreeItem({
 function PageTreeView({ nodes, depth = 0, maxDepth }: PageTreeViewProps): JSX.Element {
   return (
     <ul className="list-none p-0 m-0 not-prose">
-      {nodes.map((node) => (
+      {nodes.map((node, idx) => (
         // oxlint-disable-next-line no-use-before-define
-        <PageTreeItem key={node.path} node={node} depth={depth} maxDepth={maxDepth} />
+        <PageTreeItem key={`${node.path}-${idx}`} node={node} depth={depth} maxDepth={maxDepth} />
       ))}
     </ul>
   );

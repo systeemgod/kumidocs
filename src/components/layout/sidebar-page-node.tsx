@@ -267,9 +267,9 @@ function PageNodeRow({
       {/* Children rendered outside ContextMenu so right-click doesn't bubble */}
       {hasChildren && open && (
         <div>
-          {node.children.map((child) => (
+          {node.children.map((child, childIdx) => (
             <PageNodeRow
-              key={child.path}
+              key={`${child.path}-${childIdx}`}
               node={child}
               depth={depth + 1}
               defaultDepth={defaultDepth}
