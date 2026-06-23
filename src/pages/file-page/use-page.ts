@@ -1,6 +1,6 @@
 import { duplicatePage, getPagesLookup } from "@/lib/api";
 import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
-import type { FileType, PresenceUser, User } from "@/lib/types";
+import type { FileType, PresenceUser, TreeNode, User } from "@/lib/types";
 import { buildFrontmatter, parseFrontmatter } from "@/lib/frontmatter";
 import { computeTitle, resolveFileType } from "./utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -25,6 +25,7 @@ interface OutletCtx {
   autoSaveDelay: number;
   instanceName: string;
   reloadTree: () => void;
+  tree: TreeNode[];
 }
 interface UseFilePageReturn {
   breadcrumb: string[];

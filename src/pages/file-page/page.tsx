@@ -3,12 +3,16 @@ import FilePageHeader from "./header";
 import MarkdownViewer from "@/components/editor/markdown/viewer";
 import NotFound from "@/pages/not-found/page";
 import PageInfoPanel from "@/components/layout/page-info-panel";
+import { PageContextProvider } from "@/lib/page-context";
 import TocSidebar from "@/components/editor/markdown/toc-sidebar";
 import { buildEditorContent } from "./utils";
 import { useFilePage } from "./use-page";
 import { useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
+import type { OutletCtx } from "./use-page";
 
 export default function FilePage(): JSX.Element {
+  const { tree } = useOutletContext<OutletCtx>();
   const {
     rawPath,
     filePath,
@@ -100,173 +104,175 @@ export default function FilePage(): JSX.Element {
   });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Error banners */}
-      <ErrorBanner
-        message={loadError}
-        actions={[
-          {
-            label: "Retry",
-            onClick: async () => {
-              try {
-                await loadDoc(filePath);
-              } catch {
-                // retry handled by loadDoc's own error handling
-              }
+    <PageContextProvider pagePath={filePath} tree={tree}>
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* Error banners */}
+        <ErrorBanner
+          message={loadError}
+          actions={[
+            {
+              label: "Retry",
+              onClick: async () => {
+                try {
+                  await loadDoc(filePath);
+                } catch {
+                  // retry handled by loadDoc's own error handling
+                }
+              },
             },
-          },
-        ]}
-      />
-      <ErrorBanner
-        message={saveError}
-        actions={[
-          {
-            label: "Retry Save",
-            onClick: () => {
-              void handleSave();
+          ]}
+        />
+        <ErrorBanner
+          message={saveError}
+          actions={[
+            {
+              label: "Retry Save",
+              onClick: () => {
+                void handleSave();
+              },
             },
-          },
-        ]}
-      />
-      <ErrorBanner
-        message={duplicateError}
-        actions={[
-          {
-            label: "Retry",
-            onClick: () => {
-              void handlePageDuplicate();
+          ]}
+        />
+        <ErrorBanner
+          message={duplicateError}
+          actions={[
+            {
+              label: "Retry",
+              onClick: () => {
+                void handlePageDuplicate();
+              },
             },
-          },
-          {
-            label: "Dismiss",
-            onClick: () => {
-              setDuplicateError(undefined);
+            {
+              label: "Dismiss",
+              onClick: () => {
+                setDuplicateError(undefined);
+              },
+              variant: "ghost",
             },
-            variant: "ghost",
-          },
-        ]}
-      />
-      <ErrorBanner
-        message={conflictBanner}
-        actions={[
-          {
-            label: "Dismiss",
-            onClick: () => {
-              setConflictBanner(undefined);
+          ]}
+        />
+        <ErrorBanner
+          message={conflictBanner}
+          actions={[
+            {
+              label: "Dismiss",
+              onClick: () => {
+                setConflictBanner(undefined);
+              },
+              variant: "ghost",
             },
-            variant: "ghost",
-          },
-        ]}
-      />
-      <ErrorBanner
-        variant="warning"
-        message={
-          remoteBanner !== undefined && remoteBanner !== ""
-            ? `${remoteBanner} while you have unsaved changes.`
-            : remoteBanner
-        }
-        actions={[
-          {
-            label: "Reload",
-            onClick: async () => {
-              try {
-                await loadDoc(filePath);
-              } catch (error: unknown) {
-                console.error("Failed to reload document:", error);
-              }
-              setRemoteBanner(undefined);
+          ]}
+        />
+        <ErrorBanner
+          variant="warning"
+          message={
+            remoteBanner !== undefined && remoteBanner !== ""
+              ? `${remoteBanner} while you have unsaved changes.`
+              : remoteBanner
+          }
+          actions={[
+            {
+              label: "Reload",
+              onClick: async () => {
+                try {
+                  await loadDoc(filePath);
+                } catch (error: unknown) {
+                  console.error("Failed to reload document:", error);
+                }
+                setRemoteBanner(undefined);
+              },
             },
-          },
-          {
-            label: "Dismiss",
-            onClick: () => {
-              setRemoteBanner(undefined);
+            {
+              label: "Dismiss",
+              onClick: () => {
+                setRemoteBanner(undefined);
+              },
+              variant: "ghost",
             },
-            variant: "ghost",
-          },
-        ]}
-      />
+          ]}
+        />
 
-      {/* Page header */}
-      <FilePageHeader
-        meta={meta}
-        fileType={fileType}
-        title={title}
-        breadcrumb={breadcrumb}
-        user={user}
-        editMode={editMode}
-        editLocked={editLocked}
-        viewers={viewers}
-        saveStatus={saveStatus}
-        infoOpen={infoOpen}
-        tocOpen={tocOpen}
-        rawPath={rawPath}
-        filePath={filePath}
-        handleEmojiChange={handleEmojiChange}
-        exitEdit={exitEdit}
-        enterEdit={enterEdit}
-        setInfoOpen={setInfoOpen}
-        setTocOpen={setTocOpen}
-        handlePageDuplicate={() => {
-          void handlePageDuplicate();
-        }}
-        exportPagePdf={() => {
-          void exportPagePdf();
-        }}
-        openMove={openMove}
-        openDelete={() => {
-          openDelete(filePath);
-        }}
-      />
-
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
-        </div>
-        {/* TOC sidebar: doc pages only, view mode */}
-        {tocOpen && !editMode && fileType === "doc" && (
-          <TocSidebar
-            key={`toc-${filePath}`}
-            content={content}
-            onClose={() => {
-              setTocOpen(false);
-              localStorage.removeItem("kumidocs:toc-open");
-            }}
-          />
-        )}
-        {infoOpen && !editMode && (
-          <PageInfoPanel
-            key={`info-${filePath}`}
-            filePath={filePath}
-            title={title}
-            onClose={() => {
-              setInfoOpen(false);
-              localStorage.removeItem("kumidocs:info-open");
-            }}
-          />
-        )}
-      </div>
-
-      {/* Off-screen render container for PDF export */}
-      {fileType === "doc" && (
-        <div
-          ref={pdfContentRef}
-          aria-hidden="true"
-          style={{
-            left: 0,
-            pointerEvents: "none",
-            position: "fixed",
-            top: 0,
-            width: 800,
-            zIndex: -9999,
+        {/* Page header */}
+        <FilePageHeader
+          meta={meta}
+          fileType={fileType}
+          title={title}
+          breadcrumb={breadcrumb}
+          user={user}
+          editMode={editMode}
+          editLocked={editLocked}
+          viewers={viewers}
+          saveStatus={saveStatus}
+          infoOpen={infoOpen}
+          tocOpen={tocOpen}
+          rawPath={rawPath}
+          filePath={filePath}
+          handleEmojiChange={handleEmojiChange}
+          exitEdit={exitEdit}
+          enterEdit={enterEdit}
+          setInfoOpen={setInfoOpen}
+          setTocOpen={setTocOpen}
+          handlePageDuplicate={() => {
+            void handlePageDuplicate();
           }}
-        >
-          <MarkdownViewer value={content} />
-        </div>
-      )}
+          exportPagePdf={() => {
+            void exportPagePdf();
+          }}
+          openMove={openMove}
+          openDelete={() => {
+            openDelete(filePath);
+          }}
+        />
 
-      {/* Move + Delete dialogs (shared hook) */}
-      {pageActionDialogs}
-    </div>
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            <div className="flex-1 overflow-hidden flex flex-col">{editorContent}</div>
+          </div>
+          {/* TOC sidebar: doc pages only, view mode */}
+          {tocOpen && !editMode && fileType === "doc" && (
+            <TocSidebar
+              key={`toc-${filePath}`}
+              content={content}
+              onClose={() => {
+                setTocOpen(false);
+                localStorage.removeItem("kumidocs:toc-open");
+              }}
+            />
+          )}
+          {infoOpen && !editMode && (
+            <PageInfoPanel
+              key={`info-${filePath}`}
+              filePath={filePath}
+              title={title}
+              onClose={() => {
+                setInfoOpen(false);
+                localStorage.removeItem("kumidocs:info-open");
+              }}
+            />
+          )}
+        </div>
+
+        {/* Off-screen render container for PDF export */}
+        {fileType === "doc" && (
+          <div
+            ref={pdfContentRef}
+            aria-hidden="true"
+            style={{
+              left: 0,
+              pointerEvents: "none",
+              position: "fixed",
+              top: 0,
+              width: 800,
+              zIndex: -9999,
+            }}
+          >
+            <MarkdownViewer value={content} />
+          </div>
+        )}
+
+        {/* Move + Delete dialogs (shared hook) */}
+        {pageActionDialogs}
+      </div>
+    </PageContextProvider>
   );
 }
