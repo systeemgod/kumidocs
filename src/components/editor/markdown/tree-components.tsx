@@ -154,17 +154,23 @@ function Toc(): JSX.Element {
   return (
     <div className="my-4 rounded-md border bg-card p-3">
       <nav className="space-y-0.5">
-        {items.map((item) => (
-          <a
-            key={item.id}
-            href={`#${item.id}`}
+        {items.map((item, idx) => (
+          <button
+            key={`${item.id}-${idx}`}
+            type="button"
+            onClick={() => {
+              const el = document.querySelector(`#${CSS.escape(item.id)}`);
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}
             className={cn(
-              "block rounded px-2 py-0.5 text-sm no-underline transition-colors hover:bg-accent/50",
+              "block w-full text-left rounded px-2 py-0.5 text-sm transition-colors hover:bg-accent/50",
             )}
             style={{ paddingLeft: `${8 + (item.level - 1) * 16}px` }}
           >
             {item.text}
-          </a>
+          </button>
         ))}
       </nav>
     </div>

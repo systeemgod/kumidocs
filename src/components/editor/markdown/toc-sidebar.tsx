@@ -108,10 +108,10 @@ export default function TocSidebar({ content, onClose }: TocSidebarProps): JSX.E
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-3">
           <ul className="space-y-0.5">
-            {tocItems.map((item) => {
+            {tocItems.map((item, idx) => {
               const indent = item.level - minLevel;
               return (
-                <li key={item.id}>
+                <li key={`${item.id}-${idx}`}>
                   <button
                     type="button"
                     onClick={() => {
