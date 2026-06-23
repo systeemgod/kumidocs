@@ -1,14 +1,14 @@
 import type { Element, Root } from "hast";
 import { visit } from "unist-util-visit";
 
-const DIRECTIVE_RE = /^\[!(?<name>TREE|PAGES)\]$/u;
+const DIRECTIVE_RE = /^\[!(?<name>TOC|TREE|PAGES)\]$/u;
 
 /**
- * Rehype plugin that transforms `[!TREE]` and `[!PAGES]` text nodes
- * into `<tree />` and `<pages />` custom elements.
+ * Rehype plugin that transforms `[!TOC]`, `[!TREE]` and `[!PAGES]` text nodes
+ * into `<toc />`, `<tree />` and `<pages />` custom elements.
  *
  * When the directive is the sole child of a `<p>`, the entire paragraph
- * is replaced so the block-level tree output is not nested inside `<p>`.
+ * is replaced so the block-level output is not nested inside `<p>`.
  */
 function rehypeTreeDirective(): (tree: Root) => void {
   return (tree: Root) => {
@@ -22,7 +22,14 @@ function rehypeTreeDirective(): (tree: Root) => void {
       if (!match) {
         return;
       }
-      const tagName = match[1] === "TREE" ? "tree" : "pages";
+      let tagName: string;
+      if (match[1] === "TREE") {
+        tagName = "tree";
+      } else if (match[1] === "PAGES") {
+        tagName = "pages";
+      } else {
+        tagName = "toc";
+      }
 
       // If the directive is the only child of a <p>, schedule the <p> for replacement
       if (parent.type === "element" && parent.tagName === "p" && parent.children.length === 1) {

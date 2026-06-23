@@ -3,7 +3,7 @@ import { EmojiIcon } from "@/components/ui/emoji-icon";
 import type { PluggableList } from "unified";
 import type { ReactNode } from "react";
 import { harden } from "rehype-harden";
-import { Pages, Tree } from "./tree-components";
+import { Pages, Toc, Tree } from "./tree-components";
 import rehypeEmojiPlugin from "@/components/editor/plugins/emoji";
 import rehypeGfmAlertsPlugin from "@/components/editor/plugins/gfm-alerts";
 import rehypeHeadingIdsPlugin from "@/components/editor/plugins/heading-ids";
@@ -244,6 +244,7 @@ const COMPONENTS_DOC: Record<string, (props: Record<string, unknown>) => JSX.Ele
   "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
   "pages": Pages,
+  "toc": Toc,
   "tree": Tree,
 };
 
@@ -257,6 +258,7 @@ const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.E
   "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
   "pages": Pages,
+  "toc": Toc,
   "tree": Tree,
 };
 
@@ -272,5 +274,6 @@ export {
   Pages,
   REHYPE_PLUGINS,
   SlideAnchorComponent,
+  Toc,
   Tree,
 };

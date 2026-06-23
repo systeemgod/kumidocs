@@ -2,8 +2,10 @@ import { ChevronDownRegular, ChevronRightRegular } from "@fluentui/react-icons";
 import { EmojiIcon } from "@/components/ui/emoji-icon";
 import { Link } from "react-router-dom";
 import buildPageTree from "@/lib/page-tree";
+import { extractTocItems } from "@/lib/heading";
 import { usePageContext } from "@/lib/page-context";
 import type { PageNode } from "@/lib/types";
+import cn from "@/lib/utils";
 import { useMemo, useState } from "react";
 
 interface PageTreeViewProps {
@@ -140,4 +142,33 @@ function Tree(): JSX.Element {
   );
 }
 
-export { Pages, PageTreeView, Tree };
+/** Table of contents of the current page's headings. */
+function Toc(): JSX.Element {
+  const { rawContent } = usePageContext();
+  const items = useMemo(() => extractTocItems(rawContent), [rawContent]);
+
+  if (items.length === 0) {
+    return <></>;
+  }
+
+  return (
+    <div className="my-4 rounded-md border bg-card p-3">
+      <nav className="space-y-0.5">
+        {items.map((item) => (
+          <a
+            key={item.id}
+            href={`#${item.id}`}
+            className={cn(
+              "block rounded px-2 py-0.5 text-sm no-underline transition-colors hover:bg-accent/50",
+            )}
+            style={{ paddingLeft: `${8 + (item.level - 1) * 16}px` }}
+          >
+            {item.text}
+          </a>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+export { Pages, PageTreeView, Toc, Tree };

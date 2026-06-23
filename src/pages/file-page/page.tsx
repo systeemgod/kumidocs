@@ -104,7 +104,7 @@ export default function FilePage(): JSX.Element {
   });
 
   return (
-    <PageContextProvider pagePath={filePath} tree={tree}>
+    <PageContextProvider pagePath={filePath} rawContent={content} tree={tree}>
       <div className="flex flex-col h-full overflow-hidden">
         {/* Error banners */}
         <ErrorBanner
