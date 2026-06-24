@@ -66,7 +66,6 @@ async function buildGlyphMap(assetsDir: string): Promise<Map<string, string>> {
 
   for (const assetName of assetNames) {
     const metaPath = join(assetsDir, assetName, "metadata.json");
-    const colorDir = join(assetsDir, assetName, "Color");
 
     let meta: FluentMeta;
     try {
@@ -78,12 +77,27 @@ async function buildGlyphMap(assetsDir: string): Promise<Map<string, string>> {
     if (!meta.glyph) continue;
 
     let svgPath: string | null = null;
+
+    // Pass 1: direct Color/ subdirectory (older flat structure)
+    const directColorDir = join(assetsDir, assetName, "Color");
     try {
-      const colorFiles = await readdir(colorDir);
+      const colorFiles = await readdir(directColorDir);
       const svg = colorFiles.find((f) => f.endsWith(".svg"));
-      if (svg) svgPath = join(colorDir, svg);
+      if (svg) svgPath = join(directColorDir, svg);
     } catch {
-      continue;
+      // Not found directly; check variant subdirectories
+    }
+
+    // Pass 2: Default variant subdirectory (newer nested structure)
+    if (!svgPath) {
+      const variantColorDir = join(assetsDir, assetName, "Default", "Color");
+      try {
+        const colorFiles = await readdir(variantColorDir);
+        const svg = colorFiles.find((f) => f.endsWith(".svg"));
+        if (svg) svgPath = join(variantColorDir, svg);
+      } catch {
+        // No Default/Color dir; skip this asset
+      }
     }
 
     if (svgPath) {
