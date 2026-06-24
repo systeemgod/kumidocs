@@ -110,6 +110,11 @@ interface FileDiff {
   after: string;
 }
 
+interface BacklinkEntry {
+  path: string;
+  title: string;
+}
+
 interface SyncStatus {
   pull: "ok" | "failing";
   push: "ok" | "failing";
@@ -130,4 +135,5 @@ export type {
   SidebarItem,
   CommitEntry,
   FileDiff,
+  BacklinkEntry,
 };

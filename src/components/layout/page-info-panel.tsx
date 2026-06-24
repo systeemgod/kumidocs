@@ -6,9 +6,8 @@ import {
 } from "@fluentui/react-icons";
 import { getBacklinks, getFileDiff, getFileHistory } from "@/lib/api";
 import { useMemo, useState } from "react";
-import type { BacklinkEntry } from "@/server/backlinks";
+import type { BacklinkEntry, CommitEntry } from "@/lib/types";
 import CommitDiffDialog from "./commit-diff-dialog";
-import type { CommitEntry } from "@/lib/types";
 import type { DiffData } from "@/lib/api";
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";

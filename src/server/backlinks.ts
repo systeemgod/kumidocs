@@ -1,13 +1,8 @@
 import { WIKILINK_RE, resolveWikilinkTarget } from "@/lib/wikilinks";
 import { getAllPaths, getFile, parseFileEntry } from "./filestore";
 import type { WikilinkLookup } from "@/lib/wikilinks";
+import type { BacklinkEntry } from "@/lib/types";
 import matter from "gray-matter";
-
-/** A single backlink reference: another page that links to the current page. */
-interface BacklinkEntry {
-  path: string;
-  title: string;
-}
 
 // Lookup
 
@@ -118,4 +113,3 @@ function apiBacklinks(url: URL): Response {
 }
 
 export { apiBacklinks, apiPagesLookup, buildLookup };
-export type { BacklinkEntry };
