@@ -5,13 +5,14 @@ import cn from "@/lib/utils";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { useMemo } from "react";
 
-type AvatarSize = "xs" | "sm" | "md" | "lg";
+type AvatarSize = "xxs" | "xs" | "sm" | "md" | "lg";
 
 const sizeMap: Record<AvatarSize, { circle: string; text: string }> = {
   lg: { circle: "h-10 w-10", text: "text-xs" },
   md: { circle: "h-7 w-7", text: "text-[10px]" },
   sm: { circle: "h-6 w-6", text: "text-[9px]" },
   xs: { circle: "h-[18px] w-[18px]", text: "text-[8px]" },
+  xxs: { circle: "h-[11px] w-[11px]", text: "text-[4px]" },
 };
 
 const HEX_RADIX = 16;
