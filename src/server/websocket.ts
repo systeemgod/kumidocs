@@ -191,7 +191,7 @@ function handleEditingStart(ws: ServerWebSocket<WsData>, sid: string, rawPid: st
   broadcastToPage(rawPid, presenceUpdate(rawPid));
 }
 
-function handleEditingStop(ws: ServerWebSocket<WsData>, sid: string, rawPid: string): void {
+function handleEditingStop(_ws: ServerWebSocket<WsData>, sid: string, rawPid: string): void {
   if (typeof rawPid !== "string" || rawPid === "") {
     return;
   }
