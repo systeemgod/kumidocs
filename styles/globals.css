@@ -3,6 +3,11 @@
 @plugin "@tailwindcss/typography";
 @source "../node_modules/streamdown/dist/*.js";
 
+/* Override typography default body color (medium gray) to use foreground (near-black) */
+.prose {
+  --tw-prose-body: var(--foreground);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
