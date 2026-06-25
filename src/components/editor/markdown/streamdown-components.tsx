@@ -75,15 +75,19 @@ interface AnchorProps {
 const AnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
+  let resolvedHref = href;
   if (href?.startsWith("#") === true) {
     target = "_self";
+    // Prepend the current page path so fragment links resolve to headings on
+    // the current page instead of root (broken by harden's defaultOrigin).
+    resolvedHref = window.location.pathname + href;
   }
   return (
     <a
       className="wrap-anywhere font-medium text-primary underline"
       data-incomplete="false"
       data-streamdown="link"
-      href={href}
+      href={resolvedHref}
       rel="noopener noreferrer"
       target={target}
     >
@@ -96,15 +100,17 @@ const AnchorComponent = (allProps: AnchorProps): JSX.Element => {
 const SlideAnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
+  let resolvedHref = href;
   if (href?.startsWith("#") === true) {
     target = "_self";
+    resolvedHref = window.location.pathname + href;
   }
   return (
     <a
       className="wrap-anywhere font-medium underline"
       data-incomplete="false"
       data-streamdown="link"
-      href={href}
+      href={resolvedHref}
       rel="noopener noreferrer"
       target={target}
     >
