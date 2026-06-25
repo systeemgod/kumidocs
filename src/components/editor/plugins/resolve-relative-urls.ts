@@ -8,11 +8,7 @@ import type { Root, RootContent } from "hast";
  */
 
 const walk = (node: Root | RootContent, pageDir: string): void => {
-  if (
-    node.type === "element" &&
-    node.tagName === "a" &&
-    typeof node.properties.href === "string"
-  ) {
+  if (node.type === "element" && node.tagName === "a" && typeof node.properties.href === "string") {
     const href = node.properties.href;
     // Skip fragment-only, already absolute (/), and protocol-absolute URLs
     if (
@@ -33,8 +29,7 @@ const walk = (node: Root | RootContent, pageDir: string): void => {
 const rehypeResolveRelativeUrlsPlugin = (): ((tree: Root) => void) => {
   // Resolve page directory once, at plugin creation time (runs in browser).
   // oxlint-disable-next-line typescript/no-unnecessary-condition
-  const pathname =
-    globalThis.location === undefined ? "/" : globalThis.location.pathname;
+  const pathname = globalThis.location === undefined ? "/" : globalThis.location.pathname;
   const pageDir = pathname.replace(/\/[^/]*$/u, "/");
 
   return (tree: Root): void => {
