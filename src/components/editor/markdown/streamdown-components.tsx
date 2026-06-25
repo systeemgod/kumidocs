@@ -7,6 +7,7 @@ import { Pages, Toc, Tree } from "./tree-components";
 import rehypeEmojiPlugin from "@/components/editor/plugins/emoji";
 import rehypeGfmAlertsPlugin from "@/components/editor/plugins/gfm-alerts";
 import rehypeHeadingIdsPlugin from "@/components/editor/plugins/heading-ids";
+import rehypeResolveRelativeUrlsPlugin from "@/components/editor/plugins/resolve-relative-urls";
 import rehypeTreeDirective from "@/components/editor/plugins/tree-directive";
 
 /** Allowed URL prefixes for images (rehype-harden + slide CSS validation) */
@@ -28,6 +29,7 @@ const DEFAULT_ORIGIN = globalThis.location === undefined ? LOCAL : globalThis.lo
 
 const REHYPE_PLUGINS: PluggableList = [
   sanitizePlugin,
+  rehypeResolveRelativeUrlsPlugin,
   [
     harden,
     {
@@ -76,18 +78,11 @@ const AnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
   let resolvedHref = href;
-  if (href !== undefined && href !== "") {
-    if (href.startsWith("#")) {
-      target = "_self";
-      // Prepend the current page path so fragment links resolve to headings on
-      // the current page instead of root (broken by harden's defaultOrigin).
-      resolvedHref = window.location.pathname + href;
-    } else if (!href.startsWith("/") && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/u.test(href)) {
-      // Relative path (no protocol, no leading / or #): resolve against the
-      // current page directory instead of <base href="/">.
-      const dir = window.location.pathname.replace(/\/[^/]*$/u, "/");
-      resolvedHref = dir + href;
-    }
+  if (href?.startsWith("#") === true) {
+    target = "_self";
+    // Prepend the current page path so fragment links resolve to headings on
+    // the current page instead of root (broken by harden's defaultOrigin).
+    resolvedHref = window.location.pathname + href;
   }
   return (
     <a
@@ -108,14 +103,9 @@ const SlideAnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
   let resolvedHref = href;
-  if (href !== undefined && href !== "") {
-    if (href.startsWith("#")) {
-      target = "_self";
-      resolvedHref = window.location.pathname + href;
-    } else if (!href.startsWith("/") && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/u.test(href)) {
-      const dir = window.location.pathname.replace(/\/[^/]*$/u, "/");
-      resolvedHref = dir + href;
-    }
+  if (href?.startsWith("#") === true) {
+    target = "_self";
+    resolvedHref = window.location.pathname + href;
   }
   return (
     <a
