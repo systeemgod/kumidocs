@@ -71,7 +71,6 @@ function ScaledSlide({
   themeVars,
   origin = "center center",
   shadow = false,
-  rounded = false,
   absolute = false,
 }: {
   slide: ParsedSlide;
@@ -88,7 +87,6 @@ function ScaledSlide({
   themeVars?: Record<string, string>;
   origin?: string;
   shadow?: boolean;
-  rounded?: boolean;
   /** Position absolute top-0 left-0, used inside the scroll-mode tile wrapper */
   absolute?: boolean;
 }): JSX.Element {
@@ -115,7 +113,6 @@ function ScaledSlide({
     isDark ? "dark" : "light",
     directives.classes.includes("invert") && "slide-layout-invert",
     shadow && "shadow-xl",
-    rounded && "rounded-sm",
     absolute && "absolute top-0 left-0",
   );
 
@@ -131,7 +128,13 @@ function ScaledSlide({
       }}
       className={canvasClass}
     >
-      <SlideMarkdownViewer slide={slide} contentPadding={resolvedTheme?.contentPadding} />
+      <SlideMarkdownViewer
+        slide={slide}
+        contentPadding={resolvedTheme?.contentPadding}
+        contentAlign={resolvedTheme?.contentAlign}
+        contentVAlign={resolvedTheme?.contentVAlign}
+        headers={resolvedTheme?.headers}
+      />
 
       {/* Deck-level / directive header */}
       <HeaderFooterOverlay

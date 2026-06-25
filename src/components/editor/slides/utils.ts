@@ -157,8 +157,10 @@ function buildCanvasStyle(
   const style: React.CSSProperties = {};
 
   // 1. Theme-level background defaults
+  // Use individual properties instead of the `background` shorthand to avoid
+  // React warnings about mixing shorthand and longhand in style re-renders.
   if (resolvedTheme?.bg !== undefined && resolvedTheme.bg !== "") {
-    style.background = resolvedTheme.bg;
+    style.backgroundColor = resolvedTheme.bg;
     style.backgroundSize = "cover";
     style.backgroundPosition = "center";
     style.backgroundRepeat = "no-repeat";

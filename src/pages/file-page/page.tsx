@@ -10,7 +10,6 @@ import { useFilePage } from "./use-page";
 import { useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import type { OutletCtx } from "./use-page";
-import { resolveEmojiSvg } from "@/components/ui/emoji-icon";
 
 export default function FilePage(): JSX.Element {
   const { tree } = useOutletContext<OutletCtx>();
@@ -75,20 +74,6 @@ export default function FilePage(): JSX.Element {
       window.removeEventListener("beforeunload", handler);
     };
   }, [saveStatus]);
-
-  // Update favicon to the page's emoji.
-  useEffect(() => {
-    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-    if (!link) {
-      return;
-    }
-    const svg = resolveEmojiSvg(meta.emoji, fileType);
-    if (svg !== undefined && svg !== "") {
-      link.href = svg;
-      return;
-    }
-    link.href = "./logo.png";
-  }, [meta.emoji, fileType]);
 
   if (loading) {
     return (

@@ -100,7 +100,7 @@ await loadPermissions();
 // Build gitignore checker once; used to skip both watching and indexing.
 const ig = buildIgnoreChecker(config.repoPath);
 
-// Hard-skip these directory names regardless of .gitignore
+// Hard-skip these directory names regardless of .gitignore.
 const WATCHER_SKIP = new Set([".git", ...IGNORED_NAMES]);
 
 function isWatcherIgnored(relPath: string): boolean {

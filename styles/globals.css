@@ -281,13 +281,15 @@
 /* ── Title layout typography ─────────────────────────────────────────────── */
 /* Larger h1, centered sub-headings and paragraphs */
 .slide-canvas .slide-prose-title h1 {
-  font-size: 3.5rem;
+  color: var(--slide-h1-color, inherit);
+  font-size: var(--slide-h1-size, 3.5rem);
   letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
 }
 
 .slide-canvas .slide-prose-title h2 {
-  font-size: 2rem;
+  color: var(--slide-h2-color, inherit);
+  font-size: var(--slide-h2-size, 2rem);
   font-weight: 400;
   opacity: 0.8;
 }

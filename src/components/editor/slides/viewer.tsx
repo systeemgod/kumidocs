@@ -165,7 +165,7 @@ function SlideViewer({
                   position: "relative",
                   width: SLIDE_W * scale,
                 }}
-                className="shadow-xl rounded-sm overflow-hidden"
+                className="shadow-xl overflow-hidden"
               >
                 <ScaledSlide
                   slide={slide}
@@ -198,7 +198,6 @@ function SlideViewer({
               slideThemes={slideThemes}
               themeVars={themeVars}
               shadow
-              rounded
             />
           </div>
         )}

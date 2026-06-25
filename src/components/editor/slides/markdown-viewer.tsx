@@ -11,6 +11,12 @@ const PROSE_BASE =
 interface SlideMarkdownViewerProps {
   slide: ParsedSlide;
   contentPadding?: { top?: number; right?: number; bottom?: number; left?: number };
+  /** Horizontal text alignment for center-type layouts. Overrides the default "center". */
+  contentAlign?: "left" | "center" | "right";
+  /** Vertical content alignment for center-type layouts. Overrides the default "center". */
+  contentVAlign?: "top" | "center" | "bottom";
+  /** Per-heading style overrides applied as CSS custom properties. */
+  headers?: Partial<Record<1 | 2 | 3 | 4 | 5 | 6, { color?: string; fontSize?: number }>>;
 }
 
 const buildOuterStyle = (
@@ -32,7 +38,7 @@ const buildOuterStyle = (
 };
 
 const SlideMarkdownViewerInner = (allProps: SlideMarkdownViewerProps): JSX.Element => {
-  const { slide, contentPadding } = allProps;
+  const { slide, contentPadding, contentAlign, contentVAlign, headers } = allProps;
   const { content, directives } = slide;
   const isTitle = directives.classes.includes("title");
   const isSection = directives.classes.includes("section");
@@ -40,6 +46,20 @@ const SlideMarkdownViewerInner = (allProps: SlideMarkdownViewerProps): JSX.Eleme
   const isCenter = isTitle || isSection || directives.classes.includes("center");
   const isBlank = directives.classes.includes("blank");
   const outerStyle = buildOuterStyle(directives, contentPadding);
+
+  // Build CSS custom properties from per-heading theme config
+  if (headers) {
+    const cssVars: Record<string, string> = {};
+    for (const [level, hStyle] of Object.entries(headers)) {
+      if (hStyle.color !== undefined) {
+        cssVars[`--slide-h${level}-color`] = hStyle.color;
+      }
+      if (hStyle.fontSize !== undefined) {
+        cssVars[`--slide-h${level}-size`] = `${hStyle.fontSize}px`;
+      }
+    }
+    Object.assign(outerStyle, cssVars);
+  }
   if (isSplit) {
     const [left, right] = splitAtSecondH2(content);
     return (
@@ -59,14 +79,37 @@ const SlideMarkdownViewerInner = (allProps: SlideMarkdownViewerProps): JSX.Eleme
     );
   }
   if (isCenter) {
+    // flex-col: justify-* controls vertical (main axis), items-* controls horizontal (cross axis)
+    const justifyMap: Record<string, string> = {
+      bottom: "justify-end",
+      center: "justify-center",
+      top: "justify-start",
+    };
+    const alignMap: Record<string, string> = {
+      center: "items-center",
+      left: "items-start",
+      right: "items-end",
+    };
+    const textMap: Record<string, string> = {
+      center: "text-center",
+      left: "text-left",
+      right: "text-right",
+    };
+    const hAlign = contentAlign ?? "center";
+    const vAlign = contentVAlign ?? "center";
     return (
       <div
-        className="h-full flex flex-col items-center justify-center text-center overflow-hidden"
+        className={cn(
+          "h-full flex flex-col overflow-hidden",
+          justifyMap[vAlign] ?? "justify-center",
+          alignMap[hAlign] ?? "items-center",
+        )}
         style={outerStyle}
       >
         <div
           className={cn(
             PROSE_BASE,
+            textMap[hAlign] ?? "text-center",
             "px-12 py-8",
             isTitle && "slide-prose-title",
             isSection && "slide-prose-section",

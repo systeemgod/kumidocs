@@ -20,36 +20,6 @@ const FILE_TYPE_ICONS: Record<string, FC<{ style?: CSSProperties; className?: st
   slide: SlideTextSparkle24Color,
 };
 
-// ── File-type favicon SVGs (flat colors, no gradients — data URI safe) ──
-
-const FILE_TYPE_FAVICONS: Record<string, string> = {
-  code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="m8.09 18.61 6-14a1 1 0 0 1 1.87.67l-.04.11-6 14a1 1 0 0 1-1.87-.67l.04-.1 6-14.01-6 14Zm-5.8-7.32 4-4a1 1 0 0 1 1.5 1.32l-.08.1L4.4 12l3.3 3.3a1 1 0 0 1-1.32 1.49l-.1-.08-4-4a1 1 0 0 1-.08-1.32l.08-.1 4-4-4 4Zm14-4a1 1 0 0 1 1.32-.08l.1.08 4 4a1 1 0 0 1 .08 1.32l-.08.1-4 4a1 1 0 0 1-1.5-1.33l.08-.1L19.6 12l-3.3-3.3a1 1 0 0 1 0-1.4Z" fill="#8B52F4"/></svg>`,
-  doc: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6.25 3A3.25 3.25 0 0 0 3 6.25v11.5C3 19.55 4.46 21 6.25 21h11.5c1.8 0 3.25-1.46 3.25-3.25V6.25C21 4.45 19.54 3 17.75 3H6.25Z" fill="#0FAFFF"/><path d="M7.75 9.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm3.5-1.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Zm0 3.75a.75.75 0 1 0 0 1.5h5.5a.75.75 0 1 0 0-1.5h-5.5Zm-.75 4.5c0 .41.34.75.75.75h5.5a.75.75 0 1 0 0-1.5h-5.5a.75.75 0 0 0-.75.75ZM8.75 12a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm-1 4.75a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="#fff"/></svg>`,
-  image: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M17.75 3C19.55 3 21 4.46 21 6.25v11.5c0 1.8-1.46 3.25-3.25 3.25H6.25A3.25 3.25 0 0 1 3 17.75V6.25C3 4.45 4.46 3 6.25 3h11.5Z" fill="#0FAFFF"/><path d="M20.51 19.46A3.25 3.25 0 0 1 17.75 21H6.25c-1.17 0-2.2-.62-2.76-1.54l6.93-6.81.14-.13c.83-.7 2.05-.7 2.89.01l.13.12 6.93 6.8Z" fill="#B3E0FF"/><path d="M16 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z" fill="#fff"/></svg>`,
-  slide: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19.25 3.99H4.75A2.75 2.75 0 0 0 2 6.74v10.5a2.75 2.75 0 0 0 2.75 2.75h14.5A2.75 2.75 0 0 0 22 17.24V6.74a2.75 2.75 0 0 0-2.75-2.75Z" fill="#DD3CE2"/><path d="m13.36 5 1.38.45a2.85 2.85 0 0 1 1.79 1.81l.45 1.38c.04.11.11.2.2.26.09.07.2.1.31.1a.5.5 0 0 0 .31-.1.6.6 0 0 0 .19-.23l.01-.03.45-1.38a2.85 2.85 0 0 1 1.8-1.8l1.38-.45c.11-.04.2-.11.26-.2a.5.5 0 0 0 .1-.31.5.5 0 0 0-.1-.31.57.57 0 0 0-.26-.2h-.03l-1.38-.45a2.85 2.85 0 0 1-1.8-1.8L17.97.36a.52.52 0 0 0-.2-.26.5.5 0 0 0-.31-.1.5.5 0 0 0-.31.1.63.63 0 0 0-.2.26l-.45 1.38v.03a2.81 2.81 0 0 1-1.77 1.76l-1.38.45a.52.52 0 0 0-.26.2.5.5 0 0 0-.1.31c0 .11.03.22.1.31s.16.16.26.2h.01Z" fill="#fff" opacity=".8"/><path d="M16 11.74a.76.76 0 0 0-.75-.75h-8.5a.76.76 0 0 0-.75.75c0 .41.34.75.75.75h8.5c.41 0 .75-.34.75-.75Z" fill="#fff" opacity=".9"/><path d="M6.75 13.99a.76.76 0 0 0-.75.75c0 .41.34.75.75.75h6.5c.41 0 .75-.34.75-.75a.76.76 0 0 0-.75-.75h-6.5Z" fill="#fff" opacity=".9"/><path d="M6.75 9.49h4.5c.41 0 .75-.34.75-.75a.76.76 0 0 0-.75-.75h-4.5a.76.76 0 0 0-.75.75c0 .41.34.75.75.75Z" fill="#fff" opacity=".9"/></svg>`,
-};
-
-/**
- * Resolve an emoji character to its SVG data URI from the Fluent Emoji bundle.
- * Falls back to a file-type SVG favicon when no emoji is set.
- * Shared by EmojiIcon (rendering) and FilePage (favicon).
- */
-function resolveEmojiSvg(emoji?: string, fileType?: string): string | undefined {
-  if (emoji !== undefined && emoji !== "") {
-    const svg = EMOJI_SVGS[emoji];
-    if (svg !== undefined && svg !== "") {
-      return svg;
-    }
-  }
-  if (fileType !== undefined && fileType !== "") {
-    const svg = FILE_TYPE_FAVICONS[fileType];
-    if (svg !== undefined && svg !== "") {
-      return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-    }
-  }
-  return undefined;
-}
-
 interface EmojiIconProps {
   /** Emoji character to render (may be overridden to a Color icon). */
   emoji?: string;
@@ -76,7 +46,7 @@ function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconPro
 
   // Emoji path: check for overrides first
   if (emoji !== undefined && emoji !== "") {
-    const svgDataUri = resolveEmojiSvg(emoji);
+    const svgDataUri = EMOJI_SVGS[emoji];
     if (svgDataUri !== undefined && svgDataUri !== "") {
       return (
         <span style={wrapStyle} className={className}>
@@ -169,4 +139,4 @@ function TitleWithEmoji({ title }: { title: string }): JSX.Element {
   return <>{parts}</>;
 }
 
-export { EmojiIcon, TitleWithEmoji, resolveEmojiSvg };
+export { EmojiIcon, TitleWithEmoji };

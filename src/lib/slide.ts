@@ -189,6 +189,12 @@ interface SlideThemeDef {
   /** CSS font-family value applied to the entire slide canvas. Inherits to all content. */
   fontFamily?: string;
   contentPadding?: { top?: number; right?: number; bottom?: number; left?: number };
+  /** Horizontal text alignment for center-type layouts (title, section, center). Default: "center". */
+  contentAlign?: "left" | "center" | "right";
+  /** Vertical content alignment for center-type layouts (title, section, center). Default: "center". */
+  contentVAlign?: "top" | "center" | "bottom";
+  /** Per-heading style overrides for this theme/layout. Keys are heading levels 1-6. */
+  headers?: Partial<Record<1 | 2 | 3 | 4 | 5 | 6, { color?: string; fontSize?: number }>>;
   elements?: SlideThemeElement[];
   layouts?: Record<string, Omit<SlideThemeDef, "layouts">>;
 }
@@ -276,10 +282,13 @@ const resolveCustomTheme = (
   const layoutKey = layoutClass || "default";
   const baseDef: Omit<SlideThemeDef, "layouts"> = {
     bg: base.bg,
+    contentAlign: base.contentAlign,
     contentPadding: base.contentPadding,
+    contentVAlign: base.contentVAlign,
     elements: base.elements,
     fg: base.fg,
     fontFamily: base.fontFamily,
+    headers: base.headers,
   };
   if (base.layouts) {
     const override = base.layouts[layoutKey];
@@ -287,10 +296,13 @@ const resolveCustomTheme = (
       // Inherit fontFamily from base when the layout override does not set it
       return {
         bg: override.bg,
+        contentAlign: override.contentAlign ?? baseDef.contentAlign,
         contentPadding: override.contentPadding,
+        contentVAlign: override.contentVAlign ?? baseDef.contentVAlign,
         elements: override.elements,
         fg: override.fg,
         fontFamily: override.fontFamily ?? baseDef.fontFamily,
+        headers: override.headers ?? baseDef.headers,
       };
     }
   }
