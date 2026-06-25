@@ -76,11 +76,18 @@ const AnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
   let resolvedHref = href;
-  if (href?.startsWith("#") === true) {
-    target = "_self";
-    // Prepend the current page path so fragment links resolve to headings on
-    // the current page instead of root (broken by harden's defaultOrigin).
-    resolvedHref = window.location.pathname + href;
+  if (href !== undefined && href !== "") {
+    if (href.startsWith("#")) {
+      target = "_self";
+      // Prepend the current page path so fragment links resolve to headings on
+      // the current page instead of root (broken by harden's defaultOrigin).
+      resolvedHref = window.location.pathname + href;
+    } else if (!href.startsWith("/") && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/u.test(href)) {
+      // Relative path (no protocol, no leading / or #): resolve against the
+      // current page directory instead of <base href="/">.
+      const dir = window.location.pathname.replace(/\/[^/]*$/u, "/");
+      resolvedHref = dir + href;
+    }
   }
   return (
     <a
@@ -101,9 +108,14 @@ const SlideAnchorComponent = (allProps: AnchorProps): JSX.Element => {
   const { href, children } = allProps;
   let target = "_blank";
   let resolvedHref = href;
-  if (href?.startsWith("#") === true) {
-    target = "_self";
-    resolvedHref = window.location.pathname + href;
+  if (href !== undefined && href !== "") {
+    if (href.startsWith("#")) {
+      target = "_self";
+      resolvedHref = window.location.pathname + href;
+    } else if (!href.startsWith("/") && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/u.test(href)) {
+      const dir = window.location.pathname.replace(/\/[^/]*$/u, "/");
+      resolvedHref = dir + href;
+    }
   }
   return (
     <a
