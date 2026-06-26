@@ -55,6 +55,7 @@
 		"html2canvas-pro": "2.0.4",
 		"ignore": "7.0.5",
 		"jspdf": "4.2.1",
+		"juice": "^12.1.1",
 		"khroma": "^2.1.0",
 		"lucide-react": "1.18.0",
 		"minisearch": "7.2.0",

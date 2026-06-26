@@ -1,4 +1,5 @@
 import type { SlideThemeMap } from "@/lib/slide";
+import type { PageTemplateMap } from "@/lib/page";
 import type { User } from "@/lib/types";
 import { emailToDisplayName } from "@/lib/avatar";
 
@@ -6,6 +7,7 @@ interface KumiDocsPermissions {
   instanceName?: string;
   editors?: string[];
   slideThemes?: SlideThemeMap;
+  pageTemplates?: PageTemplateMap;
   sidebarDefaultDepth?: number;
   hideFiles?: string[];
 }

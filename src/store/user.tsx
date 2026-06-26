@@ -1,6 +1,7 @@
 import { ApiError, getMe, setAuthEmail } from "@/lib/api";
 import { createContext, useCallback, useContext, useState } from "react";
 import type { ReactNode } from "react";
+import type { PageTemplateMap } from "@/lib/page";
 import type { SlideThemeMap } from "@/lib/slide";
 import type { User } from "@/lib/types";
 import useMountEffect from "@/hooks/use-mount-effect";
@@ -13,6 +14,7 @@ interface UserContextValue {
   needsEmailSetup: boolean;
   sidebarDefaultDepth: number;
   slideThemes: SlideThemeMap;
+  pageTemplates: PageTemplateMap;
   refreshUser: () => Promise<void>;
   setEmailAndRefetch: (email: string) => void;
 }
@@ -20,6 +22,7 @@ interface UserContextValue {
 const UserContext = createContext<UserContextValue>({
   loading: true,
   needsEmailSetup: false,
+  pageTemplates: {},
   refreshUser: async () => {
     /* noop until provider mounts */
   },
@@ -34,6 +37,7 @@ interface FetchMeResult {
   user?: User;
   sidebarDefaultDepth: number;
   slideThemes: SlideThemeMap;
+  pageTemplates: PageTemplateMap;
   needs401: boolean;
 }
 
@@ -47,18 +51,20 @@ const fetchMe = async (): Promise<FetchMeResult> => {
       displayName,
       canEdit,
       slideThemes: themeData,
+      pageTemplates: pageData,
       sidebarDefaultDepth,
     } = data;
     const user: User = { canEdit, displayName, email, id, name };
     return {
       needs401: false,
+      pageTemplates: pageData ?? {},
       sidebarDefaultDepth: sidebarDefaultDepth ?? 2,
       slideThemes: themeData ?? {},
       user,
     };
   } catch (error: unknown) {
     const needs401 = error instanceof ApiError && error.status === HTTP_UNAUTHORIZED;
-    return { needs401, sidebarDefaultDepth: 0, slideThemes: {} };
+    return { needs401, pageTemplates: {}, sidebarDefaultDepth: 0, slideThemes: {} };
   }
 };
 
@@ -68,6 +74,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
   const [loading, setLoading] = useState(true);
   const [needsEmailSetup, setNeedsEmailSetup] = useState(false);
   const [slideThemes, setSlideThemes] = useState<SlideThemeMap>({});
+  const [pageTemplates, setPageTemplates] = useState<PageTemplateMap>({});
   const [sidebarDefaultDepth, setSidebarDefaultDepth] = useState(0);
 
   useMountEffect(() => {
@@ -76,11 +83,13 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
         const {
           user: fetchedUser,
           slideThemes: fetchedThemes,
+          pageTemplates: fetchedPages,
           needs401,
           sidebarDefaultDepth: fetchedDepth,
         } = await fetchMe();
         setUser(fetchedUser);
         setSlideThemes(fetchedThemes);
+        setPageTemplates(fetchedPages);
         setSidebarDefaultDepth(fetchedDepth);
         setNeedsEmailSetup(needs401);
         setLoading(false);
@@ -95,11 +104,13 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
       const {
         user: fetchedUser,
         slideThemes: fetchedThemes,
+        pageTemplates: fetchedPages,
         needs401,
         sidebarDefaultDepth: fetchedDepth,
       } = await fetchMe();
       setUser(fetchedUser);
       setSlideThemes(fetchedThemes);
+      setPageTemplates(fetchedPages);
       setSidebarDefaultDepth(fetchedDepth);
       setNeedsEmailSetup(needs401);
     } catch {
@@ -124,11 +135,13 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
         displayName,
         canEdit,
         slideThemes: themeData,
+        pageTemplates: pageData,
         sidebarDefaultDepth: fetchedDepth,
       } = data;
       const parsedUser: User = { canEdit, displayName, email: userEmail, id, name };
       setUser(parsedUser);
       setSlideThemes(themeData ?? {});
+      setPageTemplates(pageData ?? {});
       setSidebarDefaultDepth(fetchedDepth ?? 2);
       setNeedsEmailSetup(false);
     } catch {
@@ -141,6 +154,7 @@ const UserProvider = (allProps: { children: ReactNode }): JSX.Element => {
       value={{
         loading,
         needsEmailSetup,
+        pageTemplates,
         refreshUser,
         setEmailAndRefetch,
         sidebarDefaultDepth,

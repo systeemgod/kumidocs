@@ -20,6 +20,7 @@ async function apiMe(user: User, config: Config): Promise<Response> {
     autoSaveDelay: config.autoSaveDelay,
     headSha,
     instanceName: perms.instanceName ?? "KumiDocs",
+    pageTemplates: perms.pageTemplates ?? {},
     sidebarDefaultDepth: perms.sidebarDefaultDepth ?? 2,
     slideThemes: perms.slideThemes ?? {},
   });

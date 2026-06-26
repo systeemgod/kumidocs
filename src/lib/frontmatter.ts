@@ -4,6 +4,10 @@
 interface PageMeta {
   emoji?: string;
   slides?: boolean;
+  /** Template name for page-mode rendering (e.g. "email-announcement"). */
+  page?: string;
+  /** Custom variables for page template interpolation via {{key}}. */
+  pageVars?: Record<string, string>;
   /** Deck-level theme for slide presentations: 'default' | 'dark' | 'corporate' | 'minimal' | 'gradient' */
   theme?: string;
   /** When true, slide numbers are shown on each slide canvas */
@@ -41,6 +45,15 @@ const applyKv = (data: PageMeta, key: string, val: string): void => {
     const varName = key.slice("theme-var-".length);
     if (varName) {
       (data.themeVars ??= {})[varName] = trimmedVal;
+    }
+  }
+  if (key === "page") {
+    data.page = trimmedVal;
+  }
+  if (key.startsWith("page-var-")) {
+    const varName = key.slice("page-var-".length);
+    if (varName) {
+      (data.pageVars ??= {})[varName] = trimmedVal;
     }
   }
 };
@@ -92,6 +105,14 @@ const buildFrontmatter = (meta: PageMeta): string => {
   if (meta.themeVars) {
     for (const [varKey, varValue] of Object.entries(meta.themeVars)) {
       lines.push(`theme-var-${varKey}: ${varValue}`);
+    }
+  }
+  if (meta.page !== undefined && meta.page !== "") {
+    lines.push(`page: ${meta.page}`);
+  }
+  if (meta.pageVars) {
+    for (const [varKey, varValue] of Object.entries(meta.pageVars)) {
+      lines.push(`page-var-${varKey}: ${varValue}`);
     }
   }
   if (lines.length === 0) {

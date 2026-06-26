@@ -11,6 +11,9 @@ import { SlideViewer } from "@/components/editor/slides/viewer";
 import { addOverlayToPdf } from "@/components/editor/slides/utils";
 import { extensionToType } from "@/lib/filetypes";
 import { extractHeadingTitle } from "@/lib/frontmatter";
+import type { PageTemplateMap } from "@/lib/page";
+import { resolvePageTemplate } from "@/lib/page";
+import PageViewer from "@/components/viewer/page-viewer";
 
 function pathToTitle(path: string): string {
   return (path.split("/").pop() ?? path)
@@ -21,13 +24,16 @@ function pathToTitle(path: string): string {
 
 // Derived-value helpers
 
-function resolveFileType(rawExt: string, slides: boolean | undefined): FileType {
+function resolveFileType(rawExt: string, slides: boolean | undefined, page?: string): FileType {
   const base = extensionToType(rawExt);
+  if (base === "doc" && page !== undefined && page !== "") {
+    return "page";
+  }
   return base === "doc" && slides === true ? "slide" : base;
 }
 
 function computeTitle(fileType: FileType, content: string, filePath: string): string {
-  if (fileType === "doc" || fileType === "slide") {
+  if (fileType === "doc" || fileType === "slide" || fileType === "page") {
     return extractHeadingTitle(content) ?? pathToTitle(filePath);
   }
   return filePath.split("/").pop() ?? filePath;
@@ -88,6 +94,7 @@ interface EditorContentProps {
   handleSave: () => Promise<void>;
   meta: DocMeta;
   slideThemes: SlideThemeMap;
+  pageTemplates: PageTemplateMap;
   setMeta: Dispatch<SetStateAction<DocMeta>>;
   metaRef: RefObject<DocMeta>;
   title: string;
@@ -104,6 +111,7 @@ function buildEditorContent({
   handleSave,
   meta,
   slideThemes,
+  pageTemplates,
   setMeta,
   metaRef,
   title,
@@ -152,6 +160,21 @@ function buildEditorContent({
         themeVars={meta.themeVars}
       />
     );
+  }
+  if (fileType === "page" && meta.page !== undefined && meta.page !== "") {
+    const templateDef = resolvePageTemplate(pageTemplates, meta.page);
+    if (templateDef !== undefined) {
+      return (
+        <ScrollArea className="h-full">
+          <PageViewer
+            value={viewContent}
+            template={templateDef}
+            title={title}
+            pageVars={meta.pageVars}
+          />
+        </ScrollArea>
+      );
+    }
   }
   return (
     <ScrollArea className="h-full">

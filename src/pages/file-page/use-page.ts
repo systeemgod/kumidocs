@@ -8,6 +8,7 @@ import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
 import type { SaveStatus } from "./use-save";
 import type { SlideThemeMap } from "@/lib/slide";
+import type { PageTemplateMap } from "@/lib/page";
 import type { WikilinkLookup } from "@/lib/wikilinks";
 import { pathExtension } from "@/lib/filetypes";
 import { resolveWikilinks } from "@/lib/wikilinks";
@@ -70,6 +71,7 @@ interface UseFilePageReturn {
   setMeta: Dispatch<SetStateAction<DocMeta>>;
   setRemoteBanner: Dispatch<SetStateAction<string | undefined>>;
   slideThemes: SlideThemeMap;
+  pageTemplates: PageTemplateMap;
   title: string;
   user: User | undefined;
   viewers: PresenceUser[];
@@ -81,6 +83,7 @@ function useFilePage(): UseFilePageReturn {
   const navigate = useNavigate();
   const { reloadTree, autoSaveDelay, instanceName } = useOutletContext<OutletCtx>();
   const { user, slideThemes } = useUser();
+  const pageTemplates = useUser().pageTemplates;
 
   const [editMode, setEditMode] = useState(false);
   const {
@@ -115,7 +118,7 @@ function useFilePage(): UseFilePageReturn {
   const { conflictBanner, editLocked, setConflictBanner, viewers, remoteBanner, setRemoteBanner } =
     usePagePresence(filePath, user?.id, editModeRef, isDirtyRef, loadDoc);
   const rawExt = pathExtension(filePath);
-  const fileType = resolveFileType(rawExt, meta.slides);
+  const fileType = resolveFileType(rawExt, meta.slides, meta.page);
   const title = computeTitle(fileType, content, filePath);
 
   // Document title
@@ -234,6 +237,7 @@ function useFilePage(): UseFilePageReturn {
     openDelete,
     openMove,
     pageActionDialogs,
+    pageTemplates,
     pdfContentRef,
     rawContent,
     rawExt,

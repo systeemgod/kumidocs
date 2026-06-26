@@ -1,4 +1,5 @@
 import type { BacklinkEntry, CommitEntry, SearchResult, TreeNode } from "./types";
+import type { PageTemplateMap } from "./page";
 import type { SlideThemeMap } from "./slide";
 import type { WikilinkLookup } from "./wikilinks";
 
@@ -29,6 +30,7 @@ interface MeResponse {
   autoSaveDelay?: number;
   sidebarDefaultDepth?: number;
   slideThemes?: SlideThemeMap;
+  pageTemplates?: PageTemplateMap;
 }
 
 interface FileGetResponse {
