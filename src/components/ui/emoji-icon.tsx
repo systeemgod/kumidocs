@@ -30,10 +30,19 @@ interface EmojiIconProps {
   /** Pixel size or CSS length (e.g. "1.2em") for both the icon and the emoji. Default: 16. */
   size?: number | string;
   className?: string;
+  style?: CSSProperties;
 }
 
-function EmojiIcon({ emoji, fileType, icon, size = 16, className }: EmojiIconProps): JSX.Element {
+function EmojiIcon({
+  emoji,
+  fileType,
+  icon,
+  size = 16,
+  className,
+  style,
+}: EmojiIconProps): JSX.Element {
   const wrapStyle: CSSProperties = {
+    ...style,
     alignItems: "center",
     display: "inline-flex",
     height: size,

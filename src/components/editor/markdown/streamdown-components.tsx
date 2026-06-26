@@ -63,7 +63,14 @@ const KumiEmojiComponent = (allProps: KumiEmojiProps): JSX.Element => {
   if (!emoji) {
     return <></>;
   }
-  return <EmojiIcon emoji={emoji} size="1.07lh" className="align-middle" />;
+  return (
+    <EmojiIcon
+      emoji={emoji}
+      size="1.07lh"
+      className="align-middle"
+      style={{ display: "inline-flex", transform: "translateY(-10%)" }}
+    />
+  );
 };
 
 // Anchor components

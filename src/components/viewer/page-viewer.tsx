@@ -6,11 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "@/components/ui/toaster";
 import MarkdownViewer from "@/components/editor/markdown/viewer";
+import { Streamdown } from "streamdown";
+import { cjk } from "@streamdown/cjk";
+import { code } from "@streamdown/code";
+import { math } from "@streamdown/math";
+import { mermaid } from "@streamdown/mermaid";
+import {
+  COMPONENTS_SLIDE,
+  REHYPE_PLUGINS,
+} from "@/components/editor/markdown/streamdown-components";
 import { useCallback, useRef } from "react";
 
-// A4 dimensions at 96dpi: 794 x 1123 px
+// A4 width at 96dpi: 794px. Min height for a page card.
 const A4_W = 794;
 const A4_H = 1123;
+const MIN_PAGE_H = 200;
 
 interface PageViewerProps {
   value: string;
@@ -154,14 +164,16 @@ export default function PageViewer({
   // Content area inline style
   const contentStyle: CSSProperties = {
     color: template.fg ?? "inherit",
-    fontFamily: template.fontFamily ?? undefined,
     margin: `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`,
   };
 
-  // Background style for the page canvas
-  const bgStyle: CSSProperties = {};
+  // Canvas wrapper style (background + font cascades to all child elements)
+  const canvasStyle: CSSProperties = {};
   if (template.bg !== undefined && template.bg !== "") {
-    bgStyle.backgroundColor = template.bg;
+    canvasStyle.backgroundColor = template.bg;
+  }
+  if (template.fontFamily !== undefined && template.fontFamily !== "") {
+    canvasStyle.fontFamily = template.fontFamily;
   }
 
   const handleCopyHtml = useCallback(async () => {
@@ -260,11 +272,10 @@ export default function PageViewer({
         ref={pageRef}
         style={{
           boxShadow: "0 2px 16px rgba(0,0,0,0.12)",
-          minHeight: A4_H,
-          overflow: "hidden",
+          minHeight: MIN_PAGE_H,
           position: "relative",
           width: A4_W,
-          ...bgStyle,
+          ...canvasStyle,
         }}
       >
         {/* Template overlay elements */}
@@ -278,7 +289,7 @@ export default function PageViewer({
               }
 
               if (el.type === "text") {
-                const text = interp(el.content, vars);
+                const processed = interp(el.content, vars);
                 return (
                   <div
                     key={idx}
@@ -288,11 +299,19 @@ export default function PageViewer({
                       fontWeight: el.bold === true ? "bold" : undefined,
                       lineHeight: 1.2,
                       textAlign: el.align,
-                      whiteSpace: "pre",
                       ...posStyle,
                     }}
                   >
-                    {text}
+                    <Streamdown
+                      mode="static"
+                      plugins={{ cjk, code, math, mermaid }}
+                      shikiTheme={["github-light", "github-dark"]}
+                      linkSafety={{ enabled: false }}
+                      components={COMPONENTS_SLIDE}
+                      rehypePlugins={REHYPE_PLUGINS}
+                    >
+                      {processed}
+                    </Streamdown>
                   </div>
                 );
               }
