@@ -8,7 +8,7 @@ import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import { COMPONENTS_DOC, REHYPE_PLUGINS } from "@/components/editor/markdown/streamdown-components";
-import juice from "juice";
+import juice from "juice/client";
 
 const A4_W = 794;
 

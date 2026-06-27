@@ -2,23 +2,29 @@
 
 // Make React's JSX.Element available as a global type (React 19 removed global JSX namespace)
 declare namespace JSX {
-	type Element = import('react').JSX.Element;
+  type Element = import("react").JSX.Element;
 }
 
-declare module '*.css' {}
+declare module "*.css" {}
 
-declare module '*.svg' {
-	/**
-	 * A path to the SVG file
-	 */
-	const path: `${string}.svg`;
-	export = path;
+declare module "*.svg" {
+  /**
+   * A path to the SVG file
+   */
+  const path: `${string}.svg`;
+  export = path;
 }
 
-declare module '*.module.css' {
-	/**
-	 * A record of class names to their corresponding CSS module classes
-	 */
-	const classes: Readonly<Record<string, string>>;
-	export = classes;
+declare module "*.module.css" {
+  /**
+   * A record of class names to their corresponding CSS module classes
+   */
+  const classes: Readonly<Record<string, string>>;
+  export = classes;
+}
+
+// juice/client is the browser build with no Node deps; reuse the main types
+declare module "juice/client" {
+  import juice from "juice";
+  export default juice;
 }
