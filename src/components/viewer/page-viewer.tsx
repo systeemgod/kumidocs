@@ -106,7 +106,7 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
     <meta name="supported-color-schemes" content="light">
     <title>Page</title>
   </head>
-  <body>
+  <body style="margin:0;">
     ${clone.outerHTML}
   </body>
 </html>`;
@@ -116,7 +116,7 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
           applyStyleTags: true,
           applyWidthAttributes: true,
           extraCss: [
-            "*, :after, :before { box-sizing: border-box; border: 0 solid; margin: 0; padding: 0; }",
+            "*, :after, :before { box-sizing: border-box; margin: 0; padding: 0; }",
             "body { margin: 0; padding: 0; }",
             "* { box-sizing: border-box; }",
             "p { margin: 0 0 1em !important; }",
@@ -161,7 +161,8 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
         <div
           ref={wrapperRef}
           style={{
-            outline: "1px solid var(--border, rgba(0,0,0,0.2))",
+            marginLeft: "1px",
+            outline: "1px solid var(--border, #000000)",
             width: A4_W,
           }}
           dangerouslySetInnerHTML={{ __html: html }}
