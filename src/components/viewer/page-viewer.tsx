@@ -8,6 +8,7 @@ import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import { COMPONENTS_DOC, REHYPE_PLUGINS } from "@/components/editor/markdown/streamdown-components";
+import juice from "juice";
 
 const A4_W = 794;
 
@@ -87,23 +88,29 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
           el.replaceWith(document.createTextNode(alt));
         }
 
-        const marker = clone.querySelector("#kumi-content-root");
-        if (marker) {
-          const parent = marker.parentNode;
-          if (parent) {
-            while (marker.firstChild) {
-              marker.before(marker.firstChild);
-            }
-            marker.remove();
-          }
+        // Strip internal attributes that are meaningless in email
+        for (const el of clone.querySelectorAll<HTMLElement>(
+          "[data-streamdown],[data-incomplete]",
+        )) {
+          delete el.dataset.streamdown;
+          delete el.dataset.incomplete;
         }
 
-        const rawHtml = clone.outerHTML;
+        const rawHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="color-scheme" content="light dark"> <meta name="supported-color-schemes" content="light dark">
+    <title>Page</title>
+  </head>
+  <body>
+    ${clone.outerHTML}
+  </body>
+</html>`;
 
-        const juiceMod = (await import("juice")) as {
-          default: (html: string, opts?: Record<string, unknown>) => string;
-        };
-        const inlined = juiceMod.default(rawHtml, {
+        const inlined = juice(rawHtml, {
           applyHeightAttributes: true,
           applyStyleTags: true,
           applyWidthAttributes: true,
@@ -115,7 +122,7 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
             "h1, h2, h3, h4, h5, h6 { margin: 0 0 8px !important; }",
             ".py-1 { padding-top: 4px !important; padding-bottom: 4px !important; }",
             ".font-semibold { font-weight: 700; }",
-            ".space-y-4 {:where(& > :not(:last-child)) {margin-block-end: 16px;}}",
+            ".space-y-4 {:where(& > :not(:last-child)) {margin-bottom: 16px;}}",
             ".list-disc {list-style-type: disc;}",
             ".list-inside {list-style-position: inside;}",
             ".border-red-500 { border-color: #ef4444 !important; }",
