@@ -22,6 +22,7 @@ interface PageMenuItemsProps {
   onNewSubPage?: (dir: string) => void;
   onNewPage?: (dir: string) => void;
   onDuplicate?: () => void;
+  onCopyHtml?: () => Promise<void>;
   onExportPdf?: () => void;
   onMove?: (path: string) => void;
   onDelete?: (path: string, title: string) => void;
@@ -136,6 +137,7 @@ const PageMenuItems = (allProps: PageMenuItemsProps): JSX.Element => {
     onNewSubPage,
     onNewPage,
     onDuplicate,
+    onCopyHtml,
     onExportPdf,
     onMove,
     onDelete,
@@ -207,6 +209,12 @@ const PageMenuItems = (allProps: PageMenuItemsProps): JSX.Element => {
         <LinkRegular className="mr-2 w-4 h-4" />
         Copy link
       </Item>
+      {onCopyHtml && (
+        <Item onClick={onCopyHtml}>
+          <CopyRegular className="mr-2 w-4 h-4" />
+          Copy as HTML
+        </Item>
+      )}
       {onExportPdf && (
         <Item onClick={onExportPdf}>
           <ArrowDownloadRegular className="mr-2 w-4 h-4" />

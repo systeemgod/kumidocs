@@ -116,7 +116,7 @@ const SlideAnchorComponent = (allProps: AnchorProps): JSX.Element => {
   }
   return (
     <a
-      className="wrap-anywhere font-medium underline"
+      className="wrap-anywhere font-medium text-primary underline"
       data-incomplete="false"
       data-streamdown="link"
       href={resolvedHref}
@@ -237,8 +237,30 @@ const KumiAlert = (allProps: KumiAlertProps): JSX.Element => {
   const classes = ALERT_CLASSES[alertType] ?? ALERT_CLASSES.NOTE;
   const emoji = ALERT_ICONS[alertType] ?? ALERT_ICONS.NOTE;
   return (
-    <div className={`border-l-10 rounded-r-lg px-5 py-3 my-4 not-prose ${classes}`} role="alert">
-      <div className="font-bold mt-2 mb-3 text-inherit flex items-center gap-3 leading-none">
+    <div
+      style={{
+        borderBottomRightRadius: "8px",
+        borderLeft: "10px solid",
+        borderTopRightRadius: "8px",
+        marginBottom: "16px",
+        marginTop: "16px",
+        padding: "12px 20px",
+      }}
+      className={classes}
+      role="alert"
+    >
+      <div
+        style={{
+          alignItems: "center",
+          color: "inherit",
+          display: "flex",
+          fontWeight: 600,
+          gap: "12px",
+          lineHeight: 1,
+          marginBottom: "12px",
+          marginTop: "8px",
+        }}
+      >
         <EmojiIcon emoji={emoji} size="28px" />
         <span>{label}</span>
       </div>
@@ -272,6 +294,12 @@ const COMPONENTS_SLIDE: Record<string, (props: Record<string, unknown>) => JSX.E
   img: ImgComponent,
   "kumi-alert": KumiAlert,
   "kumi-emoji": KumiEmojiComponent,
+  // oxlint-disable-next-line id-length, typescript/no-unsafe-type-assertion
+  p: (props: Record<string, unknown>): JSX.Element => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    const { children } = props as { children?: ReactNode };
+    return <p style={{ margin: 0 }}>{children}</p>;
+  },
   "pages": Pages,
   "toc": Toc,
   "tree": Tree,

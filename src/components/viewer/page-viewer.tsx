@@ -1,131 +1,27 @@
-import type { CSSProperties } from "react";
-import { resolveMargin } from "@/lib/page";
-import type { PageTemplateDef } from "@/lib/page";
-import type { SlideThemeElement } from "@/lib/slide";
-import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { toast } from "@/components/ui/toaster";
-import MarkdownViewer from "@/components/editor/markdown/viewer";
+import type { PageTemplateDef } from "@/lib/page";
 import { Streamdown } from "streamdown";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
-import {
-  COMPONENTS_SLIDE,
-  REHYPE_PLUGINS,
-} from "@/components/editor/markdown/streamdown-components";
-import { useCallback, useRef } from "react";
+import { COMPONENTS_DOC, REHYPE_PLUGINS } from "@/components/editor/markdown/streamdown-components";
 
-// A4 width at 96dpi: 794px. Min height for a page card.
 const A4_W = 794;
-const A4_H = 1123;
-const MIN_PAGE_H = 200;
 
 interface PageViewerProps {
   value: string;
   template: PageTemplateDef;
-  /** Page title for variable substitution. */
   title: string;
-  /** Custom page vars from frontmatter pageVars field. */
   pageVars?: Record<string, string>;
 }
 
-// Position helper for template elements (using A4 canvas sizing)
-
-const PAGE_CANVAS_W = A4_W;
-const PAGE_CANVAS_H = A4_H;
-
-type RectElement = Extract<SlideThemeElement, { type: "rect" }>;
-type AlignableElement = Extract<SlideThemeElement, { type: "text" | "image" }>;
-type ImageElement = Extract<SlideThemeElement, { type: "image" }>;
-type AnyElement = SlideThemeElement;
-
-function applyRectStyle(el: RectElement, styles: CSSProperties): void {
-  if (el.left !== undefined) {
-    styles.left = el.left;
-  }
-  if (el.right !== undefined) {
-    styles.right = el.right;
-  }
-  if (el.top !== undefined) {
-    styles.top = el.top;
-  }
-  if (el.bottom !== undefined) {
-    styles.bottom = el.bottom;
-  }
-  if (el.width !== undefined) {
-    styles.width = el.width;
-  } else if (el.left !== undefined && el.right !== undefined) {
-    styles.width = PAGE_CANVAS_W - el.left - el.right;
-  }
-  if (el.height !== undefined) {
-    styles.height = el.height;
-  } else if (el.top !== undefined && el.bottom !== undefined) {
-    styles.height = PAGE_CANVAS_H - el.top - el.bottom;
-  }
+interface PageViewerHandle {
+  copyHtml: () => Promise<void>;
 }
 
-function applyXPositioning(el: AlignableElement, styles: CSSProperties): void {
-  if (el.centerX === true) {
-    styles.left = "50%";
-    styles.transform = "translateX(-50%)";
-  } else {
-    if (el.left !== undefined) {
-      styles.left = el.left;
-    }
-    if (el.right !== undefined) {
-      styles.right = el.right;
-    }
-  }
-}
-
-function applyYPositioning(el: AlignableElement, styles: CSSProperties): void {
-  if (el.centerY === true) {
-    styles.top = "50%";
-    styles.transform = `${styles.transform !== undefined && styles.transform !== "" ? `${styles.transform} ` : ""}translateY(-50%)`;
-  } else {
-    if (el.top !== undefined) {
-      styles.top = el.top;
-    }
-    if (el.bottom !== undefined) {
-      styles.bottom = el.bottom;
-    }
-  }
-}
-
-function applyImageDimensions(el: ImageElement, styles: CSSProperties): void {
-  if (el.width !== undefined) {
-    styles.width = el.width;
-  } else if (el.centerX !== true && el.left !== undefined && el.right !== undefined) {
-    styles.width = PAGE_CANVAS_W - el.left - el.right;
-  }
-  if (el.height !== undefined) {
-    styles.height = el.height;
-  } else if (el.centerY !== true && el.top !== undefined && el.bottom !== undefined) {
-    styles.height = PAGE_CANVAS_H - el.top - el.bottom;
-  } else if (el.width !== undefined && el.height === undefined) {
-    styles.height = el.width;
-  }
-}
-
-function computeElementStyle(el: AnyElement): CSSProperties {
-  const styles: CSSProperties = { position: "absolute" };
-
-  if (el.type === "rect") {
-    applyRectStyle(el, styles);
-  } else if (el.type === "text" || el.type === "image") {
-    applyXPositioning(el, styles);
-    applyYPositioning(el, styles);
-    if (el.type === "image") {
-      applyImageDimensions(el, styles);
-    }
-  }
-
-  return styles;
-}
-
-/** Template variables available for interpolation in element content. */
 function buildTemplateVars(
   title: string,
   pageVars?: Record<string, string>,
@@ -142,7 +38,6 @@ function buildTemplateVars(
   return vars;
 }
 
-/** Interpolate a template string with the given variables. */
 function interp(template: string, vars: Record<string, string>): string {
   let result = template;
   for (const [key, val] of Object.entries(vars)) {
@@ -151,194 +46,122 @@ function interp(template: string, vars: Record<string, string>): string {
   return result;
 }
 
-export default function PageViewer({
-  value,
-  template,
-  title,
-  pageVars,
-}: PageViewerProps): JSX.Element {
-  const pageRef = useRef<HTMLDivElement>(null);
-  const margin = resolveMargin(template.margin);
-  const vars = buildTemplateVars(title, pageVars);
+const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
+  ({ value, template, title, pageVars }, ref): JSX.Element => {
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const vars = buildTemplateVars(title, pageVars);
 
-  // Content area inline style
-  const contentStyle: CSSProperties = {
-    color: template.fg ?? "inherit",
-    margin: `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`,
-  };
+    // Render markdown to static HTML and inject it into the template string
+    const html = useMemo(() => {
+      const contentHtml = renderToStaticMarkup(
+        <Streamdown
+          mode="static"
+          plugins={{ cjk, code, math, mermaid }}
+          shikiTheme={["github-light", "github-dark"]}
+          linkSafety={{ enabled: false }}
+          components={COMPONENTS_DOC}
+          rehypePlugins={REHYPE_PLUGINS}
+        >
+          {value}
+        </Streamdown>,
+      );
+      let result = template.template;
+      result = interp(result, vars);
+      result = result.replace("{{content}}", contentHtml);
+      return result;
+    }, [value, template.template, vars]);
 
-  // Canvas wrapper style (background + font cascades to all child elements)
-  const canvasStyle: CSSProperties = {};
-  if (template.bg !== undefined && template.bg !== "") {
-    canvasStyle.backgroundColor = template.bg;
-  }
-  if (template.fontFamily !== undefined && template.fontFamily !== "") {
-    canvasStyle.fontFamily = template.fontFamily;
-  }
-
-  const handleCopyHtml = useCallback(async () => {
-    if (!pageRef.current) {
-      return;
-    }
-    try {
-      // Clone the page to avoid mutating the live DOM
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      const clone = pageRef.current.cloneNode(true) as HTMLElement;
-
-      // Remove emoji images (large data URIs) and replace with alt text
-      const emojiImages = clone.querySelectorAll('img[src^="data:image/svg+xml;base64"]');
-      for (const img of emojiImages) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-        const el = img as HTMLElement;
-        const alt = el.getAttribute("alt") ?? "";
-        el.replaceWith(document.createTextNode(alt));
+    const handleCopyHtml = useCallback(async () => {
+      if (!wrapperRef.current) {
+        return;
       }
+      try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+        const clone = wrapperRef.current.cloneNode(true) as HTMLElement;
 
-      // Get computed styles for every element and inline them
-      const allElements = clone.querySelectorAll("*");
-      for (const el of allElements) {
-        const computed = window.getComputedStyle(el);
-        // Inline the most important text/style properties
-        const props = [
-          "color",
-          "font-family",
-          "font-size",
-          "font-weight",
-          "line-height",
-          "text-align",
-          "margin",
-          "padding",
-          "background-color",
-          "background",
-          "border",
-          "display",
-          "width",
-          "height",
-          "position",
-          "top",
-          "right",
-          "bottom",
-          "left",
-          "transform",
-          "object-fit",
-        ];
-        for (const prop of props) {
-          const val = computed.getPropertyValue(prop);
-          if (val !== undefined && val !== "" && val !== "none") {
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-            (el as HTMLElement).style.setProperty(prop, val);
+        const emojiImages = clone.querySelectorAll('img[src^="data:image/svg+xml;base64"]');
+        for (const img of emojiImages) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          const el = img as HTMLElement;
+          const alt = el.getAttribute("alt") ?? "";
+          el.replaceWith(document.createTextNode(alt));
+        }
+
+        const marker = clone.querySelector("#kumi-content-root");
+        if (marker) {
+          const parent = marker.parentNode;
+          if (parent) {
+            while (marker.firstChild) {
+              marker.before(marker.firstChild);
+            }
+            marker.remove();
           }
         }
+
+        const rawHtml = clone.outerHTML;
+
+        const juiceMod = (await import("juice")) as {
+          default: (html: string, opts?: Record<string, unknown>) => string;
+        };
+        const inlined = juiceMod.default(rawHtml, {
+          applyHeightAttributes: true,
+          applyStyleTags: true,
+          applyWidthAttributes: true,
+          extraCss: [
+            "*, :after, :before { box-sizing: border-box; border: 0 solid; margin: 0; padding: 0; }",
+            "body { margin: 0; padding: 0; }",
+            "* { box-sizing: border-box; }",
+            "p { margin: 0 0 1em !important; }",
+            "h1, h2, h3, h4, h5, h6 { margin: 0 0 8px !important; }",
+            ".py-1 { padding-top: 4px !important; padding-bottom: 4px !important; }",
+            ".font-semibold { font-weight: 700; }",
+            ".space-y-4 {:where(& > :not(:last-child)) {margin-block-end: 16px;}}",
+            ".list-disc {list-style-type: disc;}",
+            ".list-inside {list-style-position: inside;}",
+            ".border-red-500 { border-color: #ef4444 !important; }",
+            ".bg-red-50 { background-color: #fef2f2 !important; }",
+            ".text-red-800 { color: #991b1b !important; }",
+            ".border-purple-500 { border-color: #a855f7 !important; }",
+            ".bg-purple-50 { background-color: #faf5ff !important; }",
+            ".text-purple-800 { color: #6b21a8 !important; }",
+            ".border-blue-500 { border-color: #3b82f6 !important; }",
+            ".bg-blue-50 { background-color: #eff6ff !important; }",
+            ".text-blue-800 { color: #1e40af !important; }",
+            ".border-green-500 { border-color: #22c55e !important; }",
+            ".bg-green-50 { background-color: #f0fdf4 !important; }",
+            ".text-green-800 { color: #166534 !important; }",
+            ".border-amber-500 { border-color: #f59e0b !important; }",
+            ".bg-amber-50 { background-color: #fffbeb !important; }",
+            ".text-amber-800 { color: #92400e !important; }",
+          ].join("\n"),
+          preserveKeyFrames: false,
+          removeStyleTags: true,
+        });
+
+        await navigator.clipboard.writeText(inlined);
+        toast.success("HTML copied to clipboard");
+      } catch (error: unknown) {
+        toast.error("Failed to copy HTML");
+        console.error("Copy HTML failed:", error);
       }
+    }, []);
 
-      const rawHtml = clone.outerHTML;
+    useImperativeHandle(ref, () => ({ copyHtml: handleCopyHtml }), [handleCopyHtml]);
 
-      // Dynamic import juice for CSS inlining
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      const juiceMod = (await import("juice")) as {
-        default: (html: string, opts?: Record<string, unknown>) => string;
-      };
-      const inlined = juiceMod.default(rawHtml, {
-        applyHeightAttributes: true,
-        applyStyleTags: true,
-        applyWidthAttributes: true,
-        extraCss:
-          "\n          body { margin: 0; padding: 0; }\n          * { box-sizing: border-box; }\n        ",
-        preserveKeyFrames: false,
-        removeStyleTags: true,
-      });
-
-      await navigator.clipboard.writeText(inlined);
-      toast.success("HTML copied to clipboard");
-    } catch (error: unknown) {
-      toast.error("Failed to copy HTML");
-      console.error("Copy HTML failed:", error);
-    }
-  }, []);
-
-  const elements = template.elements ?? [];
-
-  return (
-    <div className="flex flex-col items-center gap-3 py-6">
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={handleCopyHtml}>
-          <Copy className="size-3.5 mr-1.5" />
-          Copy as HTML
-        </Button>
+    return (
+      <div className="flex flex-col items-center gap-3 py-6">
+        <div
+          ref={wrapperRef}
+          style={{
+            outline: "1px solid var(--border, rgba(0,0,0,0.2))",
+            width: A4_W,
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
       </div>
+    );
+  },
+);
 
-      {/* A4 page canvas */}
-      <div
-        ref={pageRef}
-        style={{
-          boxShadow: "0 2px 16px rgba(0,0,0,0.12)",
-          minHeight: MIN_PAGE_H,
-          position: "relative",
-          width: A4_W,
-          ...canvasStyle,
-        }}
-      >
-        {/* Template overlay elements */}
-        {elements.length > 0 && (
-          <>
-            {elements.map((el, idx) => {
-              const posStyle = computeElementStyle(el);
-
-              if (el.type === "rect") {
-                return <div key={idx} style={{ background: el.fill, ...posStyle }} />;
-              }
-
-              if (el.type === "text") {
-                const processed = interp(el.content, vars);
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      color: el.color,
-                      fontSize: el.fontSize,
-                      fontWeight: el.bold === true ? "bold" : undefined,
-                      lineHeight: 1.2,
-                      textAlign: el.align,
-                      ...posStyle,
-                    }}
-                  >
-                    <Streamdown
-                      mode="static"
-                      plugins={{ cjk, code, math, mermaid }}
-                      shikiTheme={["github-light", "github-dark"]}
-                      linkSafety={{ enabled: false }}
-                      components={COMPONENTS_SLIDE}
-                      rehypePlugins={REHYPE_PLUGINS}
-                    >
-                      {processed}
-                    </Streamdown>
-                  </div>
-                );
-              }
-
-              // image
-              return (
-                <img
-                  key={idx}
-                  src={el.src}
-                  alt=""
-                  style={{
-                    objectFit: "contain",
-                    objectPosition: "left center",
-                    opacity: el.opacity,
-                    ...posStyle,
-                  }}
-                />
-              );
-            })}
-          </>
-        )}
-
-        {/* Content area */}
-        <div style={contentStyle}>
-          <MarkdownViewer value={value} />
-        </div>
-      </div>
-    </div>
-  );
-}
+export default PageViewer;
+export type { PageViewerHandle };

@@ -7,9 +7,10 @@ import { PageContextProvider } from "@/lib/page-context";
 import TocSidebar from "@/components/editor/markdown/toc-sidebar";
 import { buildEditorContent } from "./utils";
 import { useFilePage } from "./use-page";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import type { OutletCtx } from "./use-page";
+import type { PageViewerHandle } from "@/components/viewer/page-viewer";
 
 export default function FilePage(): JSX.Element {
   const { tree } = useOutletContext<OutletCtx>();
@@ -76,6 +77,8 @@ export default function FilePage(): JSX.Element {
     };
   }, [saveStatus]);
 
+  const pageViewerRef = useRef<PageViewerHandle>(null);
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center text-foreground text-sm">
@@ -97,6 +100,7 @@ export default function FilePage(): JSX.Element {
     meta,
     metaRef,
     pageTemplates,
+    pageViewerRef,
     rawContent,
     rawExt,
     resolvedContent,
@@ -220,6 +224,13 @@ export default function FilePage(): JSX.Element {
           exportPagePdf={() => {
             void exportPagePdf();
           }}
+          onCopyHtml={
+            fileType === "page"
+              ? async () => {
+                  await pageViewerRef.current?.copyHtml();
+                }
+              : undefined
+          }
           openMove={openMove}
           openDelete={() => {
             openDelete(filePath);

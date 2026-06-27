@@ -41,6 +41,7 @@ interface FilePageHeaderProps {
   setInfoOpen: Dispatch<SetStateAction<boolean>>;
   setTocOpen: Dispatch<SetStateAction<boolean>>;
   handlePageDuplicate: () => void;
+  onCopyHtml?: () => Promise<void>;
   exportPagePdf: () => void;
   openMove: (path: string) => Promise<void>;
   openDelete: () => void;
@@ -66,6 +67,7 @@ function FilePageHeader({
   setInfoOpen,
   setTocOpen,
   handlePageDuplicate,
+  onCopyHtml,
   exportPagePdf,
   openMove,
   openDelete,
@@ -238,6 +240,7 @@ function FilePageHeader({
                 path={filePath}
                 displayTitle={title}
                 onDuplicate={handlePageDuplicate}
+                onCopyHtml={onCopyHtml}
                 onExportPdf={fileType === "doc" && !editMode ? exportPagePdf : undefined}
                 onMove={async (movePath) => {
                   try {
@@ -257,3 +260,4 @@ function FilePageHeader({
 }
 
 export default FilePageHeader;
+// Line to prevent merge

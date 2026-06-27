@@ -1,4 +1,4 @@
-import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
+import type { Dispatch, ReactNode, Ref, RefObject, SetStateAction } from "react";
 import type { FileType, PresenceUser, User } from "@/lib/types";
 import CodeEditor from "@/components/editor/markdown/code-editor";
 import type { PageMeta as DocMeta } from "@/lib/frontmatter";
@@ -14,6 +14,7 @@ import { extractHeadingTitle } from "@/lib/frontmatter";
 import type { PageTemplateMap } from "@/lib/page";
 import { resolvePageTemplate } from "@/lib/page";
 import PageViewer from "@/components/viewer/page-viewer";
+import type { PageViewerHandle } from "@/components/viewer/page-viewer";
 
 function pathToTitle(path: string): string {
   return (path.split("/").pop() ?? path)
@@ -98,6 +99,7 @@ interface EditorContentProps {
   setMeta: Dispatch<SetStateAction<DocMeta>>;
   metaRef: RefObject<DocMeta>;
   title: string;
+  pageViewerRef?: Ref<PageViewerHandle>;
 }
 
 function buildEditorContent({
@@ -115,6 +117,7 @@ function buildEditorContent({
   setMeta,
   metaRef,
   title,
+  pageViewerRef,
 }: EditorContentProps): ReactNode {
   // Use wiki-link-resolved content in view mode when available
   const viewContent = resolvedContent ?? content;
@@ -167,6 +170,7 @@ function buildEditorContent({
       return (
         <ScrollArea className="h-full">
           <PageViewer
+            ref={pageViewerRef}
             value={viewContent}
             template={templateDef}
             title={title}
