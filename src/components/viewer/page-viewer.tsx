@@ -1,4 +1,4 @@
-// oxlint-disable unicorn/prefer-ternary
+// oxlint-disable unicorn/prefer-ternary complexity max-depth
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { toast } from "@/components/ui/toaster";
@@ -104,13 +104,46 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
         for (const el of allElements) {
           const tag = el.nodeName.toLowerCase();
           let style = el.getAttribute("style") ?? "";
-          console.log(tag, style);
           let inline = "";
 
           // Inline styles
-
           if (tag === "p") {
             inline += " margin: 0 0 1m;";
+          }
+          if (["h1", "h2", "h3", "h4", "h5", "h6"].includes(tag)) {
+            inline += " margin: 0 0 8px;";
+          }
+          // Inline CSS from known utility classes (email clients don't load <style> tags)
+          const classStyles: Record<string, string> = {
+            "bg-amber-50": "background-color:#fffbeb",
+            "bg-blue-50": "background-color:#eff6ff",
+            "bg-green-50": "background-color:#f0fdf4",
+            "bg-purple-50": "background-color:#faf5ff",
+            "bg-red-50": "background-color:#fef2f2",
+            "border-amber-500": "border-color:#f59e0b",
+            "border-blue-500": "border-color:#3b82f6",
+            "border-green-500": "border-color:#22c55e",
+            "border-purple-500": "border-color:#a855f7",
+            "border-red-500": "border-color:#ef4444",
+            "font-semibold": "font-weight:700",
+            "list-disc": "list-style-type:disc",
+            "list-inside": "list-style-position:inside",
+            "py-1": "padding-top:4px;padding-bottom:4px",
+            "text-amber-800": "color:#92400e",
+            "text-blue-800": "color:#1e40af",
+            "text-green-800": "color:#166534",
+            "text-purple-800": "color:#6b21a8",
+            "text-red-800": "color:#991b1b",
+          };
+          for (const cls of el.classList) {
+            const mapped = classStyles[cls];
+            if (mapped === undefined) {
+              continue;
+            }
+            const propName = mapped.split(":")[0];
+            if (propName !== undefined && !style.includes(propName)) {
+              inline += ` ${mapped};`;
+            }
           }
 
           // Fallback-inline
@@ -126,15 +159,59 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
           }
           style = `${inline.trim()} ${style}`.trim();
 
+          // Replace e.g. var(--border, #000000) with just the fallback value
+          style = style.replaceAll(/var\(--[\w-]+,\s*(?<fallback>[^)]+)\)/gu, "$<fallback>");
+
           // Append ; if style already doesn't end with it
           if (style.length > 0 && style.at(-1) !== ";") {
             style += ";";
           }
 
+          // Set new CSS
           el.setAttribute("style", style);
+
+          // Apply space-y-4: margin-bottom to every direct child except the last
+          if (el.classList.contains("space-y-4")) {
+            const children = el.children;
+            for (let ci = 0; ci < children.length - 1; ci++) {
+              const child = children[ci];
+              if (!(child instanceof HTMLElement)) {
+                continue;
+              }
+              const childStyle = child.getAttribute("style") ?? "";
+              if (childStyle.includes("margin:") || childStyle.includes("margin-bottom:")) {
+                continue;
+              }
+              const trimmed = childStyle.trim();
+              child.setAttribute(
+                "style",
+                `${trimmed.length > 0 ? `${trimmed}; ` : ""}margin-bottom: 16px;`,
+              );
+            }
+          }
+
+          // Copy CSS height/width/align onto HTML attribute
+          if (tag === "table" && el.style.width.length > 0 && el.style.width.endsWith("%")) {
+            el.setAttribute("width", el.style.width);
+          }
+          if (tag === "table" && el.style.height.length > 0 && el.style.height.endsWith("%")) {
+            el.setAttribute("height", el.style.height);
+          }
+          if (tag === "td" && el.style.width.length > 0 && el.style.width.endsWith("px")) {
+            el.setAttribute("width", el.style.width.replaceAll("px", ""));
+          }
+          if (tag === "td" && el.style.height.length > 0 && el.style.height.endsWith("px")) {
+            el.setAttribute("height", el.style.height.replaceAll("px", ""));
+          }
+          if (tag === "td" && el.style.textAlign.length > 0) {
+            el.setAttribute("align", el.style.textAlign);
+          }
+          if (tag === "td" && el.style.verticalAlign.length > 0) {
+            el.setAttribute("valign", el.style.verticalAlign);
+          }
         }
 
-        const rawHtml = `<!DOCTYPE html>
+        const emailHtml = `<!DOCTYPE html>
 <html lang="en" style="margin: 0; padding: 0; box-sizing: border-box;">
   <head>
     <meta charset="utf-8">
@@ -149,43 +226,7 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
   </body>
 </html>`;
 
-        const inlined = juice(rawHtml, {
-          applyHeightAttributes: true,
-          applyStyleTags: true,
-          applyWidthAttributes: true,
-          extraCss: [
-            "body { margin: 0; padding: 0; }",
-            "* { box-sizing: border-box; }",
-            "p { margin: 0 0 1em; }",
-            "h1, h2, h3, h4, h5, h6 { margin: 0 0 8px; }",
-            ".py-1 { padding-top: 4px; padding-bottom: 4px; }",
-            ".font-semibold { font-weight: 700; }",
-            ".space-y-4 {:where(& > :not(:last-child)) {margin-bottom: 16px;}}",
-            ".list-disc {list-style-type: disc;}",
-            ".list-inside {list-style-position: inside;}",
-            ".border-red-500 { border-color: #ef4444; }",
-            ".bg-red-50 { background-color: #fef2f2; }",
-            ".text-red-800 { color: #991b1b; }",
-            ".border-purple-500 { border-color: #a855f7; }",
-            ".bg-purple-50 { background-color: #faf5ff; }",
-            ".text-purple-800 { color: #6b21a8; }",
-            ".border-blue-500 { border-color: #3b82f6; }",
-            ".bg-blue-50 { background-color: #eff6ff; }",
-            ".text-blue-800 { color: #1e40af; }",
-            ".border-green-500 { border-color: #22c55e; }",
-            ".bg-green-50 { background-color: #f0fdf4; }",
-            ".text-green-800 { color: #166534; }",
-            ".border-amber-500 { border-color: #f59e0b; }",
-            ".bg-amber-50 { background-color: #fffbeb; }",
-            ".text-amber-800 { color: #92400e; }",
-          ].join("\n"),
-          preserveKeyFrames: false,
-          removeStyleTags: true,
-        });
-
-        // console.log("juice", rawHtml, inlined);
-
-        await navigator.clipboard.writeText(rawHtml);
+        await navigator.clipboard.writeText(emailHtml);
         toast.success("HTML copied to clipboard");
       } catch (error: unknown) {
         toast.error("Failed to copy HTML");
