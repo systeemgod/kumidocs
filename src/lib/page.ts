@@ -9,6 +9,8 @@ interface PageTemplateDef {
    * CSS in the template is inlined via juice when the user copies as HTML.
    */
   template: string;
+  /** Optional human-readable description shown in the Page Themes grid. */
+  description?: string;
 }
 
 type PageTemplateMap = Record<string, PageTemplateDef>;

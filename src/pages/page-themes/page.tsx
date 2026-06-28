@@ -48,9 +48,14 @@ const TemplateCard = (allProps: TemplateCardProps): JSX.Element => {
           </div>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground truncate">
-        {name} &middot; {template.template.length.toLocaleString()} bytes
-      </p>
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{name}</p>
+          {template.description !== undefined && template.description !== "" && (
+            <p className="text-xs text-muted-foreground truncate">{template.description}</p>
+          )}
+        </div>
+      </div>
     </button>
   );
 };
@@ -152,7 +157,11 @@ const PageThemesPage = (): JSX.Element => {
       </div>
       <TemplateDialog
         name={selectedName}
-        template={selectedName ? pageTemplates[selectedName] : undefined}
+        template={
+          selectedName !== undefined && selectedName !== ""
+            ? pageTemplates[selectedName]
+            : undefined
+        }
         open={dialogOpen}
         onClose={(): void => {
           setDialogOpen(false);
