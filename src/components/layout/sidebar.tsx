@@ -1,6 +1,7 @@
 import {
   AddRegular,
   BookTemplateRegular,
+  DocumentTextRegular,
   ImageRegular,
   MoreHorizontalRegular,
 } from "@fluentui/react-icons";
@@ -87,11 +88,19 @@ export default function Sidebar({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  void navigate("/t");
+                  void navigate("/s");
                 }}
               >
                 <BookTemplateRegular className="mr-2 w-4 h-4" />
-                Theme library
+                Slide themes
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  void navigate("/p");
+                }}
+              >
+                <DocumentTextRegular className="mr-2 w-4 h-4" />
+                Page themes
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -438,7 +438,7 @@ src/
 ├── pages/
 │   ├── FilePage.tsx / WelcomePage.tsx / NotFound.tsx
 │   ├── ImageLibraryPage.tsx
-│   └── ThemeLibraryPage.tsx   ← /t route, ScaledSlide thumbnails + demo dialog
+│   └── SlideThemesPage.tsx   ← /s route, ScaledSlide thumbnails + demo dialog
 └── store/theme.tsx / user.tsx / ws.ts
 styles/globals.css
 ```

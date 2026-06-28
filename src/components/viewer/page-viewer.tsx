@@ -91,7 +91,7 @@ const PageViewer = forwardRef<PageViewerHandle, PageViewerProps>(
     useImperativeHandle(ref, () => ({ copyHtml: handleCopyHtml }), [handleCopyHtml]);
 
     return (
-      <div className="flex flex-col items-center gap-3 py-6">
+      <div className="flex flex-col items-center gap-3">
         <div
           ref={wrapperRef}
           style={{
