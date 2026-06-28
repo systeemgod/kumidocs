@@ -75,7 +75,7 @@ const TemplateDialog = (allProps: TemplateDialogProps): JSX.Element => {
     >
       <DialogContent
         showCloseButton={false}
-        className="max-w-5xl w-full p-0 gap-0 overflow-hidden flex flex-col h-[85vh]"
+        className="sm:max-w-5xl max-w-5xl w-full p-0 gap-0 overflow-hidden flex flex-col h-[85vh]"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
           <span className="text-sm font-semibold">{name ?? "Template"}</span>
