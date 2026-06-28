@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { ClipboardPaste, Copy, FileText, Redo2, Scissors, TextSelect, Undo2 } from "lucide-react";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import {
@@ -20,6 +21,7 @@ import Label from "@/components/ui/label";
 import MarkdownToolbar from "./toolbar";
 import MarkdownViewer from "./viewer";
 import type { PageMeta } from "@/lib/frontmatter";
+import type { PageTemplateMap } from "@/lib/page";
 import type { SlideThemeMap } from "@/lib/slide";
 import { SlideViewer } from "@/components/editor/slides/viewer";
 import { useMarkdownEditor } from "./use-editor";
@@ -35,6 +37,7 @@ interface MarkdownEditorProps {
   slideThemes?: SlideThemeMap;
   slideThemeVars?: Record<string, string>;
   onMetaChange?: (meta: PageMeta) => void;
+  pageTemplates?: PageTemplateMap;
 }
 
 export default function MarkdownEditor({
@@ -48,7 +51,13 @@ export default function MarkdownEditor({
   slideThemes,
   slideThemeVars,
   onMetaChange,
+  pageTemplates,
 }: MarkdownEditorProps): JSX.Element {
+  const templateOptions = useMemo(() => {
+    if (!pageTemplates) return [];
+    return Object.keys(pageTemplates).sort();
+  }, [pageTemplates]);
+
   const {
     taRef,
     previewRef,
@@ -118,17 +127,68 @@ export default function MarkdownEditor({
             <DialogTitle>Page properties</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
-            {/* Presentation mode */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="props-slides"
-                checked={Boolean(dlgMeta.slides)}
-                onCheckedChange={(checked) => {
-                  applyMeta({ ...dlgMeta, slides: Boolean(checked) });
-                }}
-              />
-              <Label htmlFor="props-slides">Presentation mode</Label>
+            {/* Presentation mode + Page mode */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="props-slides"
+                  checked={Boolean(dlgMeta.slides)}
+                  onCheckedChange={(checked) => {
+                    const update: PageMeta = { ...dlgMeta, slides: Boolean(checked) };
+                    if (checked) {
+                      // mutually exclusive: unset page mode
+                      delete update.page;
+                    }
+                    applyMeta(update);
+                  }}
+                />
+                <Label htmlFor="props-slides">Presentation mode</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="props-page"
+                  checked={Boolean(dlgMeta.page)}
+                  onCheckedChange={(checked) => {
+                    const update: PageMeta = { ...dlgMeta };
+                    if (checked) {
+                      update.page = "blank";
+                      // mutually exclusive: unset slide mode
+                      delete update.slides;
+                    } else {
+                      delete update.page;
+                    }
+                    applyMeta(update);
+                  }}
+                />
+                <Label htmlFor="props-page">Page mode</Label>
+              </div>
             </div>
+            {dlgMeta.page !== undefined && dlgMeta.page !== "" && templateOptions.length > 0 && (
+              <>
+                <div className="border-t border-border" />
+                {/* Page template */}
+                <div className="flex items-center justify-between gap-4">
+                  <Label>Template</Label>
+                  <Select
+                    value={dlgMeta.page ?? "blank"}
+                    onValueChange={(val) => {
+                      applyMeta({ ...dlgMeta, page: val });
+                    }}
+                  >
+                    <SelectTrigger size="sm" className="w-36 h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templateOptions.map((name) => (
+                        <SelectItem key={name} value={name} className="text-xs">
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
             {dlgMeta.slides === true && (
               <>
                 <div className="border-t border-border" />

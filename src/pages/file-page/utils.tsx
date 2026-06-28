@@ -143,6 +143,7 @@ function buildEditorContent({
         slidePaginate={meta.paginate}
         slideThemes={slideThemes}
         slideThemeVars={meta.themeVars}
+        pageTemplates={pageTemplates}
         onMetaChange={(updatedMeta) => {
           metaRef.current = updatedMeta;
           setMeta(updatedMeta);
