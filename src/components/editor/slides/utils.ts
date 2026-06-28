@@ -46,7 +46,7 @@ function applyTextOverlay(
     }
     const yOnPage =
       pageHPx === undefined ? yLocal : yLocal - Math.floor(yLocal / pageHPx) * pageHPx;
-    const fsPx = Number.parseFloat(window.getComputedStyle(node.parentElement).fontSize);
+    const fsPx = Number(window.getComputedStyle(node.parentElement).fontSize);
     pdf.setFontSize(Number.isNaN(fsPx) ? 12 : fsPx);
     // Stretch/compress char spacing so the invisible text spans the same
     // pixel width as the actual DOM render, compensating for font differences.

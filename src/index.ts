@@ -44,6 +44,7 @@ try {
 }
 
 // Validate repo
+// oxlint-disable-next-line node/no-sync
 if (!existsSync(path.join(config.repoPath, ".git"))) {
   throw new Error(`Fatal: ${config.repoPath} is not a git repository.`);
 }
@@ -125,6 +126,7 @@ async function processFileChange(relPath: string): Promise<void> {
     return;
   }
   const fullPath = path.join(config.repoPath, relPath);
+  // oxlint-disable-next-line node/no-sync
   if (existsSync(fullPath)) {
     await reloadFile(relPath, config);
     updateInIndex(relPath);
@@ -232,6 +234,7 @@ async function runPullCycle(): Promise<void> {
         continue;
       }
       const fullPath = path.join(config.repoPath, changedPath);
+      // oxlint-disable-next-line node/no-sync
       if (existsSync(fullPath)) {
         broadcastPageChanged(changedPath, result.sha, "upstream", "Remote");
       } else {

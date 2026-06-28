@@ -190,8 +190,10 @@ const printHelp = (): void => {
         : String(rawDefault);
     lines.push(`  ${flagStr} ${opt.description} (default: ${defaultStr}, env: ${opt.env})`);
   }
-  lines.push("  -h, --help               Show this help");
-  lines.push("  -v, --version            Show version");
+  lines.push(
+    "  -h, --help               Show this help",
+    "  -v, --version            Show version",
+  );
   process.stdout.write(`${lines.join("\n")}\n`);
 };
 

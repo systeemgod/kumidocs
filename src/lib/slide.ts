@@ -233,7 +233,7 @@ const isBgDark = (color: string): boolean => {
   }
   const oklchMatch = /oklch\(\s*(?<lightness>[\d.]+)/u.exec(color);
   if (oklchMatch) {
-    return Number.parseFloat(oklchMatch.at(1) ?? "1") < OKLCH_DARK_LIGHTNESS;
+    return Number(oklchMatch.at(1) ?? "1") < OKLCH_DARK_LIGHTNESS;
   }
   return false;
 };

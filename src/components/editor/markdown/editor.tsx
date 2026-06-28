@@ -54,8 +54,10 @@ export default function MarkdownEditor({
   pageTemplates,
 }: MarkdownEditorProps): JSX.Element {
   const templateOptions = useMemo(() => {
-    if (!pageTemplates) return [];
-    return Object.keys(pageTemplates).sort();
+    if (!pageTemplates) {
+      return [];
+    }
+    return Object.keys(pageTemplates).toSorted();
   }, [pageTemplates]);
 
   const {
@@ -135,7 +137,7 @@ export default function MarkdownEditor({
                   checked={Boolean(dlgMeta.slides)}
                   onCheckedChange={(checked) => {
                     const update: PageMeta = { ...dlgMeta, slides: Boolean(checked) };
-                    if (checked) {
+                    if (checked === true) {
                       // mutually exclusive: unset page mode
                       delete update.page;
                     }
@@ -150,7 +152,7 @@ export default function MarkdownEditor({
                   checked={Boolean(dlgMeta.page)}
                   onCheckedChange={(checked) => {
                     const update: PageMeta = { ...dlgMeta };
-                    if (checked) {
+                    if (checked === true) {
                       update.page = "blank";
                       // mutually exclusive: unset slide mode
                       delete update.slides;

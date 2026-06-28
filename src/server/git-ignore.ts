@@ -10,6 +10,7 @@ type IgnoreChecker = (relPath: string) => boolean;
 function loadGlobalGitignore(): string | undefined {
   // Ask git for the configured global excludes file
   try {
+    // oxlint-disable-next-line node/no-sync
     const result = spawnSync("git", ["config", "--global", "core.excludesFile"], {
       encoding: "utf8",
     });
@@ -19,7 +20,9 @@ function loadGlobalGitignore(): string | undefined {
       const expanded = configPath.startsWith("~/")
         ? path.join(homedir(), configPath.slice(2))
         : configPath;
+      // oxlint-disable-next-line node/no-sync
       if (expanded && existsSync(expanded)) {
+        // oxlint-disable-next-line node/no-sync
         return readFileSync(expanded, "utf8");
       }
     }
@@ -33,8 +36,10 @@ function loadGlobalGitignore(): string | undefined {
     path.join(homedir(), ".gitignore"),
     path.join(homedir(), ".gitignore_global"),
   ]) {
+    // oxlint-disable-next-line node/no-sync
     if (existsSync(candidate)) {
       try {
+        // oxlint-disable-next-line node/no-sync
         return readFileSync(candidate, "utf8");
       } catch {
         // unreadable; skip
@@ -58,8 +63,10 @@ function buildIgnoreChecker(repoPath: string): IgnoreChecker {
   }
 
   const repoGitignorePath = path.join(repoPath, ".gitignore");
+  // oxlint-disable-next-line node/no-sync
   if (existsSync(repoGitignorePath)) {
     try {
+      // oxlint-disable-next-line node/no-sync
       ig.add(readFileSync(repoGitignorePath, "utf8"));
     } catch {
       // unreadable
